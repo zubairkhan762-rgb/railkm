@@ -1,0 +1,335 @@
+/* RailKM — global styles (Tailwind CSS v4, no tailwind.config.js)
+   Design language: Vercel Geist, dark variant — pure-black canvas, hairline
+   borders, a single ink tone for text, Geist Sans + Geist Mono only. */
+
+@import "tailwindcss";
+@import "@fontsource-variable/geist/index.css";
+@import "@fontsource-variable/geist-mono/index.css";
+
+/* Theme is driven by a data-theme attribute on <html> (set before paint by an
+   inline script in Layout.astro), so dark: maps to that attribute rather than
+   the OS preference. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@theme {
+	/* — Color: black canvas / elevated surface / hairline borders — */
+	--color-background: #000000;
+	--color-surface: #0a0a0a;
+	--color-line: #262626;
+	--color-foreground: #ededed;
+	--color-muted: #a1a1a1;
+
+	/* — Accent & semantic (used sparingly, never as chrome) — */
+	--color-link: #0070f3;
+	--color-link-deep: #0761d1;
+	--color-error: #ee0000;
+	--color-warning: #f5a623;
+	--color-focus: rgba(237, 237, 237, 0.45);
+
+	/* — Type: Geist Sans sets everything, Geist Mono labels data — */
+	--font-sans: "Geist Variable", "Geist", Arial, ui-sans-serif, system-ui, sans-serif;
+	--font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+	/* — Type scale: tight negative tracking on display sizes — */
+	--text-display-xl: 48px;
+	--text-display-xl--line-height: 48px;
+	--text-display-xl--letter-spacing: -2.4px;
+	--text-heading-lg: 32px;
+	--text-heading-lg--line-height: 40px;
+	--text-heading-lg--letter-spacing: -1.28px;
+	--text-heading-md: 20px;
+	--text-heading-md--line-height: 28px;
+	--text-heading-md--letter-spacing: -0.4px;
+	--text-label-sm: 14px;
+	--text-label-sm--line-height: 20px;
+	--text-label-sm--letter-spacing: -0.28px;
+	--text-eyebrow: 12px;
+	--text-eyebrow--line-height: 16px;
+	--text-body-lg: 16px;
+	--text-body-lg--line-height: 24px;
+	--text-body-md: 14px;
+	--text-body-md--line-height: 20px;
+	--text-body-sm: 12px;
+	--text-body-sm--line-height: 16px;
+
+	/* — Radius: 6px chrome, 12px cards, pill for marketing CTAs — */
+	--radius-sm: 6px;
+	--radius-md: 12px;
+	--radius-lg: 16px;
+	--radius-pill: 100px;
+	--radius-category: 64px;
+}
+
+/* Light theme — flips the semantic tokens. Every utility that reads a
+   var(--color-*) token (bg-background, bg-surface, border-line,
+   text-foreground, text-muted …) picks these up automatically, so cards,
+   tables, dropdowns and buttons re-skin without per-component overrides. */
+:root[data-theme='light'] {
+	color-scheme: light;
+	--color-background: #ffffff;
+	--color-surface: #f9f9f9;
+	--color-line: #e6e6e6;
+	--color-foreground: #111111;
+	--color-muted: #666666;
+	--color-link: #0060df;
+	--color-warning: #b45309;
+	--color-focus: rgba(17, 17, 17, 0.45);
+}
+
+/* Station codes, kilometre figures and any technical data use the mono face
+   with tabular numerals so columns of numbers stay aligned. */
+@utility data-mono {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+}
+
+/* Consistent keyboard focus treatment: a single hairline ring, never the
+   browser default outline, and only for keyboard/AT users. */
+@utility focus-ring {
+	&:focus-visible {
+		outline: 2px solid var(--color-focus);
+		outline-offset: 2px;
+	}
+}
+
+@layer base {
+	html {
+		color-scheme: dark;
+		scrollbar-gutter: stable;
+	}
+
+	body {
+		background-color: var(--color-background);
+		color: var(--color-foreground);
+		font-family: var(--font-sans);
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
+	*,
+	::before,
+	::after {
+		border-color: var(--color-line);
+	}
+
+	::selection {
+		background-color: var(--color-foreground);
+		color: var(--color-background);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		::before,
+		::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+			scroll-behavior: auto !important;
+		}
+	}
+}
+
+/* ── Print / Save-as-PDF ─────────────────────────────────────────────────
+   The interactive mapper is replaced on paper by a single formal document
+   card (#print-card, populated by index.astro). Everything flagged
+   data-print="hide" — nav, forms, buttons, marketing sections — is dropped,
+   and the palette is forced to black-on-white regardless of the active
+   theme so the output reads like an official railway record. */
+
+/* Screen: the document card never renders (it exists only for print). */
+#print-card {
+	display: none;
+}
+
+@media print {
+	/* Force a clean light palette no matter which theme is active. */
+	:root,
+	:root[data-theme='dark'],
+	:root[data-theme='light'] {
+		color-scheme: light;
+		--color-background: #ffffff;
+		--color-surface: #ffffff;
+		--color-line: #c9c9c9;
+		--color-foreground: #000000;
+		--color-muted: #333333;
+		--color-link: #000000;
+		--color-warning: #8a4b00;
+	}
+
+	@page {
+		margin: 14mm;
+	}
+
+	html,
+	body {
+		background: #ffffff !important;
+		color: #000000 !important;
+	}
+
+	/* Withhold all chrome: navigation, forms, quick-test pills, buttons,
+	   the directory and the footer. */
+	[data-print='hide'] {
+		display: none !important;
+	}
+
+	/* Reveal the document card and neutralise screen-only effects. */
+	#print-card {
+		display: block !important;
+	}
+
+	#print-card,
+	#print-card * {
+		box-shadow: none !important;
+		background-image: none !important;
+		text-shadow: none !important;
+	}
+
+	/* Keep rows, headings and the signature block whole across page breaks. */
+	.print-doc__section,
+	.print-doc__table tr,
+	.print-doc__verify {
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+
+	.print-doc__table thead {
+		display: table-header-group;
+	}
+
+	/* — Document card typography & tables — */
+	.print-doc {
+		color: #000000;
+		font-size: 12px;
+		line-height: 1.5;
+	}
+
+	.print-doc__head {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 24px;
+		border-bottom: 2px solid #000000;
+		padding-bottom: 10px;
+		margin-bottom: 16px;
+	}
+
+	.print-doc__brand {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+	}
+
+	.print-doc__title {
+		margin: 6px 0 2px;
+		font-size: 21px;
+		line-height: 1.2;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+	}
+
+	.print-doc__subtitle {
+		margin: 0;
+		font-size: 11px;
+		color: #333333;
+	}
+
+	.print-doc__side {
+		flex-shrink: 0;
+		text-align: right;
+		white-space: nowrap;
+		font-size: 11px;
+	}
+
+	.print-doc__side strong {
+		font-family: var(--font-mono);
+	}
+
+	.print-doc__section {
+		margin-top: 18px;
+	}
+
+	.print-doc__heading {
+		margin: 0 0 8px;
+		padding-bottom: 4px;
+		border-bottom: 1px solid #000000;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.print-doc__table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+
+	.print-doc__table th,
+	.print-doc__table td {
+		border: 1px solid #c9c9c9;
+		padding: 5px 8px;
+		text-align: left;
+		vertical-align: top;
+	}
+
+	.print-doc__table thead th,
+	.print-doc__table tfoot th {
+		background: #f2f2f2;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.print-doc__num,
+	.print-doc__km {
+		font-family: var(--font-mono);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.print-doc__km {
+		text-align: right;
+		white-space: nowrap;
+	}
+
+	.print-doc__code {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	.print-doc__tag {
+		font-size: 10px;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.print-doc__muted {
+		color: #555555;
+	}
+
+	.print-doc__verify {
+		display: flex;
+		justify-content: space-between;
+		gap: 32px;
+		margin-top: 28px;
+		padding-top: 14px;
+		border-top: 1px dashed #666666;
+		font-size: 11px;
+	}
+
+	.print-doc__verify span {
+		flex: 1;
+		min-width: 180px;
+		border-top: 1px solid #000000;
+		padding-top: 4px;
+	}
+
+	.print-doc__note {
+		margin-top: 12px;
+		font-size: 10px;
+		color: #555555;
+	}
+}

@@ -1,0 +1,128 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Terms & Conditions — RailKM';
+const description =
+	'Terms and conditions for using RailKM: distance-accuracy disclaimer, fare-estimate disclaimer, acceptable use, intellectual property, data attribution and limitation of liability.';
+const lastUpdated = '17 October 2026';
+---
+
+<Layout title={title} description={description} backHref="/" backLabel="Back to Route Mapper">
+	<div class="relative mx-auto w-full max-w-3xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16">
+		<nav aria-label="Breadcrumb" class="data-mono text-eyebrow uppercase text-muted">
+			<ol class="flex flex-wrap items-center gap-2">
+				<li><a class="focus-ring rounded-sm transition-colors hover:text-foreground" href="/">Home</a></li>
+				<li aria-hidden="true">/</li>
+				<li class="text-foreground">Terms &amp; Conditions</li>
+			</ol>
+		</nav>
+
+		<p class="mt-8 data-mono text-eyebrow font-medium uppercase text-muted">Legal</p>
+		<h1 class="mt-5 text-balance text-heading-lg font-semibold text-foreground">Terms &amp; Conditions</h1>
+		<p class="mt-4 text-body-lg text-muted">
+			These terms govern your use of RailKM. By using the site you agree to them.
+		</p>
+		<p class="mt-3 data-mono text-eyebrow uppercase text-muted">Last updated: {lastUpdated}</p>
+
+		<div class="mt-10 flex flex-col gap-8">
+			<section class="border-t border-line pt-6">
+				<h2 class="text-heading-md font-semibold text-foreground">1. Acceptance of terms</h2>
+				<p class="mt-3 text-body-md text-muted">
+					By accessing or using RailKM you agree to be bound by these terms. If you do not agree,
+					please do not use the service.
+				</p>
+			</section>
+
+			<section class="border-t border-line pt-6">
+				<h2 class="text-heading-md font-semibold text-foreground">2. Use of the service</h2>
+				<p class="mt-3 text-body-md text-muted">
+					RailKM is provided for personal and professional trip planning. You agree not to misuse
+					the service, including by attempting to disrupt it, scrape it at a rate that degrades
+					availability, or republish its results as official Indian Railways data.
+				</p>
+			</section>
+
+			<section class="border-t border-line pt-6">
+				<h2 class="text-heading-md font-semibold text-foreground">3. Distance accuracy disclaimer</h2>
+				<p class="mt-3 text-body-md text-muted">
+					Distances shown are the shortest <em>track</em> route by total kilometres, derived from
+					open timetable data. They are indicative reference values and may differ slightly from
+					published timetables, train-specific routes or official figures. Distances are not a
+					guarantee of any particular train's route.
+				</p>
+			</section>
+
+			<section class="border-t border-line pt-6">
+				<h2 class="text-heading-md font-semibold text-foreground">4. Fare estimates disclaimer</h2>
+				<p class="mt-3 text-body-md text-muted">
+					Fare figures are approximate estimates based on standard Indian Railways distance
+					slabs. Actual fares vary by train type, class, distance slab, dynamic pricing, reservation
+					charges, superfast surcharges and GST. Fare estimates are for planning only and are not a
+					quote.
+				</p>
+			</section>
+
+			<section class="border-t border-line pt-6">
+				<h2 class="text-heading-md font-semibold text-foreground">5. No affiliation</h2>
+				<p class="mt-3 text-body-md text-muted">
+					RailKM is an independent project. It is not affiliated with, endorsed by, or operated by
+					Indian Railways, IRCTC or any government body. RailKM does not sell tickets or provide
+					live train status.
+				</p>
+			</section>
+
+			<section class="border-t border-line pt-6">
+				<h2 class="text-heading-md font-semibold text-foreground">6. No warranty</h2>
+				<p class="mt-3 text-body-md text-muted">
+					The service is provided "as is" and "as available", without warranties of any kind,
+					express or implied, including accuracy, fitness for a particular purpose or
+					uninterrupted availability.
+				</p>
+			</section>
+
+			<section class="border-t border-line pt-6">
+				<h2 class="text-heading-md font-semibold text-foreground">7. Limitation of liability</h2>
+				<p class="mt-3 text-body-md text-muted">
+					To the maximum extent permitted by law, RailKM and its maintainers are not liable for any
+					direct, indirect, incidental or consequential loss arising from use of, or reliance on,
+					the service or its results.
+				</p>
+			</section>
+
+			<section class="border-t border-line pt-6">
+				<h2 class="text-heading-md font-semibold text-foreground">8. Data attribution</h2>
+				<p class="mt-3 text-body-md text-muted">
+					Railway data is derived from open timetable data published by
+					<a class="focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="https://datameet.org/" rel="noopener noreferrer" target="_blank">DataMeet</a>.
+					Attribution remains with the original data providers.
+				</p>
+			</section>
+
+			<section class="border-t border-line pt-6">
+				<h2 class="text-heading-md font-semibold text-foreground">9. Intellectual property</h2>
+				<p class="mt-3 text-body-md text-muted">
+					The RailKM name, interface, design and code are protected. You may use the results for
+					personal and professional planning, but may not copy or redistribute the service's code
+					or branding without permission.
+				</p>
+			</section>
+
+			<section class="border-t border-line pt-6">
+				<h2 class="text-heading-md font-semibold text-foreground">10. Changes to these terms</h2>
+				<p class="mt-3 text-body-md text-muted">
+					We may update these terms from time to time. Continued use of the service after changes
+					are posted constitutes acceptance of the revised terms.
+				</p>
+			</section>
+
+			<section class="border-t border-line pt-6">
+				<h2 class="text-heading-md font-semibold text-foreground">11. Contact</h2>
+				<p class="mt-3 text-body-md text-muted">
+					For questions about these terms, email
+					<a class="focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="mailto:support@railkm.com">support@railkm.com</a>
+					or use the <a class="focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="/contact">contact page</a>.
+				</p>
+			</section>
+		</div>
+	</div>
+</Layout>

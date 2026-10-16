@@ -1,0 +1,1164 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { buildPopularRoutes } from '../utils/popularRoutes.js';
+
+const presets = [
+	{ label: 'NDLS → VGLJ → BPL', route: 'NDLS-VGLJ-BPL' },
+	{ label: 'NZM → RTM → JAO', route: 'NZM-RTM-JAO' },
+	{ label: 'MMCT → ADI', route: 'MMCT-ADI' },
+	{ label: 'HWH → NDLS', route: 'HWH-NDLS' },
+];
+
+const popularRoutes = buildPopularRoutes();
+---
+
+<Layout>
+	<div class="relative">
+		<div
+			data-print="hide"
+			class="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(237,237,237,0.07),transparent)]"
+			aria-hidden="true"
+		>
+		</div>
+
+		<section
+			data-print="hide"
+			class="relative mx-auto w-full max-w-6xl scroll-mt-20 px-4 pt-6 pb-8 sm:px-6 sm:pt-8"
+		>
+			<p class="data-mono text-eyebrow font-medium uppercase text-muted">
+				Indian Railways · Distance Engine
+			</p>
+			<h1
+				class="mt-4 max-w-4xl text-balance text-heading-lg font-semibold text-foreground sm:text-display-xl"
+			>
+				Exact Railway Track Distance &amp; Multi-Via Route Mapper
+			</h1>
+			<p class="mt-4 max-w-2xl text-body-lg text-muted">
+				Compute shortest-track kilometres between any two stations, chain multiple via stops
+				for break-journey routing, and inspect every intermediate halt — with cumulative
+				kilometres and automatic double-back detection.
+			</p>
+		</section>
+
+		<section id="mapper" class="relative mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6">
+			<div data-print="hide" class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+				<div class="lg:col-span-5">
+					<div class="flex flex-col gap-6 lg:sticky lg:top-20">
+						<div class="rounded-lg border border-line bg-surface p-5 sm:p-6">
+							<div class="flex items-center justify-between gap-4">
+								<div>
+									<p class="data-mono text-eyebrow uppercase text-muted" data-i18n="routeBuilder">Route Builder</p>
+									<h2 class="mt-1 text-heading-md font-semibold text-foreground" data-i18n="planJourney">
+										Plan a multi-via journey
+									</h2>
+								</div>
+								<span class="data-mono hidden text-eyebrow text-muted sm:inline" data-i18n="upToStops">Up to 8 stops</span>
+							</div>
+
+							<div id="chain-builder" class="mt-5 flex flex-col gap-4">
+								<p class="text-body-sm text-muted">Loading station index…</p>
+							</div>
+
+							<div class="mt-5 flex flex-wrap items-center gap-2 border-t border-line pt-4">
+								<button
+									type="button"
+									id="add-via"
+									class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40 disabled:cursor-not-allowed disabled:opacity-40"
+								>
+									<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="shrink-0">
+										<path
+											d="M8 2.5v11M2.5 8h11"
+											stroke="currentColor"
+											stroke-width="1.5"
+											stroke-linecap="round"></path>
+									</svg>
+									<span data-i18n="addVia">Add Via Station</span>
+								</button>
+								<button
+									type="button"
+									id="swap"
+									class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40"
+								>
+									<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="shrink-0">
+										<path
+											d="M3 5.5h9M9.5 3l2.5 2.5L9.5 8M13 10.5H4M6.5 8L4 10.5 6.5 13"
+											stroke="currentColor"
+											stroke-width="1.5"
+											stroke-linecap="round"
+											stroke-linejoin="round"></path>
+									</svg>
+									<span data-i18n="swap">Swap Origin / Destination</span>
+								</button>
+							</div>
+
+							<div id="saved-routes" class="mt-5 border-t border-line pt-4"></div>
+						</div>
+
+						<div>
+							<p class="data-mono text-eyebrow uppercase text-muted" data-i18n="quickTestRoutes">Quick test routes</p>
+							<div class="mt-3 flex flex-wrap gap-2">
+								{
+									presets.map((preset) => (
+										<button
+											type="button"
+											data-preset-route={preset.route}
+											class="focus-ring data-mono inline-flex min-h-[44px] items-center rounded-full border border-line bg-surface px-4 py-2.5 text-body-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5"
+										>
+											{preset.label}
+										</button>
+									))
+								}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="lg:col-span-7">
+					<p id="route-status" class="sr-only" role="status" aria-live="polite"></p>
+					<div id="results"></div>
+				</div>
+			</div>
+
+			<section id="print-card" aria-label="Printable route distance card"></section>
+		</section>
+
+		<section
+			id="popular-routes"
+			data-print="hide"
+			aria-labelledby="popular-routes-heading"
+			class="relative mx-auto w-full max-w-6xl scroll-mt-20 px-4 pb-24 sm:px-6"
+		>
+			<div class="border-t border-line pt-10">
+				<div class="flex flex-wrap items-end justify-between gap-3">
+					<div>
+						<p class="data-mono text-eyebrow uppercase text-muted" data-i18n="directory">Directory</p>
+						<h2 id="popular-routes-heading" class="mt-1 text-heading-md font-semibold text-foreground" data-i18n="popularRoutesHeading">
+							Popular railway distance routes
+						</h2>
+					</div>
+					<p class="text-body-sm text-muted">
+						{popularRoutes.length} pre-computed shortest-track routes
+					</p>
+				</div>
+
+				<div class="mt-6 grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+					{
+						popularRoutes.map((entry) => (
+							<a
+								href={`/distance/${entry.slug}`}
+								class="focus-ring group flex h-full items-center justify-between gap-3 rounded-md border border-line bg-surface p-4 transition-colors hover:border-foreground/40 hover:bg-foreground/5"
+							>
+								<span class="min-w-0">
+									<span class="data-mono block text-body-md font-semibold text-foreground">
+										{entry.from}
+										<span class="text-muted" aria-hidden="true"> → </span>
+										{entry.to}
+									</span>
+									<span class="mt-0.5 block truncate text-body-sm text-muted">
+										{entry.fromName} to {entry.toName}
+									</span>
+								</span>
+								<span class="data-mono shrink-0 text-body-sm tabular-nums text-muted">
+									{entry.route.totalDistanceKm.toLocaleString('en-IN')} km
+								</span>
+							</a>
+						))
+					}
+				</div>
+			</div>
+		</section>
+	</div>
+</Layout>
+
+<script>
+	import {
+		calculateMultiViaRoute,
+		resolveStation,
+		searchStations,
+		stationInfo,
+		estimateFares,
+	} from '../utils/routeEngine.js';
+	import { t } from '../utils/i18n.js';
+
+	const builderEl = document.getElementById('chain-builder');
+	const resultsEl = document.getElementById('results');
+	const statusEl = document.getElementById('route-status');
+	const addViaBtn = document.getElementById('add-via');
+	const swapBtn = document.getElementById('swap');
+
+	const MAX_STOPS = 8;
+
+	let graph = null;
+	let lastRoute = null;
+	const printCardEl = document.getElementById('print-card');
+	const savedRoutesEl = document.getElementById('saved-routes');
+	const emptySlot = () => ({ code: '', query: '' });
+	const stationOf = (code) => (graph ? stationInfo(graph, code) : null);
+	let slots = [emptySlot(), emptySlot()];
+	let lastSignature = '';
+	const rowState = new Map();
+
+	function esc(value) {
+		return String(value).replace(/[&<>"']/g, (ch) => {
+			return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+		});
+	}
+
+	function positionLabel(index) {
+		if (index === 0) return t('origin');
+		if (index === slots.length - 1) return t('destination');
+		return t('via', { n: index });
+	}
+
+	function zoneDivision(code) {
+		const info = stationOf(code);
+		if (!info) return 'IR';
+		const bits = [info.zone, info.division].filter(Boolean);
+		return bits.length ? bits.join(' · ') : info.state || 'IR';
+	}
+
+	function focusInput(index) {
+		const input = document.getElementById(`station-input-${index}`);
+		if (input) input.focus();
+	}
+
+	/* ---------------------------------------------------------------- Builder */
+
+	function renderBuilder(focusIndex = null) {
+		builderEl.innerHTML = slots
+			.map((slot, index) => {
+				const isVia = index > 0 && index < slots.length - 1;
+				const info = slot.code ? stationOf(slot.code) : null;
+				const caption = info
+					? `${slot.code} · ${esc(info.name)}`
+					: slot.query && !slot.code
+						? 'No matching station selected'
+						: '';
+				const removeButton = isVia
+					? `<button type="button" data-remove="${index}" aria-label="Remove ${positionLabel(index)}" class="focus-ring inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-line text-muted transition-colors hover:border-foreground/40 hover:text-foreground sm:h-7 sm:w-7">
+						<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+					</button>`
+					: '';
+
+				return `<div class="flex flex-col gap-1.5" data-row="${index}">
+					<div class="flex items-center justify-between gap-3">
+						<label class="data-mono text-eyebrow uppercase text-muted" for="station-input-${index}">${positionLabel(index)}</label>
+						${removeButton}
+					</div>
+					<div class="relative">
+						<input
+							id="station-input-${index}"
+							name="station-${index}"
+							type="text"
+							inputmode="text"
+							autocomplete="off"
+							autocapitalize="off"
+							autocorrect="off"
+							spellcheck="false"
+							role="combobox"
+							aria-expanded="false"
+							aria-controls="station-list-${index}"
+							aria-autocomplete="list"
+							aria-label="${positionLabel(index)} station"
+							placeholder="${t('stationPlaceholder')}"
+							class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground placeholder:text-muted"
+						/>
+						<ul
+							id="station-list-${index}"
+							role="listbox"
+							aria-label="${positionLabel(index)} station suggestions"
+							class="absolute left-0 right-0 z-30 mt-1 hidden max-h-72 overflow-auto rounded-md border border-line bg-surface shadow-[0_12px_32px_-12px_rgba(0,0,0,0.8)]"
+						></ul>
+					</div>
+					<p class="data-mono text-eyebrow text-muted ${caption ? '' : 'hidden'}" data-caption="${index}">${caption}</p>
+				</div>`;
+			})
+			.join('');
+
+		slots.forEach((_, index) => wireRow(index));
+		if (focusIndex !== null) focusInput(focusIndex);
+		if (addViaBtn) addViaBtn.disabled = slots.length >= MAX_STOPS;
+	}
+
+	function wireRow(index) {
+		const input = document.getElementById(`station-input-${index}`);
+		const list = document.getElementById(`station-list-${index}`);
+		if (!input || !list) return;
+
+		rowState.set(index, { results: [], active: -1 });
+		input.value = slots[index].code || slots[index].query || '';
+
+		input.addEventListener('focus', () => openList(index));
+		input.addEventListener('input', () => {
+			slots[index].code = '';
+			slots[index].query = input.value;
+			updateCaption(index);
+			openList(index);
+			computeRoute();
+		});
+		input.addEventListener('keydown', (event) => onKeydown(event, index));
+		input.addEventListener('blur', () => {
+			window.setTimeout(() => closeList(index), 150);
+		});
+
+		const remove = builderEl.querySelector(`[data-remove="${index}"]`);
+		if (remove) remove.addEventListener('click', () => removeVia(index));
+	}
+
+	function updateCaption(index) {
+		const el = builderEl.querySelector(`[data-caption="${index}"]`);
+		if (!el) return;
+		const info = slots[index].code ? stationOf(slots[index].code) : null;
+		if (info) {
+			el.textContent = `${slots[index].code} · ${info.name}`;
+			el.classList.remove('hidden');
+		} else if (slots[index].query) {
+			el.textContent = 'No matching station selected';
+			el.classList.remove('hidden');
+		} else {
+			el.textContent = '';
+			el.classList.add('hidden');
+		}
+	}
+
+	/* ----------------------------------------------------------- Autocomplete */
+
+	function openList(index) {
+		const input = document.getElementById(`station-input-${index}`);
+		const list = document.getElementById(`station-list-${index}`);
+		if (!input || !list) return;
+
+		if (!graph) {
+			list.innerHTML = `<li class="px-4 py-3 text-body-sm text-muted" role="presentation">Loading station index…</li>`;
+			list.classList.remove('hidden');
+			input.setAttribute('aria-expanded', 'true');
+			return;
+		}
+
+		const query = input.value.trim() || slots[index].code || '';
+		if (!query) {
+			closeList(index);
+			return;
+		}
+
+		const results = searchStations(graph, query, 8);
+		const state = rowState.get(index) || { results: [], active: -1 };
+		state.results = results;
+		state.active = results.length ? 0 : -1;
+		rowState.set(index, state);
+
+		if (!results.length) {
+			list.innerHTML = `<li class="px-4 py-3 text-body-sm text-muted" role="presentation">No stations match “${esc(query)}”.</li>`;
+		} else {
+			list.innerHTML = results
+				.map((result, optionIndex) => {
+					const info = stationOf(result.code) || {};
+					const zoneBit = [result.zone, info.division].filter(Boolean).join(' · ');
+					const junctionTag = result.isJunction
+						? `<span class="data-mono shrink-0 rounded-sm border border-line px-1 py-0.5 text-[10px] uppercase text-muted">Jn</span>`
+						: '';
+					const aliasTag = result.matchedAlias
+						? `<span class="data-mono shrink-0 rounded-sm border border-line px-1 py-0.5 text-[10px] uppercase text-muted">aka ${esc(result.matchedAlias)}</span>`
+						: '';
+					return `<li
+						id="opt-${index}-${optionIndex}"
+						role="option"
+						data-opt="${optionIndex}"
+						aria-selected="${optionIndex === state.active}"
+						class="flex min-h-[44px] cursor-pointer items-center gap-2 px-4 py-2.5 ${optionIndex === state.active ? 'bg-foreground/10' : ''}"
+					>
+						<span translate="no" class="data-mono shrink-0 rounded-sm border border-line bg-background px-1.5 py-0.5 text-eyebrow font-semibold text-foreground">${esc(result.code)}</span>
+						<span class="min-w-0 flex-1 truncate text-body-md text-foreground">${esc(result.name)}</span>
+						${aliasTag}
+						${zoneBit ? `<span class="data-mono hidden shrink-0 text-eyebrow text-muted sm:inline">${esc(zoneBit)}</span>` : ''}
+						${junctionTag}
+					</li>`;
+				})
+				.join('');
+
+			list.querySelectorAll('[data-opt]').forEach((option) => {
+				const optionIndex = Number(option.dataset.opt);
+				option.addEventListener('mousedown', (event) => event.preventDefault());
+				option.addEventListener('mouseenter', () => setActive(index, optionIndex));
+				option.addEventListener('click', () => selectStation(index, state.results[optionIndex]));
+			});
+		}
+
+		list.classList.remove('hidden');
+		input.setAttribute('aria-expanded', 'true');
+		setActive(index, state.active);
+	}
+
+	function closeList(index) {
+		const input = document.getElementById(`station-input-${index}`);
+		const list = document.getElementById(`station-list-${index}`);
+		if (list) list.classList.add('hidden');
+		if (input) {
+			input.setAttribute('aria-expanded', 'false');
+			input.removeAttribute('aria-activedescendant');
+		}
+	}
+
+	function setActive(index, optionIndex) {
+		const state = rowState.get(index);
+		const input = document.getElementById(`station-input-${index}`);
+		const list = document.getElementById(`station-list-${index}`);
+		if (!state || !list || optionIndex < 0 || optionIndex >= state.results.length) return;
+
+		state.active = optionIndex;
+		list.querySelectorAll('[data-opt]').forEach((option, i) => {
+			const on = i === optionIndex;
+			option.setAttribute('aria-selected', String(on));
+			option.classList.toggle('bg-foreground/10', on);
+		});
+		if (input) input.setAttribute('aria-activedescendant', `opt-${index}-${optionIndex}`);
+		const activeEl = document.getElementById(`opt-${index}-${optionIndex}`);
+		if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+	}
+
+	function selectStation(index, result) {
+		if (!result) return;
+		slots[index] = { code: result.code, query: result.code };
+		const input = document.getElementById(`station-input-${index}`);
+		if (input) input.value = result.code;
+		updateCaption(index);
+		closeList(index);
+		computeRoute();
+	}
+
+	function onKeydown(event, index) {
+		const state = rowState.get(index);
+		const list = document.getElementById(`station-list-${index}`);
+		if (!state || !list) return;
+		const open = !list.classList.contains('hidden');
+
+		if (event.key === 'ArrowDown') {
+			event.preventDefault();
+			if (!open) openList(index);
+			else setActive(index, Math.min(state.active + 1, state.results.length - 1));
+		} else if (event.key === 'ArrowUp') {
+			if (!open) return;
+			event.preventDefault();
+			setActive(index, Math.max(state.active - 1, 0));
+		} else if (event.key === 'Enter') {
+			if (open && state.active >= 0) {
+				event.preventDefault();
+				selectStation(index, state.results[state.active]);
+			} else if (open && state.results.length) {
+				event.preventDefault();
+				selectStation(index, state.results[0]);
+			}
+		} else if (event.key === 'Tab' && open && state.active >= 0) {
+			event.preventDefault();
+			selectStation(index, state.results[state.active]);
+			focusInput(index + 1);
+		} else if (event.key === 'Escape') {
+			closeList(index);
+		}
+	}
+
+	/* -------------------------------------------------------------- Chain ops */
+
+	function addVia() {
+		if (slots.length >= MAX_STOPS) return;
+		const insertAt = slots.length - 1;
+		slots.splice(insertAt, 0, emptySlot());
+		renderBuilder(insertAt);
+		computeRoute();
+	}
+
+	function removeVia(index) {
+		if (index <= 0 || index >= slots.length - 1) return;
+		slots.splice(index, 1);
+		renderBuilder();
+		computeRoute();
+	}
+
+	function swapEnds() {
+		const last = slots.length - 1;
+		const first = slots[0];
+		slots[0] = slots[last];
+		slots[last] = first;
+		renderBuilder();
+		computeRoute();
+	}
+
+	function applyRoute(codes) {
+		const next = codes.map((code) => {
+			const resolved = resolveStation(graph, code);
+			return resolved ? { code: resolved.code, query: resolved.code } : emptySlot();
+		});
+		slots = next.length >= 2 ? next : [emptySlot(), emptySlot()];
+		renderBuilder();
+		computeRoute();
+	}
+
+	/* --------------------------------------------------- Compute & rendering */
+
+	function computeRoute() {
+		if (!graph) return;
+		const codes = slots.map((slot) => slot.code);
+
+		if (codes.some((code) => !code)) {
+			if (lastSignature !== 'idle') {
+				lastSignature = 'idle';
+				renderIdle();
+			}
+			return;
+		}
+
+		const signature = codes.join('-');
+		if (signature === lastSignature) return;
+
+		const route = calculateMultiViaRoute(graph, codes);
+		if (!route.ok) {
+			lastSignature = `error:${signature}`;
+			renderError(route.error);
+			announce('Route unavailable.');
+			return;
+		}
+
+		lastSignature = signature;
+		renderResults(route);
+		syncUrl(route.chain);
+	}
+
+	function announce(message) {
+		if (statusEl) statusEl.textContent = message;
+	}
+
+	function bentoHtml({ total, legs, stops, status }) {
+		const totalValue = typeof total === 'number' ? total.toLocaleString('en-IN') : total;
+		const unit = typeof total === 'number' ? '<span class="ml-1 text-label-sm font-normal text-muted">km</span>' : '';
+		const legsValue = typeof legs === 'number' ? `${legs} ${legs === 1 ? t('leg') : t('legs')}` : legs;
+		const stopsValue = typeof stops === 'number' ? stops.toLocaleString('en-IN') : stops;
+		const tone = {
+			green: {
+				wrap: 'border-emerald-600/30 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/30 dark:text-emerald-400',
+				dot: 'bg-emerald-600 dark:bg-emerald-400',
+			},
+			amber: {
+				wrap: 'border-amber-600/30 bg-amber-500/10 text-amber-700 dark:border-amber-500/30 dark:text-amber-400',
+				dot: 'bg-amber-600 dark:bg-amber-400',
+			},
+			muted: { wrap: 'border-line bg-surface text-muted', dot: 'bg-muted' },
+		}[status.tone];
+
+		return `<dl class="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-4">
+			<div class="bg-surface p-5">
+				<dt class="data-mono text-eyebrow uppercase text-muted">${t('totalDistance')}</dt>
+				<dd class="mt-3 data-mono text-2xl font-semibold tabular-nums tracking-normal text-foreground sm:text-heading-lg">${totalValue}${unit}</dd>
+			</div>
+			<div class="bg-surface p-5">
+				<dt class="data-mono text-eyebrow uppercase text-muted">${t('viaLegs')}</dt>
+				<dd class="mt-3 data-mono text-2xl font-semibold tabular-nums tracking-normal text-foreground sm:text-heading-lg">${legsValue}</dd>
+			</div>
+			<div class="bg-surface p-5">
+				<dt class="data-mono text-eyebrow uppercase text-muted">${t('intermediateStops')}</dt>
+				<dd class="mt-3 data-mono text-2xl font-semibold tabular-nums tracking-normal text-foreground sm:text-heading-lg">${stopsValue}</dd>
+			</div>
+			<div class="bg-surface p-5">
+				<dt class="data-mono text-eyebrow uppercase text-muted">${t('routeStatus')}</dt>
+				<dd class="mt-3"><span class="inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 ${tone.wrap}"><span class="h-1.5 w-1.5 shrink-0 rounded-full ${tone.dot}" aria-hidden="true"></span><span class="data-mono min-w-0 text-eyebrow uppercase leading-tight">${esc(status.label)}</span></span></dd>
+			</div>
+		</dl>`;
+	}
+
+	function faresHtml(totalKm) {
+		const pills = estimateFares(totalKm)
+			.map(
+				(cls) => `<li class="inline-flex items-center gap-1.5 rounded-full border border-line bg-background px-3 py-1.5 text-body-sm">
+					<span class="text-muted">${esc(cls.short)}:</span>
+					<span class="data-mono font-semibold text-foreground">₹${cls.fare.toLocaleString('en-IN')}</span>
+				</li>`
+			)
+			.join('');
+
+		return `<section aria-label="Estimated train fare" class="rounded-md border border-line bg-surface p-5">
+			<div class="flex flex-wrap items-center justify-between gap-2">
+				<h2 class="data-mono text-eyebrow uppercase text-muted">${t('estimatedFare')}</h2>
+				<span class="data-mono text-eyebrow text-muted">${totalKm.toLocaleString('en-IN')} km</span>
+			</div>
+			<ul class="mt-4 flex flex-wrap gap-2">${pills}</ul>
+			<p class="mt-3 text-body-sm text-muted">*Approximate estimates based on standard IR distance slabs. Actual fares may vary by train type, dynamic pricing, and GST.</p>
+		</section>`;
+	}
+
+	function renderIdle() {
+		lastRoute = null;
+		if (printCardEl) printCardEl.innerHTML = '';
+		const hasUnresolved = slots.some((slot) => slot.query && !slot.code);
+		resultsEl.innerHTML = `<div class="flex flex-col gap-6">
+			${bentoHtml({ total: '—', legs: '—', stops: '—', status: { label: t('awaitingStations'), tone: 'muted' } })}
+			<section aria-label="Route builder guidance" class="rounded-md border border-line bg-surface p-6">
+				<h2 class="text-heading-md font-semibold text-foreground">${t('routeSummary')}</h2>
+				<p class="mt-2 max-w-2xl text-body-md text-muted">Set an origin and destination above — add via stations to force a break-journey path. The summary updates the moment every stop is resolved.</p>
+				${hasUnresolved ? `<p class="mt-3 text-body-sm text-warning">Some stops are not recognised yet — choose a suggestion from the list.</p>` : ''}
+			</section>
+		</div>`;
+		announce('Waiting for origin and destination.');
+	}
+
+	function renderError(message) {
+		lastRoute = null;
+		if (printCardEl) printCardEl.innerHTML = '';
+		resultsEl.innerHTML = `<div class="rounded-md border border-error/40 bg-error/5 p-5" role="alert">
+			<p class="data-mono text-eyebrow uppercase text-error">Route unavailable</p>
+			<p class="mt-2 text-body-md text-foreground">${esc(message)}</p>
+			<p class="mt-1 text-body-sm text-muted">Try a different station or remove a via stop.</p>
+		</div>`;
+	}
+
+	function renderResults(route) {
+		const doubleSet = new Set(route.doubleBackStations.map((station) => station.code));
+		const intermediate = Math.max(0, route.stopCount - 2);
+		const status = route.doubleBack
+			? { label: t('doubleBack'), tone: 'amber' }
+			: { label: t('validRoute'), tone: 'green' };
+
+		const chainLine = route.chain
+			.map(
+				(code) =>
+					`<span translate="no" class="font-semibold text-foreground">${esc(code)}</span>`
+			)
+			.join(' <span class="text-muted" aria-hidden="true">→</span> ');
+
+		const warnings = route.warnings.length
+			? `<ul class="flex flex-col gap-1">${route.warnings
+					.map((warning) => `<li class="text-body-sm text-muted">${esc(warning)}</li>`)
+					.join('')}</ul>`
+			: '';
+
+		resultsEl.innerHTML = `<div class="flex flex-col gap-4">
+			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+				<p class="data-mono text-body-md text-muted">${chainLine}</p>
+				<div class="flex flex-wrap items-center gap-2">
+					<button type="button" class="js-copy focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-surface px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40">Copy Route Summary</button>
+					<button type="button" class="js-share focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-surface px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40">Share URL</button>
+					<button type="button" class="js-print focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-foreground bg-foreground px-4 py-2.5 text-label-sm font-medium text-background transition-opacity hover:opacity-90" title="Open the browser print dialog to print or save this route as a PDF">🖨️ Print / Download PDF Route</button>
+				</div>
+			</div>
+			${bentoHtml({ total: route.totalDistanceKm, legs: route.legCount, stops: intermediate, status })}
+			${faresHtml(route.totalDistanceKm)}
+			<section aria-label="Leg-by-leg track path" class="flex flex-col gap-3">
+				<h2 class="data-mono text-eyebrow uppercase text-muted">Leg-by-leg breakdown</h2>
+				${legsHtml(route, doubleSet)}
+			</section>
+			${warnings}
+		</div>`;
+
+		wireResultActions(route);
+		lastRoute = route;
+		renderPrintCard(route);
+		saveRecentRoute(route);
+		announce(
+			route.doubleBack
+				? `Route ready: ${route.totalDistanceKm} kilometres across ${route.legCount} legs. Double-back detected.`
+				: `Route ready: ${route.totalDistanceKm} kilometres across ${route.legCount} legs, ${intermediate} intermediate stops.`
+		);
+	}
+
+	function legsHtml(route, doubleSet) {
+		let offset = 0;
+		return route.legs
+			.map((leg, legIndex) => {
+				const startKm = offset;
+				offset += leg.distanceKm;
+				const cumulative = offset;
+				const intermediate = Math.max(0, leg.stations.length - 2);
+				const plural = intermediate === 1 ? '' : 's';
+
+				const rows = leg.stations
+					.map((point, pointIndex) => {
+						const isEndpoint = pointIndex === 0 || pointIndex === leg.stations.length - 1;
+						const globalKm = startKm + point.km;
+						const tags = [];
+						if (isEndpoint) {
+							tags.push(
+								`<span class="data-mono shrink-0 rounded-sm border border-line px-1.5 py-0.5 text-[10px] uppercase text-muted">${pointIndex === 0 ? 'From' : 'To'}</span>`
+							);
+						} else if (point.isJunction) {
+							tags.push(
+								`<span class="data-mono shrink-0 rounded-sm border border-line px-1.5 py-0.5 text-[10px] uppercase text-muted">Jn</span>`
+							);
+						}
+						if (doubleSet.has(point.code)) {
+							tags.push(
+								`<span class="data-mono shrink-0 rounded-sm border border-amber-600/40 bg-amber-500/10 px-1.5 py-0.5 text-[10px] uppercase text-amber-700 dark:border-amber-500/40 dark:text-amber-400">Double-Back</span>`
+							);
+						}
+						return `<li class="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line px-4 py-2.5 first:border-t-0">
+							<span class="data-mono w-16 shrink-0 text-right text-body-sm tabular-nums text-muted sm:w-20">${globalKm.toLocaleString('en-IN')} km</span>
+							<span translate="no" class="data-mono shrink-0 rounded-sm border border-line bg-background px-1.5 py-0.5 text-eyebrow font-semibold text-foreground">${esc(point.code)}</span>
+							<span class="min-w-0 flex-1 truncate text-body-sm text-foreground">${esc(point.name)}</span>
+							${tags.join('')}
+						</li>`;
+					})
+					.join('');
+
+				return `<article class="rounded-md border border-line bg-surface">
+					<header class="flex flex-wrap items-start gap-x-4 gap-y-3 p-4">
+						<div class="min-w-0">
+							<p class="data-mono text-body-md text-foreground"><span class="font-semibold">${esc(leg.from)}</span> <span class="text-muted" aria-hidden="true">→</span> <span class="font-semibold">${esc(leg.to)}</span></p>
+							<p class="mt-0.5 truncate text-body-sm text-muted">${esc(leg.fromName)} <span aria-hidden="true">→</span> ${esc(leg.toName)}</p>
+							<p class="mt-0.5 data-mono text-eyebrow text-muted">${esc(zoneDivision(leg.from))} <span aria-hidden="true">→</span> ${esc(zoneDivision(leg.to))}</p>
+						</div>
+						<div class="ml-auto flex flex-wrap items-center gap-2">
+							<span class="data-mono rounded-sm border border-line px-1.5 py-0.5 text-eyebrow uppercase text-muted">Leg ${legIndex + 1}</span>
+							<span class="data-mono text-body-md tabular-nums text-foreground">${leg.distanceKm.toLocaleString('en-IN')} km</span>
+							<span class="data-mono rounded-full border border-line bg-background px-2 py-0.5 text-eyebrow tabular-nums text-muted">Cum ${cumulative.toLocaleString('en-IN')} km</span>
+						</div>
+					</header>
+					<div class="px-4 pb-4">
+						<button
+							type="button"
+							data-leg-toggle="${legIndex}"
+							aria-expanded="false"
+							aria-controls="leg-panel-${legIndex}"
+							data-view-label="View ${intermediate} intermediate stop${plural}"
+							data-hide-label="Hide intermediate stops"
+							class="focus-ring inline-flex min-h-[44px] items-center data-mono text-eyebrow uppercase text-link transition-colors hover:text-foreground"
+						>View ${intermediate} intermediate stop${plural}</button>
+						<div id="leg-panel-${legIndex}" class="mt-3 hidden max-h-96 overflow-auto rounded-md border border-line bg-background">
+							<ol>${rows}</ol>
+						</div>
+					</div>
+				</article>`;
+			})
+			.join('');
+	}
+
+	function wireResultActions(route) {
+		const copyBtn = resultsEl.querySelector('.js-copy');
+		const shareBtn = resultsEl.querySelector('.js-share');
+		const printBtn = resultsEl.querySelector('.js-print');
+
+		if (copyBtn) {
+			copyBtn.addEventListener('click', async () => {
+				const ok = await copyText(summaryText(route));
+				copyBtn.textContent = ok ? 'Copied!' : 'Copy failed';
+				window.setTimeout(() => {
+					copyBtn.textContent = 'Copy Route Summary';
+				}, 1600);
+			});
+		}
+
+		if (shareBtn) {
+			shareBtn.addEventListener('click', () => {
+				syncUrl(route.chain);
+				copyText(window.location.href).then((ok) => {
+					shareBtn.textContent = ok ? 'Link Copied!' : 'Copy Link';
+					window.setTimeout(() => {
+						shareBtn.textContent = 'Share URL';
+					}, 1600);
+				});
+			});
+		}
+
+		if (printBtn) {
+			printBtn.addEventListener('click', () => {
+				renderPrintCard(route);
+				window.print();
+			});
+		}
+
+		resultsEl.querySelectorAll('[data-leg-toggle]').forEach((toggle) => {
+			toggle.addEventListener('click', () => {
+				const panel = document.getElementById(`leg-panel-${toggle.dataset.legToggle}`);
+				if (!panel) return;
+				const isOpen = !panel.classList.contains('hidden');
+				panel.classList.toggle('hidden', isOpen);
+				toggle.setAttribute('aria-expanded', String(!isOpen));
+				toggle.textContent = isOpen ? toggle.dataset.viewLabel : toggle.dataset.hideLabel;
+			});
+		});
+	}
+
+	function summaryText(route) {
+		const parts = [route.chain[0]];
+		for (const leg of route.legs) parts.push(`${leg.to} (${leg.distanceKm} km)`);
+		return `${parts.join(' -> ')} | Total: ${route.totalDistanceKm} km`;
+	}
+
+	/* ------------------------------------------------------------ Print card */
+
+	function printDocHtml(route) {
+		const doubleSet = new Set(route.doubleBackStations.map((station) => station.code));
+		const viaCodes = route.chain.slice(1, -1);
+		const viaIndex = new Map(viaCodes.map((code, index) => [code, index + 1]));
+		const originName = route.legs[0].fromName;
+		const destName = route.legs[route.legs.length - 1].toName;
+		const intermediate = Math.max(0, route.stopCount - 2);
+		const statusLabel = route.doubleBack ? 'Double-Back Detected' : 'Valid Linear Route';
+		const totalText = route.totalDistanceKm.toLocaleString('en-IN');
+		const generatedAt = new Date().toLocaleString('en-IN', {
+			timeZone: 'Asia/Kolkata',
+			day: '2-digit',
+			month: 'short',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit',
+		});
+
+		const summaryRows = route.chain
+			.map((code, index) => {
+				const isOrigin = index === 0;
+				const isDestination = index === route.chain.length - 1;
+				const position = isOrigin ? 'Origin' : isDestination ? 'Destination' : `Via ${index}`;
+				const name = isOrigin
+					? originName
+					: isDestination
+						? destName
+						: stationOf(code)?.name || code;
+				return `<tr>
+					<td class="print-doc__tag">${position}</td>
+					<td class="print-doc__code">${esc(code)}</td>
+					<td>${esc(name)}</td>
+					<td class="print-doc__muted">${esc(zoneDivision(code))}</td>
+				</tr>`;
+			})
+			.join('');
+
+		let legCumulative = 0;
+		const legRows = route.legs
+			.map((leg, index) => {
+				legCumulative += leg.distanceKm;
+				const legStops = Math.max(0, leg.stations.length - 2);
+				return `<tr>
+					<td class="print-doc__num">Leg ${index + 1}</td>
+					<td><span class="print-doc__code">${esc(leg.from)}</span> → <span class="print-doc__code">${esc(leg.to)}</span><br /><span class="print-doc__muted">${esc(leg.fromName)} → ${esc(leg.toName)}</span></td>
+					<td class="print-doc__km">${leg.distanceKm.toLocaleString('en-IN')}</td>
+					<td class="print-doc__km">${legCumulative.toLocaleString('en-IN')}</td>
+					<td class="print-doc__num">${legStops}</td>
+				</tr>`;
+			})
+			.join('');
+
+		let pathOffset = 0;
+		let previousCode = null;
+		const pathPoints = [];
+		route.legs.forEach((leg, legIndex) => {
+			leg.stations.forEach((point, pointIndex) => {
+				if (pointIndex === 0 && point.code === previousCode) return;
+				pathPoints.push({
+					km: pathOffset + point.km,
+					code: point.code,
+					name: point.name,
+					leg: legIndex + 1,
+					isJunction: point.isJunction,
+					first: pathPoints.length === 0,
+					remarks: [],
+				});
+				previousCode = point.code;
+			});
+			pathOffset += leg.distanceKm;
+		});
+		pathPoints.forEach((point) => {
+			if (point.first) point.remarks.push('Origin');
+			if (viaIndex.has(point.code)) point.remarks.push(`Via ${viaIndex.get(point.code)}`);
+			if (point.isJunction) point.remarks.push('Junction');
+			if (doubleSet.has(point.code)) point.remarks.push('Double-Back');
+		});
+		if (pathPoints.length) pathPoints[pathPoints.length - 1].remarks.push('Destination');
+
+		const stationRows = pathPoints
+			.map(
+				(point) => `<tr>
+					<td class="print-doc__km">${point.km.toLocaleString('en-IN')}</td>
+					<td class="print-doc__code">${esc(point.code)}</td>
+					<td>${esc(point.name)}</td>
+					<td class="print-doc__num">${point.leg}</td>
+					<td class="print-doc__tag">${esc(point.remarks.join(' · '))}</td>
+				</tr>`
+			)
+			.join('');
+
+		const fareRows = estimateFares(route.totalDistanceKm)
+			.map(
+				(cls) => `<tr>
+					<td class="print-doc__tag">${esc(cls.short)}</td>
+					<td>${esc(cls.label)}</td>
+					<td class="print-doc__km">₹${cls.fare.toLocaleString('en-IN')}</td>
+				</tr>`
+			)
+			.join('');
+
+		return `<article class="print-doc">
+			<header class="print-doc__head">
+				<div>
+					<p class="print-doc__brand">RailKM</p>
+					<h1 class="print-doc__title">Official Track Distance &amp; Route Breakdown Card</h1>
+					<p class="print-doc__subtitle">Indian Railways · Shortest-track kilometre computation from open railway data</p>
+				</div>
+				<div class="print-doc__side">
+					<p class="print-doc__brand">Document Ref</p>
+					<div>RK-${esc(route.chain.join('-'))}</div>
+					<div class="print-doc__muted">Generated ${esc(generatedAt)} IST</div>
+				</div>
+			</header>
+
+			<table class="print-doc__table">
+				<thead>
+					<tr><th>Route Status</th><th>Total Track Kilometres</th><th>Legs</th><th>Intermediate Stops</th></tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>${esc(statusLabel)}</td>
+						<td class="print-doc__km"><strong>${totalText} km</strong></td>
+						<td class="print-doc__num">${route.legCount}</td>
+						<td class="print-doc__num">${intermediate}</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<section class="print-doc__section">
+				<h2 class="print-doc__heading">Journey Summary</h2>
+				<table class="print-doc__table">
+					<thead>
+						<tr><th>Position</th><th>Code</th><th>Station</th><th>Zone / Division</th></tr>
+					</thead>
+					<tbody>${summaryRows}</tbody>
+				</table>
+			</section>
+
+			<section class="print-doc__section">
+				<h2 class="print-doc__heading">Leg-by-Leg Breakdown</h2>
+				<table class="print-doc__table">
+					<thead>
+						<tr><th>Leg</th><th>Section</th><th>Distance (km)</th><th>Cumulative (km)</th><th>Stops</th></tr>
+					</thead>
+					<tbody>${legRows}</tbody>
+					<tfoot>
+						<tr>
+							<th colspan="2">Total Track Distance</th>
+							<th class="print-doc__km">${totalText}</th>
+							<th class="print-doc__km">${totalText}</th>
+							<th class="print-doc__num">${intermediate}</th>
+						</tr>
+					</tfoot>
+				</table>
+			</section>
+
+			<section class="print-doc__section">
+				<h2 class="print-doc__heading">Complete Intermediate Stations (${pathPoints.length})</h2>
+				<table class="print-doc__table">
+					<thead>
+						<tr><th>KM</th><th>Code</th><th>Station</th><th>Leg</th><th>Remarks</th></tr>
+					</thead>
+					<tbody>${stationRows}</tbody>
+				</table>
+			</section>
+
+			<section class="print-doc__section">
+				<h2 class="print-doc__heading">Estimated Fare (Approximate)</h2>
+				<table class="print-doc__table">
+					<thead>
+						<tr><th>Class</th><th>Description</th><th>Approx. Fare</th></tr>
+					</thead>
+					<tbody>${fareRows}</tbody>
+				</table>
+				<p class="print-doc__note">*Approximate estimates based on standard IR distance slabs. Actual fares may vary by train type, dynamic pricing, and GST.</p>
+			</section>
+
+			<div class="print-doc__verify">
+				<span>Verified by (Name &amp; Designation)</span>
+				<span>Signature</span>
+				<span>Date</span>
+			</div>
+			<p class="print-doc__note">This computer-generated card reflects the shortest track kilometres derived from DATAMEET open railway data. Kilometres are cumulative along the routed path and are indicative for planning purposes only.</p>
+		</article>`;
+	}
+
+	function renderPrintCard(route) {
+		if (!printCardEl || !route) return;
+		printCardEl.innerHTML = printDocHtml(route);
+	}
+
+	/* ------------------------------------------------ Saved & recent routes */
+
+	const RECENT_KEY = 'railkm-recent-routes';
+	const FAVORITE_KEY = 'railkm-favorite-routes';
+	const MAX_RECENT = 5;
+
+	function readStore(key) {
+		try {
+			const parsed = JSON.parse(localStorage.getItem(key) || '[]');
+			return Array.isArray(parsed) ? parsed : [];
+		} catch {
+			return [];
+		}
+	}
+
+	function writeStore(key, value) {
+		try {
+			localStorage.setItem(key, JSON.stringify(value));
+		} catch {
+			/* storage unavailable (private mode) — skip persistence */
+		}
+	}
+
+	function saveRecentRoute(route) {
+		const signature = route.chain.join('-');
+		const entries = readStore(RECENT_KEY).filter((entry) => entry && entry.signature !== signature);
+		entries.unshift({ signature, km: route.totalDistanceKm });
+		writeStore(RECENT_KEY, entries.slice(0, MAX_RECENT));
+		renderSavedRoutes();
+	}
+
+	function toggleFavorite(signature) {
+		const favorites = readStore(FAVORITE_KEY);
+		const index = favorites.findIndex((entry) => entry && entry.signature === signature);
+		if (index >= 0) {
+			favorites.splice(index, 1);
+		} else {
+			const recent = readStore(RECENT_KEY).find((entry) => entry && entry.signature === signature);
+			favorites.unshift({ signature, km: recent ? recent.km : null });
+		}
+		writeStore(FAVORITE_KEY, favorites);
+		renderSavedRoutes();
+	}
+
+	function savedPillHtml(entry, isFavorite) {
+		const label = entry.signature.split('-').join(' → ');
+		const km = typeof entry.km === 'number' ? `<span class="text-muted"> · ${entry.km.toLocaleString('en-IN')} km</span>` : '';
+		const star = isFavorite
+			? '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.7 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>'
+			: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9-4.3-4.1 5.9-.8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+		const pinLabel = t(isFavorite ? 'unpinFav' : 'pinToFav');
+		return `<li class="flex items-center gap-1 rounded-full border border-line bg-background py-1 pl-3 pr-1.5">
+			<button type="button" data-restore="${esc(entry.signature)}" class="focus-ring data-mono text-body-sm text-foreground transition-colors hover:text-link">${esc(label)}${km}</button>
+			<button type="button" data-fav="${esc(entry.signature)}" aria-pressed="${isFavorite}" aria-label="${pinLabel}" title="${pinLabel}" class="focus-ring inline-flex h-6 w-6 items-center justify-center rounded-full ${isFavorite ? 'text-amber-600 dark:text-amber-400' : 'text-muted'} transition-colors hover:text-foreground">${star}</button>
+		</li>`;
+	}
+
+	function renderSavedRoutes() {
+		if (!savedRoutesEl) return;
+		const favorites = readStore(FAVORITE_KEY);
+		const favoriteSignatures = new Set(favorites.map((entry) => entry && entry.signature));
+		const recent = readStore(RECENT_KEY).filter((entry) => entry && !favoriteSignatures.has(entry.signature));
+
+		if (!favorites.length && !recent.length) {
+			savedRoutesEl.innerHTML = `<p class="data-mono text-eyebrow uppercase text-muted">${t('recentFavouriteRoutes')}</p>
+				<p class="mt-2 text-body-sm text-muted">${t('savedHint')}</p>`;
+			return;
+		}
+
+		const favoritesBlock = favorites.length
+			? `<p class="data-mono text-eyebrow uppercase text-muted">${t('favourites')}</p>
+				<ul class="mt-2 flex flex-wrap gap-2">${favorites.map((entry) => savedPillHtml(entry, true)).join('')}</ul>`
+			: '';
+		const recentBlock = recent.length
+			? `<p class="data-mono text-eyebrow uppercase text-muted${favorites.length ? ' mt-4' : ''}">${t('recent')}</p>
+				<ul class="mt-2 flex flex-wrap gap-2">${recent.map((entry) => savedPillHtml(entry, false)).join('')}</ul>`
+			: '';
+
+		savedRoutesEl.innerHTML = `${favoritesBlock}${recentBlock}`;
+
+		savedRoutesEl.querySelectorAll('[data-restore]').forEach((button) => {
+			button.addEventListener('click', () => {
+				const codes = button.dataset.restore.split('-').filter(Boolean);
+				if (graph && codes.length >= 2) applyRoute(codes);
+			});
+		});
+		savedRoutesEl.querySelectorAll('[data-fav]').forEach((button) => {
+			button.addEventListener('click', () => toggleFavorite(button.dataset.fav));
+		});
+	}
+
+	function syncUrl(codes) {
+		const url = new URL(window.location.href);
+		url.searchParams.set('route', codes.join('-'));
+		window.history.replaceState({}, '', url);
+	}
+
+	async function copyText(text) {
+		try {
+			if (navigator.clipboard && window.isSecureContext) {
+				await navigator.clipboard.writeText(text);
+				return true;
+			}
+		} catch {
+			/* fall through to legacy path */
+		}
+		try {
+			const area = document.createElement('textarea');
+			area.value = text;
+			area.setAttribute('readonly', '');
+			area.style.position = 'fixed';
+			area.style.opacity = '0';
+			document.body.appendChild(area);
+			area.select();
+			const ok = document.execCommand('copy');
+			document.body.removeChild(area);
+			return ok;
+		} catch {
+			return false;
+		}
+	}
+
+	/* ------------------------------------------------------------------- Boot */
+
+	async function boot() {
+		addViaBtn.addEventListener('click', addVia);
+		swapBtn.addEventListener('click', swapEnds);
+		document.querySelectorAll('[data-preset-route]').forEach((button) => {
+			button.addEventListener('click', () => {
+				if (!graph) return;
+				applyRoute(button.dataset.presetRoute.split('-').filter(Boolean));
+			});
+		});
+
+		try {
+			const response = await fetch('/api/railway-graph.json');
+			if (!response.ok) throw new Error(`Graph request failed (${response.status})`);
+			graph = await response.json();
+		} catch {
+			builderEl.innerHTML = `<p class="text-body-sm text-error">Could not load the station index. Reload the page to try again.</p>`;
+			resultsEl.innerHTML = `<div class="rounded-md border border-error/40 bg-error/5 p-5" role="alert">
+				<p class="data-mono text-eyebrow uppercase text-error">Graph unavailable</p>
+				<p class="mt-2 text-body-md text-foreground">The railway graph failed to load. Check your connection and reload the page.</p>
+			</div>`;
+			announce('Railway graph failed to load.');
+			return;
+		}
+
+		window.railkmGraph = graph;
+		renderSavedRoutes();
+
+		const shared = new URLSearchParams(window.location.search).get('route');
+		if (shared) {
+			const codes = shared.split('-').filter(Boolean);
+			if (codes.length >= 2 && codes.every((code) => resolveStation(graph, code))) {
+				applyRoute(codes);
+				return;
+			}
+			if (codes.length === 1) {
+				const resolved = resolveStation(graph, codes[0]);
+				if (resolved) {
+					slots = [{ code: resolved.code, query: resolved.code }, emptySlot()];
+					renderBuilder();
+					renderIdle();
+					focusInput(1);
+					return;
+				}
+			}
+		}
+
+		renderBuilder();
+		renderIdle();
+	}
+
+	window.addEventListener('beforeprint', () => {
+		if (lastRoute) renderPrintCard(lastRoute);
+	});
+
+	window.addEventListener('railkm:langchange', () => {
+		if (!graph) return;
+		renderBuilder();
+		renderSavedRoutes();
+		if (lastRoute) renderResults(lastRoute);
+		else if (lastSignature === 'idle') renderIdle();
+	});
+
+	boot();
+</script>

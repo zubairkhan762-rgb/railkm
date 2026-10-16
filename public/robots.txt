@@ -1,0 +1,6 @@
+# RailKM - allow all well-behaved crawlers full access to pre-rendered
+# pages and static assets (no restrictions).
+User-agent: *
+Allow: /
+
+Sitemap: https://railkm.com/sitemap.xml

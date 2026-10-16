@@ -1,0 +1,556 @@
+---
+import '../styles/global.css';
+import graph from '../data/railway-graph.json';
+import { LANGUAGES } from '../utils/i18n.js';
+
+interface Props {
+	title?: string;
+	description?: string;
+	backHref?: string;
+	backLabel?: string;
+	noindex?: boolean;
+}
+
+const {
+	title = 'RailKM — Indian Railway Distance & Via-Route Mapper',
+	description = 'Calculate exact Indian Railways track distances between any two stations, with multi-via routing, full intermediate halt lists and double-back detection across every indexed station.',
+	backHref,
+	backLabel = 'Back to Route Mapper',
+	noindex = false,
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalURL} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="theme-color" content="#000000" />
+		<meta name="color-scheme" content="dark light" />
+		<script is:inline>
+			(() => {
+				const key = 'railkm-theme';
+				let theme = 'dark';
+				try {
+					const stored = localStorage.getItem(key);
+					if (stored === 'light' || stored === 'dark') theme = stored;
+				} catch {
+					/* storage unavailable (private mode) — keep the default */
+				}
+				document.documentElement.dataset.theme = theme;
+				const meta = document.querySelector('meta[name="theme-color"]');
+				if (meta) meta.setAttribute('content', theme === 'light' ? '#ffffff' : '#000000');
+			})();
+		</script>
+		<meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow'} />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="RailKM" />
+		<meta property="og:locale" content="en_IN" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalURL} />
+
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+	</head>
+	<body class="flex min-h-dvh flex-col">
+		<a
+			href="#main"
+			class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-sm focus:border focus:border-line focus:bg-surface focus:px-3 focus:py-2 focus:text-body-md"
+		>
+			Skip to content
+		</a>
+
+		<header data-print="hide" class="sticky top-0 z-50 border-b border-line bg-background/80 backdrop-blur-md">
+			<div class="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+				<div class="flex min-w-0 items-center gap-3 sm:gap-4">
+					<a href="/" class="flex items-center gap-2.5 text-foreground" aria-label="RailKM home">
+						<span
+							class="flex h-6 w-6 items-center justify-center rounded-sm border border-line bg-surface"
+							aria-hidden="true"
+						>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+								<path
+									d="M4.25 1.75v12.5M11.75 1.75v12.5M1.75 4.25h12.5M1.75 8h12.5M1.75 11.75h12.5"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"></path>
+							</svg>
+						</span>
+						<span class="text-label-sm font-semibold tracking-[-0.4px]">RailKM</span>
+					</a>
+
+					{
+						backHref && (
+							<>
+								<span class="h-4 w-px bg-line" aria-hidden="true" />
+								<a
+									href={backHref}
+									class="focus-ring inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm border border-line bg-surface px-2.5 py-1 text-label-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5"
+								>
+									<span aria-hidden="true">←</span>
+									<span class="hidden sm:inline" data-i18n="backToMapper">{backLabel}</span>
+									<span class="sm:hidden">Mapper</span>
+								</a>
+							</>
+						)
+					}
+				</div>
+
+				<div class="flex shrink-0 items-center gap-2">
+					<span
+						class="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 sm:inline-flex"
+						title="Stations indexed from open railway data"
+					>
+						<span class="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.55)]"
+						></span>
+						<span class="data-mono text-eyebrow text-muted">
+							<span class="text-foreground">{stationCountLabel}</span> Stations Indexed
+						</span>
+					</span>
+
+					<div id="lang" class="relative shrink-0">
+						<button
+							type="button"
+							id="lang-trigger"
+							aria-haspopup="listbox"
+							aria-expanded="false"
+							aria-label="Change language"
+							title="Change language"
+							class="focus-ring inline-flex h-10 items-center gap-1.5 rounded-sm border border-line bg-surface px-2.5 text-body-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5"
+						>
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0 text-muted">
+								<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"></circle>
+								<path
+									d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"
+									stroke="currentColor"
+									stroke-width="1.5"></path>
+							</svg>
+							<span id="lang-current" class="data-mono text-eyebrow uppercase text-foreground">EN</span>
+							<svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true" class="shrink-0 text-muted">
+								<path
+									d="M3 4.5L6 7.5l3-3"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"></path>
+							</svg>
+						</button>
+						<div
+							id="lang-menu"
+							role="listbox"
+							aria-label="Language"
+							class="absolute right-0 z-50 mt-1 hidden max-h-80 w-44 overflow-auto rounded-md border border-line bg-surface p-1 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.8)]"
+						>
+							{
+								LANGUAGES.map((option) => (
+									<button
+										type="button"
+										data-lang-option={option.code}
+										role="option"
+										aria-selected="false"
+										class="focus-ring flex w-full items-center justify-between gap-3 rounded-sm px-3 py-2 text-left text-body-sm text-foreground transition-colors hover:bg-foreground/5"
+									>
+										<span>{option.native}</span>
+										<span class="data-mono text-eyebrow uppercase text-muted">{option.code}</span>
+									</button>
+								))
+							}
+						</div>
+					</div>
+
+					<button
+						type="button"
+						id="cmdk-trigger"
+						aria-label="Search stations (Ctrl + K)"
+						title="Search stations (Ctrl + K)"
+						class="focus-ring inline-flex h-10 shrink-0 items-center gap-2 rounded-sm border border-line bg-surface px-2.5 text-body-sm text-muted transition-colors hover:border-foreground/40 hover:bg-foreground/5 hover:text-foreground"
+					>
+						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
+							<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.75"></circle>
+							<path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"></path>
+						</svg>
+						<span class="data-mono hidden text-eyebrow sm:inline" data-i18n="search">Search</span>
+						<kbd
+							class="data-mono hidden rounded-sm border border-line bg-background px-1.5 py-0.5 text-[10px] uppercase text-muted lg:inline"
+							>Ctrl K</kbd
+						>
+					</button>
+
+					<button
+						type="button"
+						id="theme-toggle"
+						aria-label="Toggle light and dark theme"
+						title="Toggle light and dark theme"
+						class="focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-line bg-surface text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5"
+					>
+						<svg class="hidden h-4 w-4 dark:block" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+							<circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.75"></circle>
+							<path
+								d="M12 2.5v2M12 19.5v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2.5 12h2M19.5 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+								stroke="currentColor"
+								stroke-width="1.75"
+								stroke-linecap="round"></path>
+						</svg>
+						<svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+							<path
+								d="M20.5 13.2A8.4 8.4 0 1 1 10.8 3.5a6.6 6.6 0 0 0 9.7 9.7Z"
+								stroke="currentColor"
+								stroke-width="1.75"
+								stroke-linejoin="round"></path>
+						</svg>
+					</button>
+				</div>
+			</div>
+		</header>
+
+		<main id="main" class="flex-1 scroll-mt-16">
+			<slot />
+		</main>
+
+		<footer data-print="hide" class="border-t border-line">
+			<div class="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-8 sm:px-6">
+				<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+					<p class="text-body-sm text-muted">
+						RailKM — Indian railway distance &amp; multi-via route mapper.
+					</p>
+					<nav aria-label="Site information" class="flex flex-wrap items-center gap-x-4 gap-y-2">
+						<a
+							href="/about"
+							class="focus-ring rounded-sm text-body-sm text-muted transition-colors hover:text-foreground">About</a
+						>
+						<a
+							href="/privacy-policy"
+							class="focus-ring rounded-sm text-body-sm text-muted transition-colors hover:text-foreground"
+							>Privacy Policy</a
+						>
+						<a
+							href="/terms"
+							class="focus-ring rounded-sm text-body-sm text-muted transition-colors hover:text-foreground">Terms</a
+						>
+						<a
+							href="/contact"
+							class="focus-ring rounded-sm text-body-sm text-muted transition-colors hover:text-foreground"
+							>Contact</a
+						>
+					</nav>
+				</div>
+				<p class="data-mono text-eyebrow text-muted">
+					DATAMEET OPEN DATA · {stationCountLabel} STATIONS
+				</p>
+			</div>
+		</footer>
+
+		<div
+			id="cmdk"
+			data-print="hide"
+			class="fixed inset-0 z-[100] hidden items-start justify-center bg-background/70 px-4 pt-[12vh] backdrop-blur-sm"
+			role="dialog"
+			aria-modal="true"
+			aria-label="Quick station search"
+		>
+			<div class="w-full max-w-xl overflow-hidden rounded-lg border border-line bg-surface shadow-[0_24px_64px_-16px_rgba(0,0,0,0.85)]">
+				<div class="flex items-center gap-3 border-b border-line px-4">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0 text-muted">
+						<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.75"></circle>
+						<path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"></path>
+					</svg>
+					<input
+						id="cmdk-input"
+						type="text"
+						placeholder="Search any station by code or name…"
+						data-i18n-placeholder="cmdkPlaceholder"
+						autocomplete="off"
+						autocapitalize="off"
+						autocorrect="off"
+						spellcheck="false"
+						role="combobox"
+						aria-expanded="true"
+						aria-controls="cmdk-list"
+						aria-autocomplete="list"
+						class="min-h-[52px] w-full bg-transparent text-body-md text-foreground placeholder:text-muted focus:outline-none"
+					/>
+					<kbd
+						class="data-mono hidden shrink-0 rounded-sm border border-line px-1.5 py-0.5 text-eyebrow uppercase text-muted sm:block"
+						>Esc</kbd
+					>
+				</div>
+				<ul id="cmdk-list" role="listbox" aria-label="Station results" class="max-h-[50vh] overflow-auto p-1.5"></ul>
+				<div class="flex items-center justify-between gap-3 border-t border-line px-4 py-2">
+					<span class="data-mono text-eyebrow text-muted" data-i18n="cmdkHint">↑↓ choose · ↵ open in mapper</span>
+					<span id="cmdk-count" class="data-mono text-eyebrow text-muted"></span>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			const themeToggle = document.getElementById('theme-toggle');
+			if (themeToggle) {
+				themeToggle.addEventListener('click', () => {
+					const root = document.documentElement;
+					const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+					root.dataset.theme = next;
+					try {
+						localStorage.setItem('railkm-theme', next);
+					} catch {
+						/* storage unavailable (private mode) — session-only switch */
+					}
+					const meta = document.querySelector('meta[name="theme-color"]');
+					if (meta) meta.setAttribute('content', next === 'light' ? '#ffffff' : '#000000');
+				});
+			}
+		</script>
+
+		<script>
+			import { searchStations } from '../utils/routeEngine.js';
+			import { t } from '../utils/i18n.js';
+
+			const cmdk = document.getElementById('cmdk');
+			const cmdkInput = document.getElementById('cmdk-input');
+			const cmdkList = document.getElementById('cmdk-list');
+			const cmdkCount = document.getElementById('cmdk-count');
+			const cmdkTrigger = document.getElementById('cmdk-trigger');
+
+			if (cmdk && cmdkInput && cmdkList) {
+				let graph = null;
+				let graphPromise = null;
+				let results = [];
+				let active = -1;
+				let lastFocused = null;
+
+				const isOpen = () => !cmdk.classList.contains('hidden');
+
+				function loadGraph() {
+					if (window.railkmGraph) {
+						graph = window.railkmGraph;
+						return Promise.resolve(graph);
+					}
+					if (!graphPromise) {
+						graphPromise = fetch('/api/railway-graph.json')
+							.then((response) => (response.ok ? response.json() : null))
+							.then((data) => {
+								graph = data;
+								return data;
+							})
+							.catch(() => null);
+					}
+					return graphPromise;
+				}
+
+				function escapeHtml(value) {
+					return String(value).replace(/[&<>"']/g, (ch) => {
+						return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+					});
+				}
+
+				function renderList(query) {
+					const trimmed = query.trim();
+					if (!graph) {
+						results = [];
+						active = -1;
+						cmdkCount.textContent = '';
+						cmdkList.innerHTML = `<li class="px-3 py-3 text-body-sm text-muted" role="presentation">${t('cmdkLoading')}</li>`;
+						return;
+					}
+					if (!trimmed) {
+						results = [];
+						active = -1;
+						cmdkCount.textContent = '';
+						cmdkList.innerHTML = `<li class="px-3 py-3 text-body-sm text-muted" role="presentation">${t('cmdkEmptyPrompt')}</li>`;
+						return;
+					}
+					results = searchStations(graph, trimmed, 8);
+					active = results.length ? 0 : -1;
+					if (!results.length) {
+						cmdkCount.textContent = '0 results';
+						cmdkList.innerHTML = `<li class="px-3 py-3 text-body-sm text-muted" role="presentation">${t('cmdkNoMatch')} “${escapeHtml(trimmed)}”.</li>`;
+						return;
+					}
+					cmdkCount.textContent = `${results.length} result${results.length === 1 ? '' : 's'}`;
+					cmdkList.innerHTML = results
+						.map((result, index) => {
+							const junctionTag = result.isJunction
+								? `<span class="data-mono shrink-0 rounded-sm border border-line px-1 py-0.5 text-[10px] uppercase text-muted">Jn</span>`
+								: '';
+							const aliasTag = result.matchedAlias
+								? `<span class="data-mono shrink-0 rounded-sm border border-line px-1 py-0.5 text-[10px] uppercase text-muted">aka ${escapeHtml(result.matchedAlias)}</span>`
+								: '';
+							const zoneTag = result.zone
+								? `<span class="data-mono hidden shrink-0 text-eyebrow text-muted sm:inline">${escapeHtml(result.zone)}</span>`
+								: '';
+							return `<li
+								id="cmdk-opt-${index}"
+								role="option"
+								data-index="${index}"
+								aria-selected="${index === active}"
+								class="flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-sm px-3 py-2 ${index === active ? 'bg-foreground/10' : ''}"
+							>
+								<span translate="no" class="data-mono shrink-0 rounded-sm border border-line bg-background px-1.5 py-0.5 text-eyebrow font-semibold text-foreground">${escapeHtml(result.code)}</span>
+								<span class="min-w-0 flex-1 truncate text-body-md text-foreground">${escapeHtml(result.name)}</span>
+								${aliasTag}
+								${zoneTag}
+								${junctionTag}
+							</li>`;
+						})
+						.join('');
+					cmdkList.querySelectorAll('[data-index]').forEach((option) => {
+						const index = Number(option.dataset.index);
+						option.addEventListener('mousemove', () => setActive(index));
+						option.addEventListener('click', () => choose(index));
+					});
+					setActive(active);
+				}
+
+				function setActive(index) {
+					if (index < 0 || index >= results.length) return;
+					active = index;
+					cmdkList.querySelectorAll('[data-index]').forEach((option) => {
+						const on = Number(option.dataset.index) === index;
+						option.setAttribute('aria-selected', String(on));
+						option.classList.toggle('bg-foreground/10', on);
+					});
+					cmdkInput.setAttribute('aria-activedescendant', `cmdk-opt-${index}`);
+					const activeOption = document.getElementById(`cmdk-opt-${index}`);
+					if (activeOption) activeOption.scrollIntoView({ block: 'nearest' });
+				}
+
+				function choose(index) {
+					const result = results[index];
+					if (!result) return;
+					close();
+					window.location.href = `/?route=${encodeURIComponent(result.code)}`;
+				}
+
+				function open() {
+					lastFocused = document.activeElement;
+					cmdk.classList.remove('hidden');
+					cmdk.classList.add('flex');
+					cmdkInput.value = '';
+					renderList('');
+					loadGraph().then(() => {
+						if (isOpen()) renderList(cmdkInput.value);
+					});
+					window.requestAnimationFrame(() => cmdkInput.focus());
+				}
+
+				function close() {
+					cmdk.classList.add('hidden');
+					cmdk.classList.remove('flex');
+					cmdkInput.removeAttribute('aria-activedescendant');
+					if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+				}
+
+				function toggle() {
+					if (isOpen()) close();
+					else open();
+				}
+
+				window.addEventListener('keydown', (event) => {
+					const isShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+					if (isShortcut) {
+						event.preventDefault();
+						toggle();
+						return;
+					}
+					if (event.key === 'Escape' && isOpen()) {
+						event.preventDefault();
+						close();
+					}
+				});
+
+				cmdkInput.addEventListener('input', () => renderList(cmdkInput.value));
+				cmdkInput.addEventListener('keydown', (event) => {
+					if (event.key === 'ArrowDown') {
+						event.preventDefault();
+						if (!results.length) renderList(cmdkInput.value);
+						else setActive(Math.min(active + 1, results.length - 1));
+					} else if (event.key === 'ArrowUp') {
+						event.preventDefault();
+						setActive(Math.max(active - 1, 0));
+					} else if (event.key === 'Enter') {
+						event.preventDefault();
+						choose(active >= 0 ? active : 0);
+					} else if (event.key === 'Escape') {
+						event.preventDefault();
+						close();
+					}
+				});
+				cmdk.addEventListener('mousedown', (event) => {
+					if (event.target === cmdk) close();
+				});
+				if (cmdkTrigger) cmdkTrigger.addEventListener('click', toggle);
+			}
+		</script>
+
+		<script>
+			import { getLang, setLang, t } from '../utils/i18n.js';
+
+			const langMenu = document.getElementById('lang-menu');
+			const langTrigger = document.getElementById('lang-trigger');
+			const langCurrent = document.getElementById('lang-current');
+
+			function applyLanguage(lang) {
+				document.documentElement.lang = lang;
+				document.querySelectorAll('[data-i18n]').forEach((el) => {
+					el.textContent = t(el.dataset.i18n, {}, lang);
+				});
+				document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+					el.setAttribute('placeholder', t(el.dataset.i18nPlaceholder, {}, lang));
+				});
+				if (langCurrent) langCurrent.textContent = lang.toUpperCase();
+				if (langMenu) {
+					langMenu.querySelectorAll('[data-lang-option]').forEach((option) => {
+						option.setAttribute('aria-selected', String(option.dataset.langOption === lang));
+					});
+				}
+				window.dispatchEvent(new CustomEvent('railkm:langchange', { detail: { lang } }));
+			}
+
+			function closeLangMenu() {
+				if (!langMenu || !langTrigger) return;
+				langMenu.classList.add('hidden');
+				langTrigger.setAttribute('aria-expanded', 'false');
+			}
+
+			function openLangMenu() {
+				if (!langMenu || !langTrigger) return;
+				langMenu.classList.remove('hidden');
+				langTrigger.setAttribute('aria-expanded', 'true');
+			}
+
+			if (langMenu && langTrigger) {
+				langTrigger.addEventListener('click', (event) => {
+					event.stopPropagation();
+					if (langMenu.classList.contains('hidden')) openLangMenu();
+					else closeLangMenu();
+				});
+				langMenu.querySelectorAll('[data-lang-option]').forEach((option) => {
+					option.addEventListener('click', () => {
+						applyLanguage(setLang(option.dataset.langOption));
+						closeLangMenu();
+					});
+				});
+				document.addEventListener('click', (event) => {
+					if (langMenu.classList.contains('hidden')) return;
+					if (event.target === langTrigger || langTrigger.contains(event.target)) return;
+					if (!langMenu.contains(event.target)) closeLangMenu();
+				});
+				document.addEventListener('keydown', (event) => {
+					if (event.key === 'Escape') closeLangMenu();
+				});
+			}
+
+			applyLanguage(getLang());
+		</script>
+	</body>
+</html>

@@ -1,0 +1,36 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = '404 — Route Not Found | RailKM';
+const description =
+	'This page could not be found. The track leads to a dead end or the station code does not exist — head back to the RailKM route mapper.';
+---
+
+<Layout title={title} description={description} noindex>
+	<div class="relative mx-auto flex w-full max-w-3xl flex-col px-4 pt-16 pb-24 sm:px-6 sm:pt-24">
+		<p class="data-mono text-eyebrow font-medium uppercase text-muted">Error 404</p>
+		<h1
+			class="mt-5 text-balance text-heading-lg font-semibold text-foreground sm:text-display-xl"
+		>
+			404 — Route Not Found
+		</h1>
+		<p class="mt-4 max-w-xl text-body-lg text-muted">
+			Looks like this track leads to a dead end or the station code doesn't exist.
+		</p>
+
+		<div class="mt-8 flex flex-wrap items-center gap-3">
+			<a
+				href="/?route="
+				class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-foreground bg-foreground px-4 py-2.5 text-label-sm font-medium text-background transition-opacity hover:opacity-90"
+			>
+				<span aria-hidden="true">←</span> Back to Route Mapper
+			</a>
+			<a
+				href="/#popular-routes"
+				class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-surface px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5"
+			>
+				Browse popular routes
+			</a>
+		</div>
+	</div>
+</Layout>

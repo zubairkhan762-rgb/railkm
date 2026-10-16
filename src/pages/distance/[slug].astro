@@ -1,0 +1,345 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { buildPopularRoutes } from '../../utils/popularRoutes.js';
+import { estimateFares } from '../../utils/routeEngine.js';
+
+export function getStaticPaths() {
+	return buildPopularRoutes().map((entry) => ({
+		params: { slug: entry.slug },
+		props: { entry },
+	}));
+}
+
+const { entry } = Astro.props;
+const { route, from, to, fromName, toName, fromCode, toCode, slug } = entry;
+
+const site = Astro.site ?? new URL('https://railkm.com/');
+const pageUrl = new URL(`/distance/${slug}`, site);
+const mapperUrl = `/?route=${from}-${to}`;
+
+const intermediateStops = Math.max(0, route.stopCount - 2);
+const junctions = route.stops.filter((stop) => stop.isJunction);
+const junctionCodes = junctions.map((stop) => stop.code).join(', ');
+
+const fares = estimateFares(route.totalDistanceKm);
+const sleeperFare = fares.find((fare) => fare.code === 'SL')?.fare ?? 0;
+const threeAcFare = fares.find((fare) => fare.code === '3AC')?.fare ?? 0;
+const fareNote = '*Approximate estimates based on standard IR distance slabs. Actual fares may vary by train type, dynamic pricing, and GST.';
+
+const title = `Exact Railway Distance from ${fromName} (${from}) to ${toName} (${to}) — ${route.totalDistanceKm} km | RailKM`;
+const description = `The shortest Indian Railways track distance from ${fromName} (${from}) to ${toName} (${to}) is ${route.totalDistanceKm} km, passing ${intermediateStops} intermediate stations${junctions.length ? ` and ${junctions.length} junctions` : ''}. Full station-by-station cumulative-kilometre table and break-journey via planner.`;
+
+const faqs = [
+	{
+		question: `What is the exact rail track distance between ${fromName} (${from}) and ${toName} (${to})?`,
+		answer: `The shortest rail track distance is ${route.totalDistanceKm} km, covering ${route.stopCount} stations between ${fromName} (${from}) and ${toName} (${to}). This is the shortest available track route across the indexed network, passing ${intermediateStops} intermediate stations.`,
+	},
+	{
+		question: `How many junctions fall between ${fromName} and ${toName}?`,
+		answer: junctions.length
+			? `${junctions.length} junction station${junctions.length === 1 ? '' : 's'} fall on the shortest route, including ${junctionCodes}.`
+			: `No major junction stations fall on the shortest route between ${fromName} and ${toName}.`,
+	},
+	{
+		question: `Is break journey allowed between ${fromName} and ${toName}?`,
+		answer: `Indian Railways generally permits a break journey on long-distance journeys beyond a prescribed distance, allowing you to pause at an intermediate station and continue later. Use the RailKM route mapper to add via stations and check the cumulative kilometres at every stop before planning a break.`,
+	},
+	{
+		question: `What is the shortest rail route from ${fromName} to ${toName}?`,
+		answer: `RailKM computes the shortest track route by total kilometres rather than the fastest train path. The shortest route totals ${route.totalDistanceKm} km and lists every passing station with cumulative distance in the table above.`,
+	},
+	{
+		question: `How much does a train ticket from ${fromName} (${from}) to ${toName} (${to}) cost?`,
+		answer: `Over the ${route.totalDistanceKm} km journey, an approximate Sleeper (SL) fare is around ₹${sleeperFare.toLocaleString('en-IN')}, AC 3-Tier (3AC) around ₹${threeAcFare.toLocaleString('en-IN')}, with AC 2-Tier and AC First Class proportionally higher. These are standard-slab estimates only — actual fares differ by train type, dynamic pricing and GST.`,
+	},
+];
+
+const faqSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faqs.map((faq) => ({
+		'@type': 'Question',
+		name: faq.question,
+		acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+	})),
+};
+
+const breadcrumbSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: [
+		{ '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', site).href },
+		{
+			'@type': 'ListItem',
+			position: 2,
+			name: 'Popular distance routes',
+			item: new URL('/#popular-routes', site).href,
+		},
+		{ '@type': 'ListItem', position: 3, name: `${fromName} to ${toName}`, item: pageUrl.href },
+	],
+};
+---
+
+<Layout title={title} description={description} backHref={mapperUrl} backLabel="Back to Route Mapper">
+	<div class="relative overflow-hidden">
+		<div
+			class="pointer-events-none absolute inset-x-0 top-0 h-[320px] bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(237,237,237,0.06),transparent)]"
+			aria-hidden="true"
+		>
+		</div>
+
+		<div class="relative mx-auto w-full max-w-4xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16">
+			<nav aria-label="Breadcrumb" class="data-mono text-eyebrow uppercase text-muted">
+				<ol class="flex flex-wrap items-center gap-2">
+					<li><a class="focus-ring rounded-sm transition-colors hover:text-foreground" href="/">Home</a></li>
+					<li aria-hidden="true">/</li>
+					<li><a class="focus-ring rounded-sm transition-colors hover:text-foreground" href="/#popular-routes">Distance Routes</a></li>
+					<li aria-hidden="true">/</li>
+					<li class="text-foreground">{from} → {to}</li>
+				</ol>
+			</nav>
+
+			<h1 class="mt-6 text-balance text-2xl font-semibold text-foreground sm:text-3xl lg:text-heading-lg">
+				Exact Railway Distance from {fromName} ({from}) to {toName} ({to})
+			</h1>
+			<p class="mt-4 max-w-2xl text-body-lg text-muted">
+				The shortest Indian Railways track distance is
+				<span class="data-mono font-semibold text-foreground">{route.totalDistanceKm.toLocaleString('en-IN')} km</span>,
+				passing {intermediateStops} intermediate stations across {route.stopCount} halts.
+			</p>
+
+			<dl class="mt-8 grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-3">
+				<div class="bg-surface p-5">
+					<dt class="data-mono text-eyebrow uppercase text-muted">Total Track Distance</dt>
+					<dd class="mt-3 data-mono text-3xl font-semibold tabular-nums tracking-normal text-foreground sm:text-4xl">
+						{route.totalDistanceKm.toLocaleString('en-IN')}<span class="ml-1 text-label-sm font-normal text-muted">km</span>
+					</dd>
+				</div>
+				<div class="bg-surface p-5">
+					<dt class="data-mono text-eyebrow uppercase text-muted">Intermediate Stations</dt>
+					<dd class="mt-3 data-mono text-3xl font-semibold tabular-nums tracking-normal text-foreground sm:text-4xl">
+						{intermediateStops.toLocaleString('en-IN')}
+					</dd>
+				</div>
+				<div class="bg-surface p-5">
+					<dt class="data-mono text-eyebrow uppercase text-muted">Major Junctions</dt>
+					<dd class="mt-3 data-mono text-3xl font-semibold tabular-nums tracking-normal text-foreground sm:text-4xl">
+						{junctions.length.toLocaleString('en-IN')}
+					</dd>
+				</div>
+			</dl>
+
+			<section aria-labelledby="fare-heading" class="mt-6 rounded-md border border-line bg-surface p-5 sm:p-6">
+				<div class="flex flex-wrap items-center justify-between gap-2">
+					<h2 id="fare-heading" class="data-mono text-eyebrow uppercase text-muted">
+						Estimated Train Fare (Approx.)
+					</h2>
+					<span class="data-mono text-eyebrow text-muted">
+						{route.totalDistanceKm.toLocaleString('en-IN')} km
+					</span>
+				</div>
+				<ul class="mt-4 flex flex-wrap gap-2">
+					{fares.map((fare) => (
+						<li class="inline-flex items-center gap-1.5 rounded-full border border-line bg-background px-3 py-1.5 text-body-sm">
+							<span class="text-muted">{fare.short}:</span>
+							<span class="data-mono font-semibold text-foreground">₹{fare.fare.toLocaleString('en-IN')}</span>
+						</li>
+					))}
+				</ul>
+				<p class="mt-3 text-body-sm text-muted">{fareNote}</p>
+			</section>
+
+			<section
+				aria-labelledby="customize-heading"
+				class="mt-6 rounded-md border border-line bg-surface p-5 sm:p-6"
+			>
+				<div class="flex flex-wrap items-center justify-between gap-2">
+					<h2 id="customize-heading" class="text-heading-md font-semibold text-foreground">
+						Customize this Route
+					</h2>
+					<a
+						href={mapperUrl}
+						class="focus-ring rounded-sm text-body-sm text-link transition-colors hover:text-foreground"
+					>
+						Add via stations in the full mapper →
+					</a>
+				</div>
+				<p class="mt-1 text-body-sm text-muted">
+					Change the origin or destination, or swap the direction, to calculate a new distance.
+				</p>
+
+				<form id="route-swapper" class="mt-4 flex flex-col gap-3" novalidate>
+					<div class="grid gap-3 sm:grid-cols-2">
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted">Origin</span>
+							<input
+								id="swap-origin"
+								name="origin"
+								type="text"
+								value={from}
+								placeholder="e.g. NDLS"
+								autocomplete="off"
+								autocapitalize="characters"
+								spellcheck="false"
+								maxlength="8"
+								required
+							class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md uppercase text-foreground placeholder:text-muted/70"
+						/>
+					</label>
+					<label class="flex flex-col gap-1.5">
+						<span class="data-mono text-eyebrow uppercase text-muted">Destination</span>
+						<input
+							id="swap-destination"
+							name="destination"
+							type="text"
+							value={to}
+							placeholder="e.g. BCT"
+							autocomplete="off"
+							autocapitalize="characters"
+							spellcheck="false"
+							maxlength="8"
+							required
+							class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md uppercase text-foreground placeholder:text-muted/70"
+						/>
+						</label>
+					</div>
+
+					<div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+						<button
+							type="button"
+							id="swap-button"
+							class="focus-ring inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40 sm:w-auto"
+						>
+							<span aria-hidden="true">⇄</span>
+							Swap
+						</button>
+						<button
+							type="submit"
+							class="focus-ring inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-sm border border-line bg-foreground px-4 py-2.5 text-label-sm font-medium text-background transition-colors hover:bg-foreground/90 sm:w-auto"
+						>
+							Calculate Custom Route
+							<span aria-hidden="true">→</span>
+						</button>
+						<span id="swap-error" class="text-body-sm text-error" role="alert" hidden>
+							Enter both station codes.
+						</span>
+					</div>
+				</form>
+			</section>
+
+			{
+				junctions.length > 0 && (
+					<section aria-labelledby="junctions-heading" class="mt-12">
+						<h2 id="junctions-heading" class="text-heading-md font-semibold text-foreground">
+							Major junctions on route
+						</h2>
+						<ul class="mt-4 flex flex-wrap gap-2">
+							{junctions.map((junction) => (
+								<li class="data-mono flex max-w-full min-w-0 items-center gap-2 rounded-sm border border-line bg-surface px-2 py-1 text-body-sm text-foreground">
+									<span translate="no" class="shrink-0 font-semibold">{junction.code}</span>
+									<span class="min-w-0 break-words text-muted">{junction.name}</span>
+									<span class="shrink-0 text-muted tabular-nums">{junction.km.toLocaleString('en-IN')} km</span>
+								</li>
+							))}
+						</ul>
+					</section>
+				)
+			}
+
+			<section aria-labelledby="table-heading" class="mt-12">
+				<h2 id="table-heading" class="text-heading-md font-semibold text-foreground">
+					Station-by-station distance table
+				</h2>
+				<p class="mt-2 text-body-sm text-muted">
+					Cumulative track kilometres from {fromName} ({from}) to {toName} ({to}).
+				</p>
+				<div class="mt-4 max-h-[36rem] overflow-auto rounded-md border border-line bg-surface">
+					<table class="w-full border-collapse text-left">
+						<caption class="sr-only">
+							Distance from {fromName} to {toName}, station by station
+						</caption>
+						<thead class="sticky top-0 bg-surface">
+							<tr class="border-b border-line">
+								<th scope="col" class="w-12 px-4 py-2 text-right data-mono text-eyebrow uppercase text-muted">#</th>
+								<th scope="col" class="px-4 py-2 text-eyebrow uppercase text-muted">Station</th>
+								<th scope="col" class="hidden px-4 py-2 text-eyebrow uppercase text-muted sm:table-cell">Code</th>
+								<th scope="col" class="px-4 py-2 text-right text-eyebrow uppercase text-muted">Km</th>
+							</tr>
+						</thead>
+						<tbody>
+							{route.stops.map((stop, index) => (
+								<tr class:list={['border-b border-line/60', stop.isJunction && 'bg-foreground/[0.02]']}>
+									<td class="px-4 py-2 text-right data-mono text-body-sm tabular-nums text-muted">{index + 1}</td>
+									<td class="break-words px-4 py-2 text-body-sm text-foreground">
+										{stop.name}
+										{stop.isJunction && (
+											<span class="ml-2 align-middle rounded-sm border border-line px-1 py-0.5 data-mono text-[10px] uppercase text-muted">Jn</span>
+										)}
+									</td>
+									<td class="hidden px-4 py-2 sm:table-cell">
+										<span translate="no" class="data-mono text-body-sm font-semibold text-muted">{stop.code}</span>
+									</td>
+									<td class="px-4 py-2 text-right data-mono text-body-sm tabular-nums text-foreground">{stop.km.toLocaleString('en-IN')}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<section aria-labelledby="faq-heading" class="mt-12">
+				<h2 id="faq-heading" class="text-heading-md font-semibold text-foreground">
+					Frequently asked questions
+				</h2>
+				<dl class="mt-4 flex flex-col gap-3">
+					{faqs.map((faq) => (
+						<div class="rounded-md border border-line bg-surface p-5">
+							<dt class="text-body-md font-medium text-foreground">{faq.question}</dt>
+							<dd class="mt-2 text-body-sm text-muted">{faq.answer}</dd>
+						</div>
+					))}
+				</dl>
+			</section>
+
+			<p class="mt-10 text-body-sm text-muted">
+				Distances are shortest available track kilometres, derived from open railway timetable
+				data (DataMeet). For a multi-via, break-journey plan, open the
+				<a class="focus-ring rounded-sm text-link transition-colors hover:text-foreground" href={mapperUrl}>RailKM route mapper</a>.
+			</p>
+		</div>
+	</div>
+
+	<script>
+		const swapper = document.getElementById('route-swapper');
+		if (swapper) {
+			const originInput = document.getElementById('swap-origin');
+			const destinationInput = document.getElementById('swap-destination');
+			const swapButton = document.getElementById('swap-button');
+			const errorEl = document.getElementById('swap-error');
+			const normalize = (value) => (value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+			swapButton?.addEventListener('click', () => {
+				const previousOrigin = originInput.value;
+				originInput.value = destinationInput.value;
+				destinationInput.value = previousOrigin;
+				originInput.focus();
+			});
+
+			swapper.addEventListener('submit', (event) => {
+				event.preventDefault();
+				const origin = normalize(originInput.value);
+				const destination = normalize(destinationInput.value);
+				if (!origin || !destination) {
+					if (errorEl) errorEl.hidden = false;
+					(origin ? destinationInput : originInput).focus();
+					return;
+				}
+				if (errorEl) errorEl.hidden = true;
+				window.location.href = `/?route=${encodeURIComponent(origin)}-${encodeURIComponent(destination)}`;
+			});
+		}
+	</script>
+
+	<script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
+	<script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
+</Layout>
