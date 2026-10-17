@@ -59,6 +59,23 @@ const popularRoutes = buildPopularRoutes();
 								<p class="text-body-sm text-muted">Loading station index…</p>
 							</div>
 
+							<label
+								for="hrms-pass"
+								class="mt-4 flex cursor-pointer items-start gap-3 rounded-sm border border-line bg-background p-3.5 transition-colors hover:border-foreground/40"
+							>
+								<input
+									id="hrms-pass"
+									name="hrms-pass"
+									type="checkbox"
+									class="focus-ring mt-0.5 h-4 w-4 shrink-0 accent-foreground"
+								/>
+								<span class="min-w-0">
+									<span class="block text-body-sm font-medium text-foreground">
+										Check HRMS Pass 15% Extra Distance Limit
+									</span>
+								</span>
+							</label>
+
 							<div class="mt-5 flex flex-wrap items-center gap-2 border-t border-line pt-4">
 								<button
 									type="button"
@@ -185,6 +202,7 @@ const popularRoutes = buildPopularRoutes();
 	const statusEl = document.getElementById('route-status');
 	const addViaBtn = document.getElementById('add-via');
 	const swapBtn = document.getElementById('swap');
+	const hrmsCheckbox = document.getElementById('hrms-pass');
 
 	const MAX_STOPS = 8;
 
@@ -507,7 +525,7 @@ const popularRoutes = buildPopularRoutes();
 			return;
 		}
 
-		const signature = codes.join('-');
+		const signature = codes.join('-') + (hrmsCheckbox && hrmsCheckbox.checked ? '|hrms' : '');
 		if (signature === lastSignature) return;
 
 		const route = calculateMultiViaRoute(graph, codes);
@@ -584,6 +602,33 @@ const popularRoutes = buildPopularRoutes();
 		</section>`;
 	}
 
+	function hrmsHtml(totalKm) {
+		const extra = Math.round(totalKm * 0.15 * 10) / 10;
+		const max = Math.round((totalKm + extra) * 10) / 10;
+		const fmt = (value) => value.toLocaleString('en-IN', { maximumFractionDigits: 1 });
+		return `<section aria-label="HRMS pass 15% extra distance limit" class="rounded-md border border-emerald-600/30 bg-emerald-500/10 p-5 dark:border-emerald-500/30">
+			<div class="flex flex-wrap items-center justify-between gap-2">
+				<h2 class="data-mono text-eyebrow uppercase text-emerald-700 dark:text-emerald-400">HRMS Pass · 15% Extra Distance</h2>
+				<span class="data-mono text-eyebrow text-muted">Base + 15%</span>
+			</div>
+			<dl class="mt-4 grid grid-cols-1 gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-3">
+				<div class="bg-surface p-4">
+					<dt class="data-mono text-eyebrow uppercase text-muted">Base Distance</dt>
+					<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">${fmt(totalKm)}<span class="ml-1 text-label-sm font-normal text-muted">km</span></dd>
+				</div>
+				<div class="bg-surface p-4">
+					<dt class="data-mono text-eyebrow uppercase text-muted">15% Extra Margin</dt>
+					<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">+${fmt(extra)}<span class="ml-1 text-label-sm font-normal text-muted">km</span></dd>
+				</div>
+				<div class="bg-surface p-4">
+					<dt class="data-mono text-eyebrow uppercase text-muted">Maximum Allowed HRMS Pass Distance</dt>
+					<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">${fmt(max)}<span class="ml-1 text-label-sm font-normal text-muted">km</span></dd>
+				</div>
+			</dl>
+			<p class="mt-3 text-body-sm text-muted">*Maximum allowed HRMS pass distance is the base track distance plus a 15% extra margin.</p>
+		</section>`;
+	}
+
 	function renderIdle() {
 		lastRoute = null;
 		if (printCardEl) printCardEl.innerHTML = '';
@@ -639,6 +684,7 @@ const popularRoutes = buildPopularRoutes();
 				</div>
 			</div>
 			${bentoHtml({ total: route.totalDistanceKm, legs: route.legCount, stops: intermediate, status })}
+			${hrmsCheckbox && hrmsCheckbox.checked ? hrmsHtml(route.totalDistanceKm) : ''}
 			${faresHtml(route.totalDistanceKm)}
 			<section aria-label="Leg-by-leg track path" class="flex flex-col gap-3">
 				<h2 class="data-mono text-eyebrow uppercase text-muted">Leg-by-leg breakdown</h2>
@@ -1101,6 +1147,7 @@ const popularRoutes = buildPopularRoutes();
 	async function boot() {
 		addViaBtn.addEventListener('click', addVia);
 		swapBtn.addEventListener('click', swapEnds);
+		if (hrmsCheckbox) hrmsCheckbox.addEventListener('change', computeRoute);
 		document.querySelectorAll('[data-preset-route]').forEach((button) => {
 			button.addEventListener('click', () => {
 				if (!graph) return;
