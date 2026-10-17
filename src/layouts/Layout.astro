@@ -62,6 +62,17 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
+
+		<!-- Google tag (gtag.js) -->
+		<script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-GSSK6L1PGH"></script>
+		<script is:inline>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				dataLayer.push(arguments);
+			}
+			gtag('js', new Date());
+			gtag('config', 'G-GSSK6L1PGH');
+		</script>
 	</head>
 	<body class="flex min-h-dvh flex-col">
 		<a
