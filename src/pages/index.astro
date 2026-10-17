@@ -199,6 +199,20 @@ const faqSchema = {
 									</svg>
 									<span data-i18n="swap">Swap Origin / Destination</span>
 								</button>
+								<button
+									type="button"
+									id="clear-route"
+									class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40"
+								>
+									<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="shrink-0">
+										<path
+											d="M4 4l8 8M12 4l-8 8"
+											stroke="currentColor"
+											stroke-width="1.5"
+											stroke-linecap="round"></path>
+									</svg>
+									<span>Clear Route</span>
+								</button>
 							</div>
 
 							<div id="saved-routes" class="mt-5 border-t border-line pt-4"></div>
@@ -340,6 +354,7 @@ const faqSchema = {
 	const statusEl = document.getElementById('route-status');
 	const addViaBtn = document.getElementById('add-via');
 	const swapBtn = document.getElementById('swap');
+	const clearRouteBtn = document.getElementById('clear-route');
 	const hrmsCheckbox = document.getElementById('hrms-pass');
 
 	const MAX_STOPS = 8;
@@ -395,6 +410,10 @@ const faqSchema = {
 						<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
 					</button>`
 					: '';
+				const hasText = Boolean(slot.code || slot.query);
+				const clearButton = `<button type="button" data-clear="${index}" aria-label="Clear ${positionLabel(index)}" title="Clear" class="focus-ring absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-sm text-muted transition-colors hover:text-foreground" style="${hasText ? '' : 'display:none'}">
+					<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+				</button>`;
 
 				return `<div class="flex flex-col gap-1.5" data-row="${index}">
 					<div class="flex items-center justify-between gap-3">
@@ -417,7 +436,7 @@ const faqSchema = {
 							aria-autocomplete="list"
 							aria-label="${positionLabel(index)} station"
 							placeholder="${t('stationPlaceholder')}"
-							class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground placeholder:text-muted"
+							class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background py-2.5 pl-4 pr-10 text-body-md text-foreground placeholder:text-muted"
 						/>
 						<ul
 							id="station-list-${index}"
@@ -425,6 +444,7 @@ const faqSchema = {
 							aria-label="${positionLabel(index)} station suggestions"
 							class="absolute left-0 right-0 z-30 mt-1 hidden max-h-72 overflow-auto rounded-md border border-line bg-surface shadow-[0_12px_32px_-12px_rgba(0,0,0,0.8)]"
 						></ul>
+						${clearButton}
 					</div>
 					<p class="data-mono text-eyebrow text-muted ${caption ? '' : 'hidden'}" data-caption="${index}">${caption}</p>
 				</div>`;
@@ -449,6 +469,7 @@ const faqSchema = {
 			slots[index].code = '';
 			slots[index].query = input.value;
 			updateCaption(index);
+			updateClearButton(index, input.value.length > 0);
 			openList(index);
 			computeRoute();
 		});
@@ -459,6 +480,17 @@ const faqSchema = {
 
 		const remove = builderEl.querySelector(`[data-remove="${index}"]`);
 		if (remove) remove.addEventListener('click', () => removeVia(index));
+
+		const clear = builderEl.querySelector(`[data-clear="${index}"]`);
+		if (clear) {
+			clear.addEventListener('mousedown', (event) => event.preventDefault());
+			clear.addEventListener('click', () => clearSlot(index));
+		}
+	}
+
+	function updateClearButton(index, hasText) {
+		const btn = builderEl.querySelector(`[data-clear="${index}"]`);
+		if (btn) btn.style.display = hasText ? '' : 'none';
 	}
 
 	function updateCaption(index) {
@@ -578,8 +610,20 @@ const faqSchema = {
 		const input = document.getElementById(`station-input-${index}`);
 		if (input) input.value = result.code;
 		updateCaption(index);
+		updateClearButton(index, true);
 		closeList(index);
 		computeRoute();
+	}
+
+	function clearSlot(index) {
+		slots[index] = emptySlot();
+		const input = document.getElementById(`station-input-${index}`);
+		if (input) input.value = '';
+		updateCaption(index);
+		updateClearButton(index, false);
+		closeList(index);
+		computeRoute();
+		focusInput(index);
 	}
 
 	function onKeydown(event, index) {
@@ -637,6 +681,18 @@ const faqSchema = {
 		slots[last] = first;
 		renderBuilder();
 		computeRoute();
+	}
+
+	function clearAll() {
+		slots = [emptySlot(), emptySlot()];
+		lastSignature = '';
+		renderBuilder();
+		if (graph) computeRoute();
+		else renderIdle();
+		const url = new URL(window.location.href);
+		url.searchParams.delete('route');
+		window.history.replaceState({}, '', url);
+		focusInput(0);
 	}
 
 	function applyRoute(codes) {
@@ -1285,6 +1341,7 @@ const faqSchema = {
 	async function boot() {
 		addViaBtn.addEventListener('click', addVia);
 		swapBtn.addEventListener('click', swapEnds);
+		if (clearRouteBtn) clearRouteBtn.addEventListener('click', clearAll);
 		if (hrmsCheckbox) hrmsCheckbox.addEventListener('change', computeRoute);
 		document.querySelectorAll('[data-preset-route]').forEach((button) => {
 			button.addEventListener('click', () => {
