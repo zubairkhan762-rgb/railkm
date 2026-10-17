@@ -10,6 +10,49 @@ const presets = [
 ];
 
 const popularRoutes = buildPopularRoutes();
+
+const faqs = [
+	{
+		question: 'How does RailKM calculate Indian Railways track distance?',
+		answer:
+			'RailKM models the railway network as a weighted graph of stations connected by track segments and runs a shortest-path search that minimises total track kilometres. The result lists every intermediate halt with its cumulative distance from the origin.',
+	},
+	{
+		question: 'What is the HRMS Pass 15% extra distance rule?',
+		answer:
+			'Under the Indian Railways HRMS (Human Resource Management System) pass facility, eligible employees and their dependants may travel by a permitted route up to the base distance plus a 15% extra margin. RailKM shows this as Base Distance, +15% margin and Maximum Allowed HRMS Pass Distance when you tick the HRMS checkbox.',
+	},
+	{
+		question: 'How do I calculate the maximum allowed distance under the HRMS Pass 15% limit?',
+		answer:
+			'Tick “Check HRMS Pass 15% Extra Distance Limit” below the station inputs and calculate a route. RailKM multiplies the shortest track distance by 15%, adds it to the base distance and displays the maximum allowed HRMS pass distance. For example, a 1,000 km route allows up to 1,150 km.',
+	},
+	{
+		question: 'Is break journey allowed between two stations?',
+		answer:
+			'Indian Railways generally permits a break journey on long-distance journeys beyond a prescribed distance, letting you pause at an intermediate station and continue later. Use the multi-via mapper to add via stops and check cumulative kilometres before planning a break.',
+	},
+	{
+		question: 'Can I plan a route with multiple via stations?',
+		answer:
+			'Yes. Add up to eight stops including origin and destination. RailKM chains the legs, detects double-backs where the route revisits a station, and shows a cumulative-kilometre table for every halt.',
+	},
+	{
+		question: 'Are RailKM distances and fares official Indian Railways figures?',
+		answer:
+			'No. Distances are derived from open railway timetable data and fares are ballpark estimates from standard IR distance slabs. They are indicative for planning only — always confirm timings, fares and pass eligibility with Indian Railways or IRCTC.',
+	},
+];
+
+const faqSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faqs.map((faq) => ({
+		'@type': 'Question',
+		name: faq.question,
+		acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+	})),
+};
 ---
 
 <Layout>
@@ -184,8 +227,54 @@ const popularRoutes = buildPopularRoutes();
 				</div>
 			</div>
 		</section>
+
+		<section
+			id="faq"
+			data-print="hide"
+			aria-labelledby="faq-heading"
+			class="relative mx-auto w-full max-w-6xl scroll-mt-20 px-4 pb-24 sm:px-6"
+		>
+			<div class="border-t border-line pt-10">
+				<p class="data-mono text-eyebrow uppercase text-muted">Help</p>
+				<h2 id="faq-heading" class="mt-1 text-heading-md font-semibold text-foreground">
+					Frequently asked questions
+				</h2>
+				<p class="mt-2 max-w-2xl text-body-sm text-muted">
+					Railway distance, break-journey routing and the HRMS Pass 15% extra distance rule.
+				</p>
+
+				<div class="mt-6 flex flex-col gap-3">
+					{
+						faqs.map((faq) => (
+							<details class="group rounded-md border border-line bg-surface transition-colors hover:border-foreground/40">
+								<summary class="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-body-md font-medium text-foreground [&::-webkit-details-marker]:hidden">
+									<span>{faq.question}</span>
+									<svg
+										class="h-4 w-4 shrink-0 text-muted transition-transform group-open:rotate-180"
+										viewBox="0 0 12 12"
+										fill="none"
+										aria-hidden="true"
+									>
+										<path
+											d="M3 4.5L6 7.5l3-3"
+											stroke="currentColor"
+											stroke-width="1.5"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
+									</svg>
+								</summary>
+								<div class="border-t border-line px-5 py-4 text-body-sm text-muted">{faq.answer}</div>
+							</details>
+						))
+					}
+				</div>
+			</div>
+		</section>
 	</div>
 </Layout>
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
 
 <script>
 	import {

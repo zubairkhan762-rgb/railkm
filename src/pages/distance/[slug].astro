@@ -26,6 +26,11 @@ const sleeperFare = fares.find((fare) => fare.code === 'SL')?.fare ?? 0;
 const threeAcFare = fares.find((fare) => fare.code === '3AC')?.fare ?? 0;
 const fareNote = '*Approximate estimates based on standard IR distance slabs. Actual fares may vary by train type, dynamic pricing, and GST.';
 
+const hrmsExtra = Math.round(route.totalDistanceKm * 0.15 * 10) / 10;
+const hrmsMax = Math.round((route.totalDistanceKm + hrmsExtra) * 10) / 10;
+const hrmsExtraText = hrmsExtra.toLocaleString('en-IN', { maximumFractionDigits: 1 });
+const hrmsMaxText = hrmsMax.toLocaleString('en-IN', { maximumFractionDigits: 1 });
+
 const title = `Exact Railway Distance from ${fromName} (${from}) to ${toName} (${to}) — ${route.totalDistanceKm} km | RailKM`;
 const description = `The shortest Indian Railways track distance from ${fromName} (${from}) to ${toName} (${to}) is ${route.totalDistanceKm} km, passing ${intermediateStops} intermediate stations${junctions.length ? ` and ${junctions.length} junctions` : ''}. Full station-by-station cumulative-kilometre table and break-journey via planner.`;
 
@@ -51,6 +56,14 @@ const faqs = [
 	{
 		question: `How much does a train ticket from ${fromName} (${from}) to ${toName} (${to}) cost?`,
 		answer: `Over the ${route.totalDistanceKm} km journey, an approximate Sleeper (SL) fare is around ₹${sleeperFare.toLocaleString('en-IN')}, AC 3-Tier (3AC) around ₹${threeAcFare.toLocaleString('en-IN')}, with AC 2-Tier and AC First Class proportionally higher. These are standard-slab estimates only — actual fares differ by train type, dynamic pricing and GST.`,
+	},
+	{
+		question: `Does the HRMS Pass 15% extra distance rule apply to the ${fromName} to ${toName} route?`,
+		answer: `Yes. On the shortest track distance of ${route.totalDistanceKm} km between ${fromName} (${from}) and ${toName} (${to}), a 15% extra margin adds ${hrmsExtraText} km, giving a maximum allowed HRMS pass distance of ${hrmsMaxText} km. Eligibility and the permitted route are governed by Indian Railways HRMS pass rules, so confirm with your administration before travelling.`,
+	},
+	{
+		question: `How is the HRMS Pass 15% extra distance calculated for this route?`,
+		answer: `The HRMS 15% rule multiplies the base track distance by 0.15 and adds it back: ${route.totalDistanceKm} km × 15% = ${hrmsExtraText} km, so the maximum allowed distance is ${route.totalDistanceKm} + ${hrmsExtraText} = ${hrmsMaxText} km. RailKM shows all three figures in the route mapper when you tick the “Check HRMS Pass 15% Extra Distance Limit” checkbox.`,
 	},
 ];
 
@@ -291,14 +304,30 @@ const breadcrumbSchema = {
 				<h2 id="faq-heading" class="text-heading-md font-semibold text-foreground">
 					Frequently asked questions
 				</h2>
-				<dl class="mt-4 flex flex-col gap-3">
+				<div class="mt-4 flex flex-col gap-3">
 					{faqs.map((faq) => (
-						<div class="rounded-md border border-line bg-surface p-5">
-							<dt class="text-body-md font-medium text-foreground">{faq.question}</dt>
-							<dd class="mt-2 text-body-sm text-muted">{faq.answer}</dd>
-						</div>
+						<details class="group rounded-md border border-line bg-surface transition-colors hover:border-foreground/40">
+							<summary class="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-body-md font-medium text-foreground [&::-webkit-details-marker]:hidden">
+								<span>{faq.question}</span>
+								<svg
+									class="h-4 w-4 shrink-0 text-muted transition-transform group-open:rotate-180"
+									viewBox="0 0 12 12"
+									fill="none"
+									aria-hidden="true"
+								>
+									<path
+										d="M3 4.5L6 7.5l3-3"
+										stroke="currentColor"
+										stroke-width="1.5"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>
+							</summary>
+							<div class="border-t border-line px-5 py-4 text-body-sm text-muted">{faq.answer}</div>
+						</details>
 					))}
-				</dl>
+				</div>
 			</section>
 
 			<p class="mt-10 text-body-sm text-muted">
