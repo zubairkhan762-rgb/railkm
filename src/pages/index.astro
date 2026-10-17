@@ -103,6 +103,32 @@ const faqSchema = {
 		acceptedAnswer: { '@type': 'Answer', text: faq.answer },
 	})),
 };
+
+const appSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'WebApplication',
+	name: 'RailKM — Indian Railway Track Distance & Multi-Via Route Mapper',
+	url: 'https://railkm.com/',
+	applicationCategory: 'TravelApplication',
+	operatingSystem: 'Any',
+	browserRequirements: 'Requires JavaScript',
+	description:
+		'Free Indian Railways track-distance calculator and multi-via route mapper. Compute the shortest rail route between any two of 8,989 indexed stations, list every intermediate halt with cumulative kilometres, detect double-backs, and check the HRMS Pass 15% extra distance limit.',
+	offers: {
+		'@type': 'Offer',
+		price: '0',
+		priceCurrency: 'INR',
+	},
+	featureList: [
+		'Shortest Indian Railways track distance between any two stations',
+		'Multi-via break-journey routing up to 8 stops',
+		'Station-by-station cumulative kilometre tables',
+		'Automatic double-back detection',
+		'HRMS Pass 15% extra distance limit calculator',
+		'Estimated Sleeper, 3AC, 2AC and 1AC fares',
+		'Printable / PDF route distance sheet',
+	],
+};
 ---
 
 <Layout>
@@ -498,70 +524,70 @@ const faqSchema = {
 							</thead>
 							<tbody class="text-body-sm">
 								<tr class="border-b border-line/60">
-									<td class="data-mono px-4 py-2.5 text-foreground">HWH → NDLS</td>
+									<td class="px-4 py-2.5"><a class="data-mono focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="/?route=HWH-NDLS">HWH → NDLS</a></td>
 									<td class="px-4 py-2.5 text-muted">Patna Jn (PNBE) · DDU Mughalsarai · Kanpur Central (CNB)</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,448</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">217.2</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,665.2</td>
 								</tr>
 								<tr class="border-b border-line/60">
-									<td class="data-mono px-4 py-2.5 text-foreground">GWL → BDTS</td>
+									<td class="px-4 py-2.5"><a class="data-mono focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="/?route=GWL-BDTS">GWL → BDTS</a></td>
 									<td class="px-4 py-2.5 text-muted">Bina Jn · Bhopal Jn · Itarsi Jn · Bhusaval Jn · Vadodara Jn</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,200</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">180</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,380</td>
 								</tr>
 								<tr class="border-b border-line/60">
-									<td class="data-mono px-4 py-2.5 text-foreground">NDLS → VGLJ → BPL</td>
+									<td class="px-4 py-2.5"><a class="data-mono focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="/?route=NDLS-VGLJ-BPL">NDLS → VGLJ → BPL</a></td>
 									<td class="px-4 py-2.5 text-muted">Mathura Jn · Agra Cantt · Gwalior · Jhansi (VGLJ) · Bina Jn</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">707</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">106.1</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">813.1</td>
 								</tr>
 								<tr class="border-b border-line/60">
-									<td class="data-mono px-4 py-2.5 text-foreground">NZM → RTM → JAO</td>
+									<td class="px-4 py-2.5"><a class="data-mono focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="/?route=NZM-RTM-JAO">NZM → RTM → JAO</a></td>
 									<td class="px-4 py-2.5 text-muted">Mathura Jn · Kota Jn · Ratlam Jn (RTM)</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">762</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">114.3</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">876.3</td>
 								</tr>
 								<tr class="border-b border-line/60">
-									<td class="data-mono px-4 py-2.5 text-foreground">MMCT → ADI</td>
+									<td class="px-4 py-2.5"><a class="data-mono focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="/?route=MMCT-ADI">MMCT → ADI</a></td>
 									<td class="px-4 py-2.5 text-muted">Surat (ST) · Vadodara Jn (BRC) · Anand</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">499</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">74.9</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">573.9</td>
 								</tr>
 								<tr class="border-b border-line/60">
-									<td class="data-mono px-4 py-2.5 text-foreground">NDLS → MMCT</td>
+									<td class="px-4 py-2.5"><a class="data-mono focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="/?route=NDLS-MMCT">NDLS → MMCT</a></td>
 									<td class="px-4 py-2.5 text-muted">Mathura Jn · Kota Jn · Ratlam Jn · Vadodara Jn · Surat</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,365</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">204.8</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,569.8</td>
 								</tr>
 								<tr class="border-b border-line/60">
-									<td class="data-mono px-4 py-2.5 text-foreground">NDLS → MAS</td>
+									<td class="px-4 py-2.5"><a class="data-mono focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="/?route=NDLS-MAS">NDLS → MAS</a></td>
 									<td class="px-4 py-2.5 text-muted">Agra Cantt · Jhansi · Bhopal Jn · Itarsi Jn · Nagpur · Vijayawada</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">2,175</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">326.3</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">2,501.3</td>
 								</tr>
 								<tr class="border-b border-line/60">
-									<td class="data-mono px-4 py-2.5 text-foreground">HWH → CSMT</td>
+									<td class="px-4 py-2.5"><a class="data-mono focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="/?route=HWH-CSMT">HWH → CSMT</a></td>
 									<td class="px-4 py-2.5 text-muted">Kharagpur Jn · Bilaspur Jn · Nagpur · Bhusaval Jn</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,953</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">293</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">2,246</td>
 								</tr>
 								<tr class="border-b border-line/60">
-									<td class="data-mono px-4 py-2.5 text-foreground">NDLS → ADI</td>
+									<td class="px-4 py-2.5"><a class="data-mono focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="/?route=NDLS-ADI">NDLS → ADI</a></td>
 									<td class="px-4 py-2.5 text-muted">Jaipur Jn (JP) · Ajmer Jn (AII) · Abu Road (ABR)</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">866</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">129.9</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">995.9</td>
 								</tr>
 								<tr>
-									<td class="data-mono px-4 py-2.5 text-foreground">NDLS → BPL</td>
+									<td class="px-4 py-2.5"><a class="data-mono focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="/?route=NDLS-BPL">NDLS → BPL</a></td>
 									<td class="px-4 py-2.5 text-muted">Mathura Jn · Agra Cantt · Gwalior · Jhansi · Bina Jn</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">707</td>
 									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">106.1</td>
@@ -623,6 +649,7 @@ const faqSchema = {
 		</section>
 	</div>
 	<script slot="head" type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
+	<script slot="head" type="application/ld+json" is:inline set:html={JSON.stringify(appSchema)} />
 </Layout>
 
 <script>
@@ -1160,6 +1187,10 @@ const faqSchema = {
 				<div class="flex flex-wrap items-center gap-2">
 					<button type="button" class="js-copy focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-surface px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40">Copy Route Summary</button>
 					<button type="button" class="js-share focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-surface px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40">Share URL</button>
+					<button type="button" class="js-whatsapp focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-surface px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40" title="Share this route on WhatsApp">
+						<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="shrink-0"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.18 8.18 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24Zm-2.6 4.36c-.13 0-.33.05-.5.24-.17.19-.66.64-.66 1.57 0 .93.68 1.83.77 1.95.09.12 1.31 2.1 3.25 2.88 1.61.64 1.94.51 2.29.48.35-.03 1.13-.46 1.29-.91.16-.45.16-.83.11-.91-.05-.08-.17-.13-.35-.22-.18-.09-1.13-.56-1.3-.62-.18-.07-.31-.1-.44.09-.13.19-.5.63-.62.76-.11.13-.23.14-.41.05-.18-.09-.77-.28-1.46-.9-.54-.48-.9-1.07-1.01-1.26-.11-.19-.01-.29.08-.38.08-.08.18-.23.27-.34.09-.11.12-.19.18-.31.06-.12.03-.23-.01-.32-.05-.09-.43-1.05-.6-1.43-.16-.38-.32-.33-.44-.33-.11 0-.24-.02-.36-.02Z"/></svg>
+						WhatsApp
+					</button>
 					<button type="button" class="js-print focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-foreground bg-foreground px-4 py-2.5 text-label-sm font-medium text-background transition-opacity hover:opacity-90" title="Open the browser print dialog to print or save this route as a PDF">🖨️ Print / Download PDF Route</button>
 				</div>
 			</div>
@@ -1257,6 +1288,7 @@ const faqSchema = {
 	function wireResultActions(route) {
 		const copyBtn = resultsEl.querySelector('.js-copy');
 		const shareBtn = resultsEl.querySelector('.js-share');
+		const whatsappBtn = resultsEl.querySelector('.js-whatsapp');
 		const printBtn = resultsEl.querySelector('.js-print');
 
 		if (copyBtn) {
@@ -1288,6 +1320,13 @@ const faqSchema = {
 			});
 		}
 
+		if (whatsappBtn) {
+			whatsappBtn.addEventListener('click', () => {
+				const text = whatsappText(route);
+				window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+			});
+		}
+
 		resultsEl.querySelectorAll('[data-leg-toggle]').forEach((toggle) => {
 			toggle.addEventListener('click', () => {
 				const panel = document.getElementById(`leg-panel-${toggle.dataset.legToggle}`);
@@ -1304,6 +1343,17 @@ const faqSchema = {
 		const parts = [route.chain[0]];
 		for (const leg of route.legs) parts.push(`${leg.to} (${leg.distanceKm} km)`);
 		return `${parts.join(' -> ')} | Total: ${route.totalDistanceKm} km`;
+	}
+
+	function whatsappText(route) {
+		const url = `${window.location.origin}/?route=${route.chain.join('-')}`;
+		const base = route.totalDistanceKm.toLocaleString('en-IN');
+		let text = `RailKM Route: ${route.chain.join(' → ')} | Track Distance: ${base} km`;
+		if (hrmsCheckbox && hrmsCheckbox.checked) {
+			const max = Math.round(route.totalDistanceKm * 1.15 * 10) / 10;
+			text += ` (HRMS +15% Max: ${max.toLocaleString('en-IN', { maximumFractionDigits: 1 })} km)`;
+		}
+		return `${text} — Check route: ${url}`;
 	}
 
 	/* ------------------------------------------------------------ Print card */
