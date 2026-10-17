@@ -42,6 +42,36 @@ const faqs = [
 		answer:
 			'No. Distances are derived from open railway timetable data and fares are ballpark estimates from standard IR distance slabs. They are indicative for planning only — always confirm timings, fares and pass eligibility with Indian Railways or IRCTC.',
 	},
+	{
+		question: 'What is the 500 km and 1000 km break journey rule in Indian Railways vs HRMS Pass?',
+		answer:
+			'On a normal Indian Railways ticket, a break journey is allowed once when the total journey is 500 km or more, and twice when it is 1,000 km or more, with each break taken at an intermediate station on the ticket route. An HRMS Privilege Pass is more flexible: pass holders can take en-route break journeys at intermediate stations along the permitted route, subject to the pass rules, validity period and class entitlement, rather than the fixed 500 km / 1,000 km ticket limits.',
+	},
+	{
+		question: 'Can I book a longer route in HRMS E-Pass if the alternate route is faster?',
+		answer:
+			'Yes, in two situations under the Railway Servants Pass Rules. A longer alternate route is permitted if it stays within the 15% extra distance over the shortest route, or if the longer route is quicker in travel time than the shortest-distance route. If the chosen route exceeds the 15% margin and is not faster, the extra distance is charged as per the applicable pass rules. RailKM’s HRMS checkbox shows the exact base, +15% and maximum allowed distance so you can check eligibility before booking.',
+	},
+	{
+		question: 'What is double-back (backtracking) in HRMS Pass routing and how to avoid it?',
+		answer:
+			'A double-back or backtracking means travelling through the same station twice on one journey, which breaks the linearity of the permitted route and is generally not allowed for a pass unless there is no direct/linear alternative or an exceptional permission is granted. To avoid it, plan a route that never revisits a station. RailKM’s double-back detector flags any repeated station in red so you can reroute before applying for the pass.',
+	},
+	{
+		question: 'How many Via stations or Break Journeys are allowed in an HRMS Privilege Pass / PTO?',
+		answer:
+			'An HRMS Privilege Pass allows en-route break journeys at intermediate stations along a valid linear route, with the number and duration governed by the pass rules and its validity period. A PTO (Privilege Ticket Order) is issued for a specific journey and route. RailKM lets you add up to eight stops including origin and destination, so you can map intermediate via and break-journey stations and confirm the route stays linear and within the 15% limit.',
+	},
+	{
+		question: 'Why does railway track distance differ from Google Maps road distance?',
+		answer:
+			'Indian Railways charges distance along the actual rail network — measured through real junctions, curves and gradients between stations — not along road highways. Because trains must follow the track alignment and junction layout, the rail track distance can be longer or shorter than the road distance Google Maps shows. RailKM computes the chargeable rail track kilometres so pass and fare calculations match railway practice.',
+	},
+	{
+		question: 'What is the validity period of an HRMS Privilege Pass and PTO?',
+		answer:
+			'An HRMS Privilege Pass is normally issued with a validity of five months for a full or half set of passes. A PTO (Privilege Ticket Order) is issued on payment of one-third of the ordinary fare and is valid for the journey and period specified on the order. Always verify the current validity, class and entitlement on your pass with your railway administration, as the rules are revised from time to time.',
+	},
 ];
 
 const faqSchema = {
@@ -272,9 +302,8 @@ const faqSchema = {
 			</div>
 		</section>
 	</div>
+	<script slot="head" type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
 </Layout>
-
-<script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
 
 <script>
 	import {
