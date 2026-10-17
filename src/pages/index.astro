@@ -1554,7 +1554,7 @@ const appSchema = {
 
 	const RECENT_KEY = 'railkm-recent-routes';
 	const FAVORITE_KEY = 'railkm-favorite-routes';
-	const MAX_RECENT = 5;
+	const MAX_RECENT = 6;
 
 	function readStore(key) {
 		try {
@@ -1594,6 +1594,19 @@ const appSchema = {
 		renderSavedRoutes();
 	}
 
+	function removeRecent(signature) {
+		const entries = readStore(RECENT_KEY).filter((entry) => entry && entry.signature !== signature);
+		writeStore(RECENT_KEY, entries);
+		renderSavedRoutes();
+	}
+
+	function clearRecentHistory() {
+		const favoriteSignatures = new Set(readStore(FAVORITE_KEY).map((entry) => entry && entry.signature));
+		const entries = readStore(RECENT_KEY).filter((entry) => entry && favoriteSignatures.has(entry.signature));
+		writeStore(RECENT_KEY, entries);
+		renderSavedRoutes();
+	}
+
 	function savedPillHtml(entry, isFavorite) {
 		const label = entry.signature.split('-').join(' → ');
 		const km = typeof entry.km === 'number' ? `<span class="text-muted"> · ${entry.km.toLocaleString('en-IN')} km</span>` : '';
@@ -1601,9 +1614,13 @@ const appSchema = {
 			? '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.7 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>'
 			: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9-4.3-4.1 5.9-.8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
 		const pinLabel = t(isFavorite ? 'unpinFav' : 'pinToFav');
+		const removeBtn = isFavorite
+			? ''
+			: `<button type="button" data-remove-recent="${esc(entry.signature)}" aria-label="Remove from recent" title="Remove from recent" class="focus-ring inline-flex h-6 w-6 items-center justify-center rounded-full text-muted transition-colors hover:text-foreground"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>`;
 		return `<li class="flex items-center gap-1 rounded-full border border-line bg-background py-1 pl-3 pr-1.5">
 			<button type="button" data-restore="${esc(entry.signature)}" class="focus-ring data-mono text-body-sm text-foreground transition-colors hover:text-link">${esc(label)}${km}</button>
 			<button type="button" data-fav="${esc(entry.signature)}" aria-pressed="${isFavorite}" aria-label="${pinLabel}" title="${pinLabel}" class="focus-ring inline-flex h-6 w-6 items-center justify-center rounded-full ${isFavorite ? 'text-amber-600 dark:text-amber-400' : 'text-muted'} transition-colors hover:text-foreground">${star}</button>
+			${removeBtn}
 		</li>`;
 	}
 
@@ -1624,7 +1641,10 @@ const appSchema = {
 				<ul class="mt-2 flex flex-wrap gap-2">${favorites.map((entry) => savedPillHtml(entry, true)).join('')}</ul>`
 			: '';
 		const recentBlock = recent.length
-			? `<p class="data-mono text-eyebrow uppercase text-muted${favorites.length ? ' mt-4' : ''}">${t('recent')}</p>
+			? `<div class="flex items-center justify-between gap-2${favorites.length ? ' mt-4' : ''}">
+					<p class="data-mono text-eyebrow uppercase text-muted">${t('recent')}</p>
+					<button type="button" data-clear-recent class="focus-ring rounded-sm data-mono text-eyebrow uppercase text-muted transition-colors hover:text-foreground">Clear history</button>
+				</div>
 				<ul class="mt-2 flex flex-wrap gap-2">${recent.map((entry) => savedPillHtml(entry, false)).join('')}</ul>`
 			: '';
 
@@ -1639,6 +1659,13 @@ const appSchema = {
 		savedRoutesEl.querySelectorAll('[data-fav]').forEach((button) => {
 			button.addEventListener('click', () => toggleFavorite(button.dataset.fav));
 		});
+		savedRoutesEl.querySelectorAll('[data-remove-recent]').forEach((button) => {
+			button.addEventListener('click', () => removeRecent(button.dataset.removeRecent));
+		});
+		const clearRecentBtn = savedRoutesEl.querySelector('[data-clear-recent]');
+		if (clearRecentBtn) {
+			clearRecentBtn.addEventListener('click', clearRecentHistory);
+		}
 	}
 
 	function syncUrl(codes) {
