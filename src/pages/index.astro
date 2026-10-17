@@ -293,6 +293,292 @@ const faqSchema = {
 		</section>
 
 		<section
+			id="guide"
+			data-print="hide"
+			aria-label="Indian Railways track distance and HRMS pass editorial guide"
+			class="relative mx-auto w-full max-w-6xl scroll-mt-20 px-4 pb-24 sm:px-6"
+		>
+			<div class="border-t border-line pt-10">
+				<p class="data-mono text-eyebrow uppercase text-muted">Editorial</p>
+				<p class="mt-3 max-w-3xl text-body-lg text-muted">
+					RailKM measures a journey the way Indian Railways bills it — the shortest sanctioned
+					track route in kilometres, not the road line on a phone map. These notes are written for
+					staff filing HRMS passes, clerks checking break-journey entitlement, and passengers who
+					want the exact figure before booking.
+				</p>
+			</div>
+
+			<div class="mt-8 flex flex-col gap-6">
+				<article class="rounded-md border border-line bg-surface p-5 sm:p-6">
+					<h2 class="text-heading-md font-semibold text-foreground">
+						How to Calculate Exact Indian Railways Track Distance &amp; Plan Multi-Via Routes
+					</h2>
+					<p class="mt-3 text-body-md text-muted">
+						Type the origin and destination station codes into the route builder — NDLS for New
+						Delhi, HWH for Howrah, BPL for Bhopal. The engine resolves each code, including older
+						codes such as JHS and BCT, then runs a Dijkstra shortest-path search over 8,989 indexed
+						stations and more than 17,000 track segments. It returns the shortest path Indian
+						railway permits on that pair, measured as track kilometres rather than road kilometres.
+						That railway track distance appears as Total Track Distance in the summary card.
+					</p>
+					<p class="mt-3 text-body-md text-muted">
+						If the journey has to run through a particular town, add Via stations. You can chain up
+						to eight stops — for example NDLS → VGLJ → BPL, the pattern for a halt at Jhansi. Every
+						leg carries its own kilometres and a running cumulative total, so a clerk can read the
+						exact distance at Mathura Jn, Bina Jn or Itarsi Jn without doing the arithmetic by hand.
+					</p>
+					<ul class="mt-3 flex flex-col gap-2 text-body-md text-muted">
+						<li>
+							<span class="data-mono font-semibold text-foreground">Add Via Station</span> inserts an
+							intermediate stop before the destination; up to eight stops in one chain.
+						</li>
+						<li>
+							<span class="data-mono font-semibold text-foreground">Swap Origin / Destination</span>
+							reverses the chain in one click when the return pass is filed separately.
+						</li>
+						<li>
+							<span class="data-mono font-semibold text-foreground">Clear Route</span> empties every
+							field and drops the <span class="data-mono">?route=</span> parameter so a fresh journey
+							can be typed. Each input also has a small × to clear one station.
+						</li>
+					</ul>
+					<p class="mt-3 text-body-md text-muted">
+						When the chain is right, use Print / Download PDF Route for a route sheet listing every
+						intermediate halt, junction and cumulative kilometre — the layout a checking inspector
+						expects at the counter. RailKM is a route mapper free to use, with no sign-up and no
+						advertising between you and the figure. Test it against a route you already know; that is
+						the fastest way to decide whether it is the best route mapper for your section or just
+						another route finder train India users abandon after one search.
+					</p>
+				</article>
+
+				<article class="rounded-md border border-line bg-surface p-5 sm:p-6">
+					<h2 class="text-heading-md font-semibold text-foreground">
+						HRMS E-Pass 15% Extra Distance Rule &amp; Linear Routing Explained
+					</h2>
+					<p class="mt-3 text-body-md text-muted">
+						For railway staff the pass is sanctioned on the shortest route between the two stations,
+						called the base distance. HRMS then allows a grace margin of 15% over that base for
+						practical routing — a different junction, a longer chord, or a train that does not run
+						on the absolute shortest path. The three figures that decide a case are base distance,
+						the 15% margin, and the maximum allowed pass distance.
+					</p>
+					<h3 class="mt-5 text-body-lg font-semibold text-foreground">
+						Worked example: Gwalior to Bandra Terminus
+					</h3>
+					<p class="mt-3 text-body-md text-muted">
+						Gwalior (GWL) to Bandra Terminus (BDTS) is 1,200 track kilometres on the shortest route,
+						running through Bina Jn, Bhopal Jn, Itarsi Jn, Bhusaval Jn and Vadodara Jn. The 15%
+						margin is 1,200 × 0.15 = 180 km. The maximum allowed HRMS pass distance is therefore
+						1,200 + 180 = 1,380 km. Any sanctioned route up to 1,380 km sits inside the limit; the
+						excess beyond it is treated under the applicable pass rules. Tick the HRMS Pass 15%
+						checkbox in the mapper and these three numbers are computed for the route you have
+						entered.
+					</p>
+					<h3 class="mt-5 text-body-lg font-semibold text-foreground">
+						The quicker-train alternate route
+					</h3>
+					<p class="mt-3 text-body-md text-muted">
+						The Railway Servants (Pass) Rules also cover the faster alternative. If a route is longer
+						than the shortest path but the train covering it has a shorter running time, the longer
+						route may be sanctioned even when it crosses the 15% margin, because the pass follows the
+						train a servant actually travels on. The test on the file is running time, not kilometres.
+					</p>
+					<h3 class="mt-5 text-body-lg font-semibold text-foreground">
+						Privilege Pass, PTO and double-back rejections
+					</h3>
+					<p class="mt-3 text-body-md text-muted">
+						A Privilege Pass for a full or half set is normally issued with a validity of five months.
+						A Privilege Ticket Order (PTO) is issued on payment of one-third of the ordinary fare and
+						holds good for the journey and period endorsed on the order.
+					</p>
+					<p class="mt-3 text-body-md text-muted">
+						Double-back is the most common reason a pass is returned. If the route touches the same
+						station twice — a path that enters Itarsi Jn, runs out and returns through it — the
+						routing is no longer linear and HRMS treats it as invalid unless no linear alternative
+						exists. The RailKM double-back detector flags any repeated station in amber before you
+						file, so the correction happens at the desk and not at the divisional office.
+					</p>
+				</article>
+
+				<article class="rounded-md border border-line bg-surface p-5 sm:p-6">
+					<h2 class="text-heading-md font-semibold text-foreground">
+						How Indian Railways Measures Track Kilometres &amp; Distance-Based Fare Slabs
+					</h2>
+					<p class="mt-3 text-body-md text-muted">
+						Rail distance is not road distance. A highway from Gwalior to Mumbai can be shorter or
+						longer than the rail alignment, but Indian Railways charges along the track it actually
+						owns: section by section, through real junction layouts, curves and gradients. RailKM
+						rebuilds this by summing block distances between adjacent stations from open timetable
+						data across 8,900-plus stations. That is why a rail figure rarely matches a phone map —
+						the phone measures tarmac, the railway measures steel.
+					</p>
+					<h3 class="mt-5 text-body-lg font-semibold text-foreground">
+						Break journey: commercial ticket vs HRMS pass
+					</h3>
+					<p class="mt-3 text-body-md text-muted">
+						Two rules get mixed up at the booking window. On a normal commercial ticket a break
+						journey is allowed once when the total journey is 500 km or more, and twice when it is
+						1,000 km or more. An HRMS Privilege Pass is looser — break journeys are taken at
+						intermediate stations along the permitted route, subject to the pass validity and class,
+						instead of the fixed 500 km and 1,000 km ticket thresholds.
+					</p>
+					<h3 class="mt-5 text-body-lg font-semibold text-foreground">
+						Gauge width vs station-to-station distance
+					</h3>
+					<p class="mt-3 text-body-md text-muted">
+						Two measurements share similar words and get confused. What is the distance between
+						railway track rails is a gauge question: Indian Railways Broad Gauge is 1,676 mm
+						(5 ft 6 in) between the two running rails. Station-to-station track distance is a route
+						question: the chargeable length between two stations. Keep the two apart and the
+						arithmetic stays clean.
+					</p>
+					<h3 class="mt-5 text-body-lg font-semibold text-foreground">Telescopic fare slabs</h3>
+					<p class="mt-3 text-body-md text-muted">
+						Fares ride the same kilometres through telescopic slabs, where the rate per kilometre
+						falls as distance rises. A 1,200 km journey is charged in bands rather than at one flat
+						rate, which is why Sleeper (SL), AC 3-Tier (3AC), AC 2-Tier (2AC) and AC First Class (1AC)
+						move by different multipliers. RailKM applies standard-slab estimates to the computed
+						total, so the fares track the actual track distance and not a straight-line guess.
+					</p>
+				</article>
+
+				<article class="rounded-md border border-line bg-surface p-5 sm:p-6">
+					<h2 class="text-heading-md font-semibold text-foreground">
+						Planning Connecting Trains &amp; Multi-Via Junction Routes Without Double-Back
+					</h2>
+					<p class="mt-3 text-body-md text-muted">
+						Two routes can share a start and finish and still be different pieces of railway. Delhi
+						to Mumbai is the clearest example. The Agra–Gwalior–Jhansi–Bhopal–Itarsi line through
+						Bhopal Jn and Itarsi Jn is the central route. The Mathura–Kota–Ratlam–Vadodara line
+						through Kota Jn, Ratlam Jn and Vadodara Jn is the western route. A multi-via plan must
+						pick one as its main line: NDLS → VGLJ → BPL and NDLS → KOTA → RTM are both valid linear
+						chains, but mixing them carelessly sends the route back over ground it has already
+						covered.
+					</p>
+					<p class="mt-3 text-body-md text-muted">
+						Double-backs appear at junctions where a line branches and returns. A path that enters
+						Bina Jn, runs towards Katni, and comes back to Bina Jn reverses direction on the same
+						block; the same happens if a plan re-enters Itarsi Jn or Vadodara Jn twice. RailKM marks
+						any repeated station, so the fault is visible before the file moves.
+					</p>
+					<p class="mt-3 text-body-md text-muted">
+						Pick junction stops that sit in the direction of travel. For Delhi to Bangalore, going
+						via Bhopal Jn and Itarsi Jn keeps the chain linear; adding Nagpur after Bhopal is valid
+						on the central route, but adding Kota after Bhopal breaks it. Where two connecting trains
+						are involved, chain the changeover station by name — HWH → NGP → BSL → CSMT — so the
+						cumulative kilometre at the junction is on the record and the connecting-train allowance
+						is defensible.
+					</p>
+				</article>
+
+				<article class="rounded-md border border-line bg-surface p-5 sm:p-6">
+					<h2 class="text-heading-md font-semibold text-foreground">
+						Major Indian Railways Trunk Corridors &amp; HRMS 15% Distance Reference Table
+					</h2>
+					<p class="mt-3 text-body-md text-muted">
+						These corridors generate the bulk of HRMS pass queries. Base kilometres are the shortest
+						sanctioned track route; the margin is 15% of that base; the maximum is the sum. Confirm
+						any figure against the current dataset in the mapper before filing, since a new chord
+						line or a gauge conversion can shift a section.
+					</p>
+					<div class="mt-4 overflow-x-auto rounded-md border border-line">
+						<table class="w-full min-w-[44rem] border-collapse text-left">
+							<caption class="sr-only">
+								Base track kilometres, 15% margin and maximum HRMS pass distance for major corridors
+							</caption>
+							<thead>
+								<tr class="border-b border-line bg-background/40">
+									<th scope="col" class="data-mono px-4 py-2.5 text-eyebrow uppercase text-muted">Route</th>
+									<th scope="col" class="px-4 py-2.5 text-eyebrow uppercase text-muted">Key intermediate junctions</th>
+									<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">Base KM</th>
+									<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">+15% KM</th>
+									<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">Max HRMS KM</th>
+								</tr>
+							</thead>
+							<tbody class="text-body-sm">
+								<tr class="border-b border-line/60">
+									<td class="data-mono px-4 py-2.5 text-foreground">HWH → NDLS</td>
+									<td class="px-4 py-2.5 text-muted">Patna Jn (PNBE) · DDU Mughalsarai · Kanpur Central (CNB)</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,448</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">217.2</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,665.2</td>
+								</tr>
+								<tr class="border-b border-line/60">
+									<td class="data-mono px-4 py-2.5 text-foreground">GWL → BDTS</td>
+									<td class="px-4 py-2.5 text-muted">Bina Jn · Bhopal Jn · Itarsi Jn · Bhusaval Jn · Vadodara Jn</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,200</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">180</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,380</td>
+								</tr>
+								<tr class="border-b border-line/60">
+									<td class="data-mono px-4 py-2.5 text-foreground">NDLS → VGLJ → BPL</td>
+									<td class="px-4 py-2.5 text-muted">Mathura Jn · Agra Cantt · Gwalior · Jhansi (VGLJ) · Bina Jn</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">707</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">106.1</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">813.1</td>
+								</tr>
+								<tr class="border-b border-line/60">
+									<td class="data-mono px-4 py-2.5 text-foreground">NZM → RTM → JAO</td>
+									<td class="px-4 py-2.5 text-muted">Mathura Jn · Kota Jn · Ratlam Jn (RTM)</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">762</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">114.3</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">876.3</td>
+								</tr>
+								<tr class="border-b border-line/60">
+									<td class="data-mono px-4 py-2.5 text-foreground">MMCT → ADI</td>
+									<td class="px-4 py-2.5 text-muted">Surat (ST) · Vadodara Jn (BRC) · Anand</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">499</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">74.9</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">573.9</td>
+								</tr>
+								<tr class="border-b border-line/60">
+									<td class="data-mono px-4 py-2.5 text-foreground">NDLS → MMCT</td>
+									<td class="px-4 py-2.5 text-muted">Mathura Jn · Kota Jn · Ratlam Jn · Vadodara Jn · Surat</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,365</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">204.8</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,569.8</td>
+								</tr>
+								<tr class="border-b border-line/60">
+									<td class="data-mono px-4 py-2.5 text-foreground">NDLS → MAS</td>
+									<td class="px-4 py-2.5 text-muted">Agra Cantt · Jhansi · Bhopal Jn · Itarsi Jn · Nagpur · Vijayawada</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">2,175</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">326.3</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">2,501.3</td>
+								</tr>
+								<tr class="border-b border-line/60">
+									<td class="data-mono px-4 py-2.5 text-foreground">HWH → CSMT</td>
+									<td class="px-4 py-2.5 text-muted">Kharagpur Jn · Bilaspur Jn · Nagpur · Bhusaval Jn</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">1,953</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">293</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">2,246</td>
+								</tr>
+								<tr class="border-b border-line/60">
+									<td class="data-mono px-4 py-2.5 text-foreground">NDLS → ADI</td>
+									<td class="px-4 py-2.5 text-muted">Jaipur Jn (JP) · Ajmer Jn (AII) · Abu Road (ABR)</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">866</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">129.9</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">995.9</td>
+								</tr>
+								<tr>
+									<td class="data-mono px-4 py-2.5 text-foreground">NDLS → BPL</td>
+									<td class="px-4 py-2.5 text-muted">Mathura Jn · Agra Cantt · Gwalior · Jhansi · Bina Jn</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">707</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">106.1</td>
+									<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">813.1</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<p class="mt-3 text-body-sm text-muted">
+						Rail track kilometres are indicative and derived from open timetable data. Confirm the
+						sanctioned route and pass entitlement with your railway administration before travel.
+					</p>
+				</article>
+			</div>
+		</section>
+
+		<section
 			id="faq"
 			data-print="hide"
 			aria-labelledby="faq-heading"
