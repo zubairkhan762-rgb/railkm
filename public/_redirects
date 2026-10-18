@@ -1,0 +1,8 @@
+# Cloudflare Pages redirects.
+# NOTE: `_redirects` matches request PATHS, not hostnames. Cloudflare Pages lists
+# "domain-level redirects" as unsupported, so the lines below are kept as
+# documentation of intent only and are IGNORED by Pages.
+# The working *.pages.dev -> railkm.com 301 redirect is implemented in
+# /functions/_middleware.js (a Pages Function), which runs before static assets.
+https://railkm.pages.dev/* https://railkm.com/:splat 301
+http://railkm.pages.dev/* https://railkm.com/:splat 301

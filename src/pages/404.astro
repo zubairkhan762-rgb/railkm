@@ -1,9 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const title = '404 — Route Not Found | RailKM';
+const title = 'Station or Page Not Found — 404 | RailKM';
 const description =
-	'This page could not be found. The track leads to a dead end or the station code does not exist — head back to the RailKM route mapper.';
+	'The station code or page you requested does not exist. Head back to the RailKM route mapper or open the Indian Railway TA Calculator.';
 ---
 
 <Layout title={title} description={description} noindex>
@@ -12,24 +12,25 @@ const description =
 		<h1
 			class="mt-5 text-balance text-heading-lg font-semibold text-foreground sm:text-display-xl"
 		>
-			404 — Route Not Found
+			Station or Page Not Found — 404
 		</h1>
 		<p class="mt-4 max-w-xl text-body-lg text-muted">
-			Looks like this track leads to a dead end or the station code doesn't exist.
+			This track leads to a dead end — the station code or page you requested does not exist. Pick
+			a destination below to get back on the main line.
 		</p>
 
 		<div class="mt-8 flex flex-wrap items-center gap-3">
 			<a
-				href="/?route="
+				href="/"
 				class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-foreground bg-foreground px-4 py-2.5 text-label-sm font-medium text-background transition-opacity hover:opacity-90"
 			>
-				<span aria-hidden="true">←</span> Back to Route Mapper
+				Go to Route Mapper
 			</a>
 			<a
-				href="/#popular-routes"
+				href="/ta-calculator"
 				class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-surface px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5"
 			>
-				Browse popular routes
+				Open TA Calculator
 			</a>
 		</div>
 	</div>

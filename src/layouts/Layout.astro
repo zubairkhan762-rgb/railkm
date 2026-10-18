@@ -19,7 +19,8 @@ const {
 	noindex = false,
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const SITE_URL = 'https://railkm.com';
+const canonicalURL = new URL(Astro.url.pathname, SITE_URL);
 const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 ---
 
