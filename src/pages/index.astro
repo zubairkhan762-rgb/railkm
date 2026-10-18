@@ -144,15 +144,16 @@ const appSchema = {
 			data-print="hide"
 			class="relative mx-auto w-full max-w-6xl scroll-mt-20 px-4 pt-6 pb-8 sm:px-6 sm:pt-8"
 		>
-			<p class="data-mono text-eyebrow font-medium uppercase text-muted">
+			<p class="data-mono text-eyebrow font-medium uppercase text-muted" data-i18n="heroEyebrow">
 				Indian Railways · Distance Engine
 			</p>
 			<h1
 				class="mt-4 max-w-4xl text-balance text-heading-lg font-semibold text-foreground sm:text-display-xl"
+				data-i18n="heroTitle"
 			>
 				Exact Railway Track Distance &amp; Multi-Via Route Mapper
 			</h1>
-			<p class="mt-4 max-w-2xl text-body-lg text-muted">
+			<p class="mt-4 max-w-2xl text-body-lg text-muted" data-i18n="heroDesc">
 				Compute shortest-track kilometres between any two stations, chain multiple via stops
 				for break-journey routing, and inspect every intermediate halt — with cumulative
 				kilometres, HRMS Pass 15% extra distance limit, and automatic double-back detection.
@@ -237,7 +238,7 @@ const appSchema = {
 											stroke-width="1.5"
 											stroke-linecap="round"></path>
 									</svg>
-									<span>Clear Route</span>
+									<span data-i18n="clearRoute">Clear Route</span>
 								</button>
 							</div>
 
@@ -325,7 +326,7 @@ const appSchema = {
 			class="relative mx-auto w-full max-w-6xl scroll-mt-20 px-4 pb-8 sm:px-6"
 		>
 			<div class="border-t border-line pt-10">
-				<p class="data-mono text-eyebrow uppercase text-muted">Editorial</p>
+				<p class="data-mono text-eyebrow uppercase text-muted" data-i18n="editorialLabel">Editorial</p>
 				<p class="mt-3 max-w-3xl text-body-lg text-muted">
 					RailKM measures a journey the way Indian Railways bills it — the shortest sanctioned
 					track route in kilometres, not the road line on a phone map. These notes are written for
@@ -336,7 +337,7 @@ const appSchema = {
 
 			<div class="mt-8 flex flex-col gap-6">
 				<article class="rounded-md border border-line bg-surface p-5 sm:p-6">
-					<h2 class="text-heading-md font-semibold text-foreground">
+					<h2 class="text-heading-md font-semibold text-foreground" data-i18n="guide1Title">
 						How to Calculate Exact Indian Railways Track Distance &amp; Plan Multi-Via Routes
 					</h2>
 					<p class="mt-3 text-body-md text-muted">
@@ -379,7 +380,7 @@ const appSchema = {
 				</article>
 
 				<article class="rounded-md border border-line bg-surface p-5 sm:p-6">
-					<h2 class="text-heading-md font-semibold text-foreground">
+					<h2 class="text-heading-md font-semibold text-foreground" data-i18n="guide2Title">
 						HRMS E-Pass 15% Extra Distance Rule &amp; Linear Routing Explained
 					</h2>
 					<p class="mt-3 text-body-md text-muted">
@@ -389,7 +390,7 @@ const appSchema = {
 						on the absolute shortest path. The three figures that decide a case are base distance,
 						the 15% margin, and the maximum allowed pass distance.
 					</p>
-					<h3 class="mt-5 text-body-lg font-semibold text-foreground">
+					<h3 class="mt-5 text-body-lg font-semibold text-foreground" data-i18n="guide2ExTitle">
 						Worked example: Gwalior to Bandra Terminus
 					</h3>
 					<p class="mt-3 text-body-md text-muted">
@@ -401,7 +402,7 @@ const appSchema = {
 						checkbox in the mapper and these three numbers are computed for the route you have
 						entered.
 					</p>
-					<h3 class="mt-5 text-body-lg font-semibold text-foreground">
+					<h3 class="mt-5 text-body-lg font-semibold text-foreground" data-i18n="guide2AltTitle">
 						The quicker-train alternate route
 					</h3>
 					<p class="mt-3 text-body-md text-muted">
@@ -410,7 +411,7 @@ const appSchema = {
 						route may be sanctioned even when it crosses the 15% margin, because the pass follows the
 						train a servant actually travels on. The test on the file is running time, not kilometres.
 					</p>
-					<h3 class="mt-5 text-body-lg font-semibold text-foreground">
+					<h3 class="mt-5 text-body-lg font-semibold text-foreground" data-i18n="guide2PassTitle">
 						Privilege Pass, PTO and double-back rejections
 					</h3>
 					<p class="mt-3 text-body-md text-muted">
@@ -428,7 +429,7 @@ const appSchema = {
 				</article>
 
 				<article class="rounded-md border border-line bg-surface p-5 sm:p-6">
-					<h2 class="text-heading-md font-semibold text-foreground">
+					<h2 class="text-heading-md font-semibold text-foreground" data-i18n="guide3Title">
 						How Indian Railways Measures Track Kilometres &amp; Distance-Based Fare Slabs
 					</h2>
 					<p class="mt-3 text-body-md text-muted">
@@ -439,7 +440,7 @@ const appSchema = {
 						data across 8,900-plus stations. That is why a rail figure rarely matches a phone map —
 						the phone measures tarmac, the railway measures steel.
 					</p>
-					<h3 class="mt-5 text-body-lg font-semibold text-foreground">
+					<h3 class="mt-5 text-body-lg font-semibold text-foreground" data-i18n="guide3BreakTitle">
 						Break journey: commercial ticket vs HRMS pass
 					</h3>
 					<p class="mt-3 text-body-md text-muted">
@@ -449,7 +450,7 @@ const appSchema = {
 						intermediate stations along the permitted route, subject to the pass validity and class,
 						instead of the fixed 500 km and 1,000 km ticket thresholds.
 					</p>
-					<h3 class="mt-5 text-body-lg font-semibold text-foreground">
+					<h3 class="mt-5 text-body-lg font-semibold text-foreground" data-i18n="guide3GaugeTitle">
 						Gauge width vs station-to-station distance
 					</h3>
 					<p class="mt-3 text-body-md text-muted">
@@ -459,7 +460,7 @@ const appSchema = {
 						question: the chargeable length between two stations. Keep the two apart and the
 						arithmetic stays clean.
 					</p>
-					<h3 class="mt-5 text-body-lg font-semibold text-foreground">Telescopic fare slabs</h3>
+					<h3 class="mt-5 text-body-lg font-semibold text-foreground" data-i18n="guide3FareTitle">Telescopic fare slabs</h3>
 					<p class="mt-3 text-body-md text-muted">
 						Fares ride the same kilometres through telescopic slabs, where the rate per kilometre
 						falls as distance rises. A 1,200 km journey is charged in bands rather than at one flat
@@ -470,7 +471,7 @@ const appSchema = {
 				</article>
 
 				<article class="rounded-md border border-line bg-surface p-5 sm:p-6">
-					<h2 class="text-heading-md font-semibold text-foreground">
+					<h2 class="text-heading-md font-semibold text-foreground" data-i18n="guide4Title">
 						Planning Connecting Trains &amp; Multi-Via Junction Routes Without Double-Back
 					</h2>
 					<p class="mt-3 text-body-md text-muted">
@@ -499,7 +500,7 @@ const appSchema = {
 				</article>
 
 				<article class="rounded-md border border-line bg-surface p-5 sm:p-6">
-					<h2 class="text-heading-md font-semibold text-foreground">
+					<h2 class="text-heading-md font-semibold text-foreground" data-i18n="guide5Title">
 						Major Indian Railways Trunk Corridors &amp; HRMS 15% Distance Reference Table
 					</h2>
 					<p class="mt-3 text-body-md text-muted">
@@ -515,11 +516,11 @@ const appSchema = {
 							</caption>
 							<thead>
 								<tr class="border-b border-line bg-background/40">
-									<th scope="col" class="data-mono px-4 py-2.5 text-eyebrow uppercase text-muted">Route</th>
-									<th scope="col" class="px-4 py-2.5 text-eyebrow uppercase text-muted">Key intermediate junctions</th>
-									<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">Base KM</th>
-									<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">+15% KM</th>
-									<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">Max HRMS KM</th>
+									<th scope="col" class="data-mono px-4 py-2.5 text-eyebrow uppercase text-muted" data-i18n="thRoute">Route</th>
+									<th scope="col" class="px-4 py-2.5 text-eyebrow uppercase text-muted" data-i18n="thJunctions">Key intermediate junctions</th>
+									<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted" data-i18n="thBaseKm">Base KM</th>
+									<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted" data-i18n="thPlus15">+15% KM</th>
+									<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted" data-i18n="thMaxHrms">Max HRMS KM</th>
 								</tr>
 							</thead>
 							<tbody class="text-body-sm">
@@ -611,8 +612,8 @@ const appSchema = {
 			class="relative mx-auto w-full max-w-6xl scroll-mt-20 px-4 pb-8 sm:px-6"
 		>
 			<div class="border-t border-line pt-8">
-				<p class="data-mono text-eyebrow uppercase text-muted">Help</p>
-				<h2 id="faq-heading" class="mt-1 text-heading-md font-semibold text-foreground">
+				<p class="data-mono text-eyebrow uppercase text-muted" data-i18n="helpLabel">Help</p>
+				<h2 id="faq-heading" class="mt-1 text-heading-md font-semibold text-foreground" data-i18n="faqHeading">
 					Frequently asked questions
 				</h2>
 				<p class="mt-2 max-w-2xl text-body-sm text-muted">
@@ -1129,24 +1130,24 @@ const appSchema = {
 		const fmt = (value) => value.toLocaleString('en-IN', { maximumFractionDigits: 1 });
 		return `<section aria-label="HRMS pass 15% extra distance limit" class="rounded-md border border-emerald-600/30 bg-emerald-500/10 p-5 dark:border-emerald-500/30">
 			<div class="flex flex-wrap items-center justify-between gap-2">
-				<h2 class="data-mono text-eyebrow uppercase text-emerald-700 dark:text-emerald-400">HRMS Pass · 15% Extra Distance</h2>
-				<span class="data-mono text-eyebrow text-muted">Base + 15%</span>
+				<h2 class="data-mono text-eyebrow uppercase text-emerald-700 dark:text-emerald-400">${t('hrmsPassHeading')}</h2>
+				<span class="data-mono text-eyebrow text-muted">${t('hrmsBaseLabel')}</span>
 			</div>
 			<dl class="mt-4 grid grid-cols-1 gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-3">
 				<div class="bg-surface p-4">
-					<dt class="data-mono text-eyebrow uppercase text-muted">Base Distance</dt>
+					<dt class="data-mono text-eyebrow uppercase text-muted">${t('hrmsBase')}</dt>
 					<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">${fmt(totalKm)}<span class="ml-1 text-label-sm font-normal text-muted">km</span></dd>
 				</div>
 				<div class="bg-surface p-4">
-					<dt class="data-mono text-eyebrow uppercase text-muted">15% Extra Margin</dt>
+					<dt class="data-mono text-eyebrow uppercase text-muted">${t('hrmsExtra')}</dt>
 					<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">+${fmt(extra)}<span class="ml-1 text-label-sm font-normal text-muted">km</span></dd>
 				</div>
 				<div class="bg-surface p-4">
-					<dt class="data-mono text-eyebrow uppercase text-muted">Maximum Allowed HRMS Pass Distance</dt>
+					<dt class="data-mono text-eyebrow uppercase text-muted">${t('hrmsMax')}</dt>
 					<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">${fmt(max)}<span class="ml-1 text-label-sm font-normal text-muted">km</span></dd>
 				</div>
 			</dl>
-			<p class="mt-3 text-body-sm text-muted">*Maximum allowed HRMS pass distance is the base track distance plus a 15% extra margin.</p>
+			<p class="mt-3 text-body-sm text-muted">${t('hrmsNote')}</p>
 		</section>`;
 	}
 
@@ -1199,20 +1200,20 @@ const appSchema = {
 			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 				<p class="data-mono text-body-md text-muted">${chainLine}</p>
 				<div class="flex flex-wrap items-center gap-2">
-					<button type="button" class="js-copy focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-surface px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40">Copy Route Summary</button>
-					<button type="button" class="js-share focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-surface px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40">Share URL</button>
+					<button type="button" class="js-copy focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-surface px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40">${t('copyRouteBtn')}</button>
+					<button type="button" class="js-share focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-surface px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40">${t('shareUrlBtn')}</button>
 					<button type="button" class="js-whatsapp focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-emerald-600/30 bg-emerald-500/10 px-4 py-2.5 text-label-sm text-emerald-700 transition-colors hover:border-emerald-600/60 hover:bg-emerald-500/20 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-500/20" title="Share this route on WhatsApp">
 						<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="shrink-0"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.18 8.18 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24Zm-2.6 4.36c-.13 0-.33.05-.5.24-.17.19-.66.64-.66 1.57 0 .93.68 1.83.77 1.95.09.12 1.31 2.1 3.25 2.88 1.61.64 1.94.51 2.29.48.35-.03 1.13-.46 1.29-.91.16-.45.16-.83.11-.91-.05-.08-.17-.13-.35-.22-.18-.09-1.13-.56-1.3-.62-.18-.07-.31-.1-.44.09-.13.19-.5.63-.62.76-.11.13-.23.14-.41.05-.18-.09-.77-.28-1.46-.9-.54-.48-.9-1.07-1.01-1.26-.11-.19-.01-.29.08-.38.08-.08.18-.23.27-.34.09-.11.12-.19.18-.31.06-.12.03-.23-.01-.32-.05-.09-.43-1.05-.6-1.43-.16-.38-.32-.33-.44-.33-.11 0-.24-.02-.36-.02Z"/></svg>
 						WhatsApp
 					</button>
-					<button type="button" class="js-print focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-foreground bg-foreground px-4 py-2.5 text-label-sm font-medium text-background transition-opacity hover:opacity-90" title="Open the browser print dialog to print or save this route as a PDF">🖨️ Print / Download PDF Route</button>
+					<button type="button" class="js-print focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-foreground bg-foreground px-4 py-2.5 text-label-sm font-medium text-background transition-opacity hover:opacity-90" title="Open the browser print dialog to print or save this route as a PDF">🖨️ ${t('printRouteBtn')}</button>
 				</div>
 			</div>
 			${bentoHtml({ total: route.totalDistanceKm, legs: route.legCount, stops: intermediate, status })}
 			${hrmsCheckbox && hrmsCheckbox.checked ? hrmsHtml(route.totalDistanceKm) : ''}
 			${faresHtml(route.totalDistanceKm)}
 			<section aria-label="Leg-by-leg track path" class="flex flex-col gap-3">
-				<h2 class="data-mono text-eyebrow uppercase text-muted">Leg-by-leg breakdown</h2>
+				<h2 class="data-mono text-eyebrow uppercase text-muted">${t('legBreakdownHeading')}</h2>
 				${legsHtml(route, doubleSet)}
 			</section>
 			${warnings}
@@ -1308,9 +1309,9 @@ const appSchema = {
 		if (copyBtn) {
 			copyBtn.addEventListener('click', async () => {
 				const ok = await copyText(summaryText(route));
-				copyBtn.textContent = ok ? 'Copied!' : 'Copy failed';
+				copyBtn.textContent = ok ? t('copyDone') : t('copyFailed');
 				window.setTimeout(() => {
-					copyBtn.textContent = 'Copy Route Summary';
+					copyBtn.textContent = t('copyRouteBtn');
 				}, 1600);
 			});
 		}
@@ -1319,9 +1320,9 @@ const appSchema = {
 			shareBtn.addEventListener('click', () => {
 				syncUrl(route.chain);
 				copyText(window.location.href).then((ok) => {
-					shareBtn.textContent = ok ? 'Link Copied!' : 'Copy Link';
+					shareBtn.textContent = ok ? t('linkCopied') : t('copyLink');
 					window.setTimeout(() => {
-						shareBtn.textContent = 'Share URL';
+						shareBtn.textContent = t('shareUrlBtn');
 					}, 1600);
 				});
 			});
@@ -1477,7 +1478,7 @@ const appSchema = {
 			<header class="print-doc__head">
 				<div>
 					<p class="print-doc__brand">RailKM</p>
-					<h1 class="print-doc__title">Official Track Distance &amp; Route Breakdown Card</h1>
+					<h1 class="print-doc__title">${t('printDocTitle')}</h1>
 					<p class="print-doc__subtitle">Indian Railways · Shortest-track kilometre computation from open railway data</p>
 				</div>
 				<div class="print-doc__side">
@@ -1502,7 +1503,7 @@ const appSchema = {
 			</table>
 
 			<section class="print-doc__section">
-				<h2 class="print-doc__heading">Journey Summary</h2>
+				<h2 class="print-doc__heading">${t('printSummary')}</h2>
 				<table class="print-doc__table">
 					<thead>
 						<tr><th>Position</th><th>Code</th><th>Station</th><th>Zone / Division</th></tr>
@@ -1512,7 +1513,7 @@ const appSchema = {
 			</section>
 
 			<section class="print-doc__section">
-				<h2 class="print-doc__heading">Leg-by-Leg Breakdown</h2>
+				<h2 class="print-doc__heading">${t('printLegBreakdown')}</h2>
 				<table class="print-doc__table">
 					<thead>
 						<tr><th>Leg</th><th>Section</th><th>Distance (km)</th><th>Cumulative (km)</th><th>Stops</th></tr>
@@ -1520,7 +1521,7 @@ const appSchema = {
 					<tbody>${legRows}</tbody>
 					<tfoot>
 						<tr>
-							<th colspan="2">Total Track Distance</th>
+							<th colspan="2">${t('totalTrackDistance')}</th>
 							<th class="print-doc__km">${totalText}</th>
 							<th class="print-doc__km">${totalText}</th>
 							<th class="print-doc__num">${intermediate}</th>
@@ -1530,7 +1531,7 @@ const appSchema = {
 			</section>
 
 			<section class="print-doc__section">
-				<h2 class="print-doc__heading">Complete Intermediate Stations (${pathPoints.length})</h2>
+				<h2 class="print-doc__heading">${t('printIntermediateStations')} (${pathPoints.length})</h2>
 				<table class="print-doc__table">
 					<thead>
 						<tr><th>KM</th><th>Code</th><th>Station</th><th>Leg</th><th>Remarks</th></tr>
@@ -1540,7 +1541,7 @@ const appSchema = {
 			</section>
 
 			<section class="print-doc__section">
-				<h2 class="print-doc__heading">Estimated Fare (Approximate)</h2>
+				<h2 class="print-doc__heading">${t('printEstimatedFare')}</h2>
 				<table class="print-doc__table">
 					<thead>
 						<tr><th>Class</th><th>Description</th><th>Approx. Fare</th></tr>
@@ -1657,7 +1658,7 @@ const appSchema = {
 		const recentBlock = recent.length
 			? `<div class="flex items-center justify-between gap-2${favorites.length ? ' mt-4' : ''}">
 					<p class="data-mono text-eyebrow uppercase text-muted">${t('recent')}</p>
-					<button type="button" data-clear-recent class="focus-ring rounded-sm data-mono text-eyebrow uppercase text-muted transition-colors hover:text-foreground">Clear history</button>
+					<button type="button" data-clear-recent class="focus-ring rounded-sm data-mono text-eyebrow uppercase text-muted transition-colors hover:text-foreground">${t('clearHistoryBtn')}</button>
 				</div>
 				<ul class="mt-2 flex flex-wrap gap-2">${recent.map((entry) => savedPillHtml(entry, false)).join('')}</ul>`
 			: '';
