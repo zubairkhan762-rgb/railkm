@@ -1018,6 +1018,20 @@ const appSchema = {
 		computeRoute();
 	}
 
+	function setStationFromSearch(role, code) {
+		if (!graph) return;
+		const resolved = resolveStation(graph, code);
+		if (!resolved) return;
+		const isDestination = role === 'destination';
+		const target = isDestination ? slots.length - 1 : 0;
+		slots[target] = { code: resolved.code, query: resolved.code };
+		renderBuilder();
+		computeRoute();
+		focusInput(isDestination ? 0 : slots.length - 1);
+	}
+
+	window.railkmSetStation = setStationFromSearch;
+
 	/* --------------------------------------------------- Compute & rendering */
 
 	function computeRoute() {

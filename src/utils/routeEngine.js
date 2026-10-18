@@ -38,6 +38,25 @@ export const STATION_IDENTITIES = Object.freeze({
 	HBJ: Object.freeze({ code: 'RKMP', name: 'RANI KAMLAPATI' }),
 	FD: Object.freeze({ code: 'AYC', name: 'AYODHYA CANTT' }),
 	BCT: Object.freeze({ code: 'MMCT', name: 'MUMBAI CENTRAL' }),
+	MUV: Object.freeze({ code: 'BSBS', name: 'BANARAS' }),
+});
+
+/**
+ * Legacy alias map for renamed Indian Railways stations. Keys are the old
+ * codes and old names travellers still type; values are the current official
+ * code. These outrank every other match so entering a legacy token (even one
+ * that collides with an unrelated station code, e.g. `VT`) returns the current
+ * official station first.
+ */
+export const LEGACY_ALIASES = Object.freeze({
+	JHS: 'VGLJ', JHANSI: 'VGLJ',
+	MGS: 'DDU', MUGHALSARAI: 'DDU',
+	ALD: 'PRYJ', ALLAHABAD: 'PRYJ',
+	BCT: 'MMCT', BOMBAY: 'MMCT',
+	HBJ: 'RKMP', HABIBGANJ: 'RKMP',
+	MUV: 'BSBS', MANDUADIH: 'BSBS',
+	FD: 'AYC', FAIZABAD: 'AYC',
+	CSTM: 'CSMT', VT: 'CSMT',
 });
 
 /**
@@ -47,14 +66,10 @@ export const STATION_IDENTITIES = Object.freeze({
  * STATION_IDENTITIES / STATION_ALIAS_GROUPS when the graph uses a legacy code).
  */
 export const STATION_ALIASES = Object.freeze({
-	// — renamed / re-coded stations —
-	JHS: 'VGLJ', VGLJ: 'VGLJ',
-	CSTM: 'CSMT', CST: 'CSMT', CSMT: 'CSMT',
-	ALD: 'PRYJ', PRYJ: 'PRYJ',
-	MGS: 'DDU', DDU: 'DDU',
-	HBJ: 'RKMP', RKMP: 'RKMP',
-	FD: 'AYC', AYC: 'AYC',
-	BCT: 'MMCT', MMCT: 'MMCT',
+	// — renamed / re-coded stations (old code or old name → official code) —
+	...LEGACY_ALIASES,
+	VGLJ: 'VGLJ', CSMT: 'CSMT', CST: 'CSMT', PRYJ: 'PRYJ', DDU: 'DDU',
+	RKMP: 'RKMP', AYC: 'AYC', MMCT: 'MMCT',
 	// — historical city names & spellings → station code —
 	CAWNPORE: 'CNB',
 	KANPUR: 'CNB',
@@ -148,6 +163,7 @@ for (const [token, official] of Object.entries(STATION_ALIASES)) {
 }
 
 const MATCH_TYPES = [
+	'legacy-alias',
 	'exact-code',
 	'alias-code',
 	'prefix-code',
@@ -155,6 +171,12 @@ const MATCH_TYPES = [
 	'prefix-name',
 	'contains-name',
 ];
+
+/** Operational/non-passenger halts that must never outrank a real station. */
+const OPERATIONAL_HALT_RE = /\b(?:CABIN|BLOCK|YARD|SIDING|HUT|OUTER)\b/i;
+
+/** Major junction markers that lift a station above comparable matches. */
+const MAJOR_JUNCTION_RE = /\b(?:JN|TERMINUS|CENTRAL|CANTT)\b/i;
 
 /** Binary min-heap with flat typed-array storage; pop() exposes the popped
  *  pair through `poppedNode` / `poppedDist` to avoid allocating result objects. */
@@ -418,8 +440,11 @@ function getSearchIndex(graph) {
 }
 
 /**
- * Fast station search. Priority: exact code → alias code → code prefix →
- * exact name → name prefix → name contains. Returns up to `limit` matches.
+ * Fast station search. Priority: legacy alias (old code/name) → exact code →
+ * alias code → code prefix → exact name → name prefix → name contains.
+ * Ties break by a score that boosts major junctions (JN/TERMINUS/CENTRAL/CANTT)
+ * and sinks operational halts (CABIN/BLOCK/YARD/SIDING/HUT/OUTER).
+ * Returns up to `limit` matches.
  */
 export function searchStations(graph, query, limit = 8) {
 	const trimmed = (query || '').trim();
@@ -428,25 +453,36 @@ export function searchStations(graph, query, limit = 8) {
 	const upper = trimmed.toUpperCase();
 	const lower = trimmed.toLowerCase();
 
+	const legacyTarget = LEGACY_ALIASES[upper];
+
 	const results = [];
 	for (const entry of getSearchIndex(graph)) {
 		let category = -1;
 		let matchedAlias;
-		if (entry.code === upper) {
+		if (legacyTarget && entry.code === legacyTarget) {
 			category = 0;
-		} else if (entry.aliasTokens.includes(upper)) {
+			matchedAlias = upper;
+		} else if (entry.code === upper) {
 			category = 1;
+		} else if (entry.aliasTokens.includes(upper)) {
+			category = 2;
 			matchedAlias = upper;
 		} else if (entry.code.startsWith(upper)) {
-			category = 2;
-		} else if (entry.nameLower === lower) {
 			category = 3;
-		} else if (entry.nameLower.startsWith(lower)) {
+		} else if (entry.nameLower === lower) {
 			category = 4;
-		} else if (entry.nameLower.includes(lower)) {
+		} else if (entry.nameLower.startsWith(lower)) {
 			category = 5;
+		} else if (entry.nameLower.includes(lower)) {
+			category = 6;
 		}
 		if (category === -1) continue;
+
+		const upperName = entry.name.toUpperCase();
+		const operational = OPERATIONAL_HALT_RE.test(upperName);
+		let score = operational ? -100 : 0;
+		if (MAJOR_JUNCTION_RE.test(upperName)) score += 10;
+		if (entry.isJunction) score += 5;
 
 		results.push({
 			code: entry.code,
@@ -459,18 +495,19 @@ export function searchStations(graph, query, limit = 8) {
 			matchedAlias,
 			matchType: MATCH_TYPES[category],
 			category,
+			score,
 		});
 	}
 
 	results.sort(
 		(a, b) =>
 			a.category - b.category ||
-			(b.isJunction ? 1 : 0) - (a.isJunction ? 1 : 0) ||
+			b.score - a.score ||
 			a.code.length - b.code.length ||
 			(a.code < b.code ? -1 : a.code > b.code ? 1 : 0)
 	);
 
-	return results.slice(0, limit).map(({ category, ...rest }) => rest);
+	return results.slice(0, limit).map(({ category, score, ...rest }) => rest);
 }
 
 /**

@@ -401,6 +401,9 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 							const zoneTag = result.zone
 								? `<span class="data-mono hidden shrink-0 text-eyebrow text-muted sm:inline">${escapeHtml(result.zone)}</span>`
 								: '';
+							const codeAttr = escapeHtml(result.code);
+							const actionClass =
+								'focus-ring rounded-sm border border-line bg-background px-1.5 py-0.5 data-mono text-[10px] uppercase text-muted transition-colors hover:border-foreground/40 hover:text-foreground';
 							return `<li
 								id="cmdk-opt-${index}"
 								role="option"
@@ -408,11 +411,16 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 								aria-selected="${index === active}"
 								class="flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-sm px-3 py-2 ${index === active ? 'bg-foreground/10' : ''}"
 							>
-								<span translate="no" class="data-mono shrink-0 rounded-sm border border-line bg-background px-1.5 py-0.5 text-eyebrow font-semibold text-foreground">${escapeHtml(result.code)}</span>
+								<span translate="no" class="data-mono shrink-0 rounded-sm border border-line bg-background px-1.5 py-0.5 text-eyebrow font-semibold text-foreground">${codeAttr}</span>
 								<span class="min-w-0 flex-1 truncate text-body-md text-foreground">${escapeHtml(result.name)}</span>
 								${aliasTag}
 								${zoneTag}
 								${junctionTag}
+								<span class="ml-auto flex shrink-0 items-center gap-1">
+									<button type="button" data-action="origin" data-code="${codeAttr}" title="Set as origin" class="${actionClass}">Set Origin</button>
+									<button type="button" data-action="dest" data-code="${codeAttr}" title="Set as destination" class="${actionClass}">Set Dest</button>
+									<button type="button" data-action="copy" data-code="${codeAttr}" title="Copy station code" class="${actionClass}">Copy Code</button>
+								</span>
 							</li>`;
 						})
 						.join('');
@@ -421,7 +429,61 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 						option.addEventListener('mousemove', () => setActive(index));
 						option.addEventListener('click', () => choose(index));
 					});
+					cmdkList.querySelectorAll('[data-action]').forEach((button) => {
+						button.addEventListener('mousedown', (event) => event.stopPropagation());
+						button.addEventListener('click', (event) => {
+							event.preventDefault();
+							event.stopPropagation();
+							const action = button.dataset.action;
+							if (action === 'copy') {
+								copyCode(button, button.dataset.code);
+								return;
+							}
+							setStation(action === 'dest' ? 'destination' : 'origin', button.dataset.code);
+						});
+					});
 					setActive(active);
+				}
+
+				function setStation(role, code) {
+					close();
+					if (typeof window.railkmSetStation === 'function') {
+						window.railkmSetStation(role, code);
+						return;
+					}
+					window.location.href = `/?route=${encodeURIComponent(code)}`;
+				}
+
+				async function copyCode(button, code) {
+					const original = button.textContent;
+					let ok = false;
+					try {
+						if (navigator.clipboard && window.isSecureContext) {
+							await navigator.clipboard.writeText(code);
+							ok = true;
+						}
+					} catch {
+						/* fall through to legacy copy */
+					}
+					if (!ok) {
+						try {
+							const area = document.createElement('textarea');
+							area.value = code;
+							area.setAttribute('readonly', '');
+							area.style.position = 'fixed';
+							area.style.opacity = '0';
+							document.body.appendChild(area);
+							area.select();
+							ok = document.execCommand('copy');
+							document.body.removeChild(area);
+						} catch {
+							ok = false;
+						}
+					}
+					button.textContent = ok ? 'Copied' : 'Copy failed';
+					window.setTimeout(() => {
+						button.textContent = original;
+					}, 1200);
 				}
 
 				function setActive(index) {
