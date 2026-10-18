@@ -8,34 +8,64 @@ const description = `Free Indian Railway TA (Travelling Allowance) calculator fo
 
 const taFaqs = [
 	{
-		question: 'How is Indian Railway Travelling Allowance (TA) calculated for a duty journey?',
+		question: 'Is TA payable if the place of duty is only 7 km from headquarters?',
 		answer:
-			'Indian Railway TA for a duty journey is a daily-rate entitlement based on the time you spend away from your headquarters (HQ): up to 6 hours attracts 30% of the daily TA rate, above 6 hours and up to 12 hours attracts 70%, and above 12 hours attracts 100%. Every completed 24-hour period away from HQ attracts a further 100% block. The daily TA rate itself depends on your 7th CPC pay level. RailKM multiplies your daily rate by the applicable slab to give the total TA amount.',
+			'No. The 8 km rule is a floor, and the distance is rail track distance, not road distance. At 7 km the duty point is inside the limit, so no daily TA is admissible however long the employee is held there. At exactly 8 km the claim still fails; TA begins only when the distance is more than 8 km. Confirm the figure from the station index or the route mapper before writing the journal.',
 	},
 	{
-		question: 'What are the 30%, 70% and 100% TA duration slabs for railway employees?',
+		question: 'How is time away counted when the train is running late?',
 		answer:
-			'The railway TA duration slabs are: 30% of the daily TA rate when the duty absence from HQ is up to 6 hours; 70% when it is more than 6 hours but not more than 12 hours; and 100% when it is more than 12 hours. For journeys spanning multiple days, each further block of 24 hours (or part thereof, subject to the rule applied) attracts an additional 100% of the daily rate. RailKM applies these slabs automatically from your departure and arrival times.',
+			'Time is counted from actual sign-off at headquarters to actual sign-on back at headquarters, not from the timetabled departure or arrival. If a late-running train brings the employee back four hours behind schedule, those hours count towards the slab. The movement order gives the sanctioned duty; the journal records the real times. Note both the timetabled and the actual times in the remarks column so the dealing clerk can see why the slab is higher than expected.',
 	},
 	{
-		question: 'What is the 8 km rule in Indian Railway Travelling Allowance?',
+		question: 'Can Trackmen and Technicians claim both TA and Night Duty Allowance for the same duty?',
 		answer:
-			'The 8 km rule says that TA is admissible for a duty journey only when the place of duty is more than 8 km from your headquarters (or from the railway station nearest to your residence, as applicable). If the duty point is within 8 km of the HQ, generally no TA is payable. RailKM measures the rail track distance from your HQ station to the duty station and shows whether the 8 km condition is satisfied.',
+			'Yes, when each is separately earned. Night Duty Allowance (NDA) is for hours worked between 22:00 and 06:00 and is paid by the number of night hours. Daily TA is for duty beyond 8 km from headquarters and is paid by duration slab. A night patrol more than 8 km from headquarters can carry both, shown on separate lines of the journal. What cannot happen is drawing TA for a night block already paid as NDA under a different rule; the two are kept distinct.',
 	},
 	{
-		question: 'What are the 7th CPC pay-level daily TA rates for railway employees?',
+		question: 'What happens after 180 days of continuous halt or duty at one station?',
 		answer:
-			'Under the 7th CPC framework the daily TA rates used by this calculator are: Rs 500 per day for Pay Levels 1-5, Rs 800 for Levels 6-8, Rs 900 for Levels 9-11, Rs 1,000 for Levels 12 and 13A, and Rs 1,200 for Level 14 and above. When travelling on official duty that also carries a DA-eligible trip the effective rate used here rises to Rs 625, Rs 1,000, Rs 1,125, Rs 1,250 and Rs 1,500 respectively. Always confirm the currently notified rates with your administration, as they are revised from time to time.',
+			'When an employee is held continuously at one station for more than 180 days without a change of headquarters, that station is generally treated as the headquarters and daily TA to it stops from the date the limit is crossed. The section must report the position to the establishment branch before the limit is reached so the posting is regularised. TA already drawn for the period up to the crossing date is not recovered unless the halt was unauthorised.',
 	},
 	{
-		question: 'Is Railway TA payable for a night halt or a journey spanning more than one day?',
+		question: 'How do I submit the monthly TA journal to the dealing clerk?',
 		answer:
-			'Yes. When a duty journey includes a night halt or otherwise keeps you away from HQ beyond 24 hours, TA is computed in blocks of 24 hours at the 100% rate, in addition to the slab applicable to the time away. The absence is normally counted from the time you leave HQ until the time you return. RailKM sums each completed 24-hour block plus the final part-day slab to produce the total TA amount for the journey.',
+			'Maintain the journal daily, with the movement order number, the headquarters and duty stations, the distance, and the departure and arrival times against each entry. At month-end the section supervisor countersigns it and forwards it to the dealing clerk. The clerk checks the pay level, the slab and the distance, then passes it into HRMS/IPAS for bill processing. Submit before the cut-off fixed by the division; late journals need the controlling officer condonation.',
 	},
 	{
-		question: 'Is the RailKM TA calculator official, and how accurate are the results?',
+		question: 'When do the daily TA rates change after a DA revision?',
 		answer:
-			'RailKM is an independent planning tool and is not affiliated with Indian Railways. The TA figures are indicative estimates that apply the standard 30%, 70% and 100% duration slabs and the 7th CPC pay-level daily rates. Actual entitlement can vary with your specific rules, the notified DA position and the sanctioning authority, so treat the result as a planning guide and confirm the final amount with your railway administration.',
+			'The daily rates step up by 25% automatically once Dearness Allowance crosses 50%. The standard rates of Rs 500, Rs 800, Rs 900, Rs 1,000 and Rs 1,200 become Rs 625, Rs 1,000, Rs 1,125, Rs 1,250 and Rs 1,500 from the date of the DA order. No separate application is filed; the rate is applied by the bill section. If the order is retrospective, the higher rate applies from that date and the arrears are drawn in the next bill.',
+	},
+	{
+		question: 'Is TA paid on the day of transfer or joining?',
+		answer:
+			'Transfer and joining are governed by transfer TA rules, which are separate from daily duty TA. Ordinary daily duty TA covers journeys on official work while the employee remains posted at the same headquarters. The day an employee is relieved for transfer, or reports for joining, is dealt with under the transfer grant, packing allowance and related provisions, not under the 30/70/100 duty slabs. Keep the two claim types on separate journals.',
+	},
+	{
+		question: 'Can TA be claimed for departmental training at another station?',
+		answer:
+			'Yes, if the training station is more than 8 km from headquarters by rail and a movement order is issued. Training away from headquarters is duty, so the duration slabs apply to the hours away. Where the training is non-residential and the employee returns to headquarters daily, the part-day slab applies; where a night halt is involved, the 24-hour block at 100% applies. Training allowance, if any, is claimed separately and does not change the daily TA.',
+	},
+	{
+		question: 'Is the 8 km test done on road distance or rail distance?',
+		answer:
+			'Rail distance only. The 8 km limit is measured station-to-station along the shortest rail route. Road distance, the nearest bus stop, or a phone map reading is not the basis. This is why the route mapper gives the ruling figure: it follows the actual track alignment through junctions. Note the rail distance in the journal and let the dealing clerk verify it from the station index.',
+	},
+	{
+		question: 'What documents must accompany a TA claim?',
+		answer:
+			'A movement order for the journey, the monthly TA journal with times and distances, and the station-index or route-map distance where the 8 km limit is close. Where NDA or training allowance is also claimed, the sanction for that allowance is attached. The dealing clerk returns any claim that lacks a movement order reference, has mismatched times, or shows a slab the entries do not support. Keep copies until the bill is passed.',
+	},
+	{
+		question: 'Do Loco Pilots and Guards draw daily TA for a run?',
+		answer:
+			'Running Staff, that is Loco Pilots, Assistant Loco Pilots and Train Managers or Guards, are paid Running Allowance, commonly called Kilometreage Allowance (KMA), under the mileage formula rather than ordinary daily duty TA. A run is compensated through KMA plus the prescribed running allowances, so daily TA is not claimed for the same trip. When a running employee is called for a non-running duty away from headquarters, such as a course, that separate duty is dealt with on its own claim.',
+	},
+	{
+		question: 'Is TA payable for a short 3-hour call to a station 15 km away?',
+		answer:
+			'Yes. The distance is more than 8 km, so the claim is admissible, and 3 hours away falls in the six-hours-or-less slab, giving 30% of the daily rate. For a Level 5 employee that is 30% of Rs 500, which is Rs 150. Short duties are easy to overlook, so list every call in the journal with its movement order number, because the bill section pays only what the journal supports.',
 	},
 ];
 
@@ -357,87 +387,231 @@ const taRates = [
 				aria-labelledby="ta-guide-heading"
 				class="mt-12 scroll-mt-20 border-t border-line pt-10"
 			>
-				<p class="data-mono text-eyebrow uppercase text-muted">Reference guide</p>
+				<p class="data-mono text-eyebrow uppercase text-muted">Staff reference manual</p>
 				<h2 id="ta-guide-heading" class="mt-1 text-balance text-heading-md font-semibold text-foreground">
-					Indian Railway Travelling Allowance rules explained
+					Travelling Allowance on duty: a working manual for railway staff
 				</h2>
 				<p class="mt-3 max-w-3xl text-body-md text-muted">
-					Travelling Allowance (TA) for a railway duty journey is driven by three things: the time you
-					spend away from your headquarters (HQ), the distance between your HQ and the place of duty,
-					and your 7th CPC pay level. The daily TA rate is fixed by pay level; the amount you actually
-					receive is a percentage of that rate set by the duration slabs below.
+					Travelling Allowance (TA) on duty is paid to a railway servant who leaves headquarters (HQ) on
+					official work. The entitlement turns on three figures only — the hours spent away from HQ, the
+					rail distance between HQ and the place of duty, and the pay level of the employee. This manual
+					is written for non-running staff: P-Way, TRD, S&amp;T, C&amp;W, Ministerial and equivalent
+					cadres. It explains how daily TA is worked out, how the bill section checks it, and where TA
+					stops and Night Duty Allowance or Running Allowance begins.
 				</p>
 
-				<div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-					<div class="rounded-lg border border-line bg-surface p-5">
-						<p class="data-mono text-eyebrow uppercase text-muted">Up to 6 hours</p>
-						<p class="mt-3 data-mono text-2xl font-semibold tabular-nums text-foreground">30%</p>
-						<p class="mt-2 text-body-sm text-muted">
-							Of the daily TA rate when the duty absence from HQ is 6 hours or less.
-						</p>
-					</div>
-					<div class="rounded-lg border border-line bg-surface p-5">
-						<p class="data-mono text-eyebrow uppercase text-muted">6 to 12 hours</p>
-						<p class="mt-3 data-mono text-2xl font-semibold tabular-nums text-foreground">70%</p>
-						<p class="mt-2 text-body-sm text-muted">
-							Of the daily TA rate when the duty absence is more than 6 but not more than 12 hours.
-						</p>
-					</div>
-					<div class="rounded-lg border border-line bg-surface p-5">
-						<p class="data-mono text-eyebrow uppercase text-muted">Above 12 hours</p>
-						<p class="mt-3 data-mono text-2xl font-semibold tabular-nums text-foreground">100%</p>
-						<p class="mt-2 text-body-sm text-muted">
-							Of the daily TA rate for more than 12 hours, plus 100% for every completed 24-hour block.
-						</p>
-					</div>
-				</div>
+				<div class="mt-8 max-w-3xl space-y-8">
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">
+							1. Travelling Allowance on duty for non-running staff
+						</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								Daily TA is an entitlement paid by pay level, not a bill for money actually spent. The
+								rules sit in the Indian Railway Establishment Code (IREC) Volume II, read with the 7th
+								CPC RBE circulars issued from time to time. A non-running employee becomes eligible the
+								moment a movement order is issued and duty carries the person outside HQ limits.
+								Inspection runs, relief duty, breakdown attendance, escorting stores, and departmental
+								training at another station all qualify.
+							</p>
+							<p>
+								The clock starts when the employee signs off at HQ and stops when the employee signs
+								back on. The controlling officer signs the movement order; the dealing clerk, not the
+								claimant, applies the rate. Enter the pay level, the HQ and duty station, and the
+								departure and arrival times above — the slab and the amount follow from those entries
+								alone. A claim is tied to a journey on railway business, so an attendance entry without
+								a movement order reference is returned to the section.
+							</p>
+						</div>
+					</article>
 
-				<div
-					class="mt-4 flex items-start gap-3 rounded-lg border border-emerald-600/30 bg-emerald-500/10 p-5 dark:border-emerald-500/30"
-				>
-					<span
-						class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600 dark:bg-emerald-400"
-						aria-hidden="true"></span>
-					<p class="text-body-sm text-muted">
-						<span class="font-medium text-foreground">8 km distance rule:</span> TA is admissible only when
-						the place of duty is more than 8 km from your headquarters station. Enter your HQ and duty
-						station above and RailKM measures the rail track distance to confirm the condition.
-					</p>
-				</div>
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">
+							2. The 8 km track distance rule from headquarters
+						</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								The 8 km rule is a distance test, and the distance is measured along the rail route, not
+								by road. HQ and the place of duty are both on the network; the gap between them is the
+								chargeable track kilometres along the shortest route — the same kilometres the route
+								mapper gives on the home page. A road shortcut, a stretch of town in between, or a
+								phone map reading is never the basis, because bill sections work station-to-station.
+							</p>
+							<p>
+								If the place of duty lies 8 km or less from HQ, no daily TA is admissible for that
+								call, however long the employee is held there. Once the gap crosses 8 km, the full slab
+								for the hours away applies. The dealing clerk confirms the figure from the station
+								index or the route map, writes the ruling distance on the TA journal, and only then
+								applies the slab.
+							</p>
+						</div>
+					</article>
 
-				<h3 class="mt-10 text-heading-md font-semibold text-foreground">
-					7th CPC pay-level daily TA rates
-				</h3>
-				<p class="mt-2 max-w-3xl text-body-sm text-muted">
-					The calculator uses these standard daily rates by pay level, with the higher rate applied for
-					DA-eligible duty journeys. Rates are indicative and revised periodically.
-				</p>
-				<div class="mt-4 overflow-x-auto rounded-md border border-line">
-					<table class="w-full min-w-[32rem] border-collapse text-left">
-						<caption class="sr-only">Daily TA rates by 7th CPC pay level</caption>
-						<thead>
-							<tr class="border-b border-line bg-background/40">
-								<th scope="col" class="data-mono px-4 py-2.5 text-eyebrow uppercase text-muted">Pay Level</th>
-								<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">Standard Rate / Day</th>
-								<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">DA-Eligible Rate / Day</th>
-							</tr>
-						</thead>
-						<tbody class="text-body-sm">
-							{
-								taRates.map((rate) => (
-									<tr class="border-b border-line/60 last:border-b-0">
-										<th scope="row" class="px-4 py-2.5 text-left font-medium text-foreground">{rate.level}</th>
-										<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">{rate.standard}</td>
-										<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">{rate.da}</td>
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">
+							3. How the 30%, 70% and 100% duration slabs are counted
+						</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								Slab counting starts at departure from HQ and ends at return to HQ. Up to 6 hours away
+								earns 30% of the daily rate. Above 6 hours and up to 12 hours earns 70%. Above 12 hours
+								earns 100%. The percentages are of the daily rate fixed for the pay level, so a Level 6
+								employee held 5 hours earns 30% of ₹800, that is ₹240, while the same employee held 10
+								hours earns 70%, that is ₹560.
+							</p>
+							<p>
+								Multi-day duty is counted in blocks. Every completed 24 hours away from HQ carries a
+								fresh 100% block, and the residue after the last full block is graded on the same
+								30/70/100 scale. A duty of 28 hours is one full 24-hour block at 100% plus a 4-hour
+								residue at 30% — 130% of the daily rate in all. A 30-hour duty is 100% plus a 6-hour
+								residue at 30%; a 31-hour duty is 100% plus a 7-hour residue at 70%. Where a journey
+								crosses midnight, the date of departure fixes the day of the claim, and the arrival
+								date is entered only to work out the hours.
+							</p>
+						</div>
+						<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+							<div class="rounded-lg border border-line bg-surface p-5">
+								<p class="data-mono text-eyebrow uppercase text-muted">Up to 6 hours</p>
+								<p class="mt-3 data-mono text-2xl font-semibold tabular-nums text-foreground">30%</p>
+								<p class="mt-2 text-body-sm text-muted">
+									Of the daily TA rate when the duty absence from HQ is 6 hours or less.
+								</p>
+							</div>
+							<div class="rounded-lg border border-line bg-surface p-5">
+								<p class="data-mono text-eyebrow uppercase text-muted">6 to 12 hours</p>
+								<p class="mt-3 data-mono text-2xl font-semibold tabular-nums text-foreground">70%</p>
+								<p class="mt-2 text-body-sm text-muted">
+									Of the daily TA rate when the duty absence is more than 6 but not more than 12
+									hours.
+								</p>
+							</div>
+							<div class="rounded-lg border border-line bg-surface p-5">
+								<p class="data-mono text-eyebrow uppercase text-muted">Above 12 hours</p>
+								<p class="mt-3 data-mono text-2xl font-semibold tabular-nums text-foreground">100%</p>
+								<p class="mt-2 text-body-sm text-muted">
+									Of the daily TA rate for more than 12 hours, plus 100% for every completed 24-hour
+									block.
+								</p>
+							</div>
+						</div>
+					</article>
+
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">
+							4. 7th CPC pay level daily TA rates and the 50% DA revision rule
+						</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								The daily rate is fixed by 7th CPC pay level. Levels 1-5 draw ₹500, Levels 6-8 draw
+								₹800, Levels 9-11 draw ₹900, Levels 12 and 13A draw ₹1,000, and Level 14 and above
+								draw ₹1,200. These standard rates hold while Dearness Allowance stays below 50%.
+							</p>
+							<p>
+								Once DA crosses 50%, the rates step up automatically by 25%: ₹500 becomes ₹625, ₹800
+								becomes ₹1,000, ₹900 becomes ₹1,125, ₹1,000 becomes ₹1,250 and ₹1,200 becomes ₹1,500.
+								The 25% revision follows the DA order itself; no separate application is filed. Use the
+								rate notified for the claim month. Where a DA order carries retrospective effect, the
+								higher rate applies from the date of the order and the difference is drawn in the next
+								bill.
+							</p>
+						</div>
+						<div class="mt-4 overflow-x-auto rounded-md border border-line">
+							<table class="w-full min-w-[32rem] border-collapse text-left">
+								<caption class="sr-only">Daily TA rates by 7th CPC pay level</caption>
+								<thead>
+									<tr class="border-b border-line bg-background/40">
+										<th scope="col" class="data-mono px-4 py-2.5 text-eyebrow uppercase text-muted">Pay Level</th>
+										<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">Rate while DA below 50%</th>
+										<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">Rate once DA crosses 50%</th>
 									</tr>
-								))
-							}
-						</tbody>
-					</table>
+								</thead>
+								<tbody class="text-body-sm">
+									{
+										taRates.map((rate) => (
+											<tr class="border-b border-line/60 last:border-b-0">
+												<th scope="row" class="px-4 py-2.5 text-left font-medium text-foreground">{rate.level}</th>
+												<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">{rate.standard}</td>
+												<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">{rate.da}</td>
+											</tr>
+										))
+									}
+								</tbody>
+							</table>
+						</div>
+					</article>
+
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">
+							5. Three real-world duty calculation examples
+						</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								<span class="font-medium text-foreground">Case 1 — Same-day S&amp;T / TRD maintenance
+								call.</span> A Technician (Level 6) is called to a point on the section, signs off at HQ at
+								09:30 and signs back at 14:45. Time away is 5 hours 15 minutes, which is 6 hours or less,
+								so the slab is 30% of ₹800, that is ₹240. The duty point is 11 km away, above the 8 km
+								limit, so the distance condition is met and the claim stands.
+							</p>
+							<p>
+								<span class="font-medium text-foreground">Case 2 — Outstation day duty, VGLJ to
+								BPL.</span> A Ministerial staff member (Level 7) travels from Virangana Lakshmibai Jhansi
+								(VGLJ) to Bhopal Jn (BPL), signs off at 06:50 and returns at 16:30. Time away is 9 hours
+								40 minutes, above 6 and not above 12, so the slab is 70% of ₹800, that is ₹560. Track
+								distance is far above 8 km, so the distance condition is met.
+							</p>
+							<p>
+								<span class="font-medium text-foreground">Case 3 — Overnight relief / breakdown
+								duty.</span> A C&amp;W fitter (Level 5) is sent for breakdown relief and is away from HQ for
+								28 hours. One completed 24-hour block is paid at 100%, and the remaining 4 hours attract
+								30%, giving 130% of ₹500, that is ₹650. Claim the block and the residue on one journal
+								line, showing the departure and return date-times.
+							</p>
+						</div>
+					</article>
+
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">
+							6. Daily TA, Night Duty Allowance and Running Allowance
+						</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								Three payments are routinely mixed up at the counter. Daily TA is for being away from HQ
+								on duty beyond 8 km and is paid by slab. Night Duty Allowance (NDA) is paid for duty
+								performed between 22:00 and 06:00 and depends on the number of night hours, not on
+								distance from HQ; it is claimed on its own line and does not replace TA. Running
+								Allowance, commonly called Kilometreage Allowance (KMA), applies to Running Staff — Loco
+								Pilots, Assistant Loco Pilots, and Train Managers or Guards — and is paid per kilometre
+								run under the mileage formula.
+							</p>
+							<p>
+								A Loco Pilot does not draw daily TA and KMA for the same trip. A Trackman on night
+								patrol may draw NDA, and where the 8 km test is met, daily TA as well, each under its
+								own rule. Keep the three heads separate on the journal so the dealing clerk can pass
+								each without a query.
+							</p>
+						</div>
+					</article>
+
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">
+							Filing the monthly TA journal
+						</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								Each employee keeps a monthly TA journal. At month-end the entries are tallied against
+								movement orders, the 8 km distance is noted, and the journal moves through the section
+								supervisor to the dealing clerk. The clerk checks the pay level, the slab applied and
+								the distance before the claim enters HRMS/IPAS for bill processing. Claims filed beyond
+								the time limit fixed by the administration need the controlling officer's condonation.
+								Keep the movement order number against every entry; a slab claim without a movement
+								order reference is returned.
+							</p>
+						</div>
+					</article>
 				</div>
 
-				<h3 class="mt-10 text-heading-md font-semibold text-foreground">
-					Frequently asked questions about Railway TA
+				<h3 class="mt-12 text-heading-md font-semibold text-foreground">
+					12 practical questions from the section and the bill counter
 				</h3>
 				<div class="mt-6 space-y-3">
 					{
