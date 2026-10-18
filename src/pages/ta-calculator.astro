@@ -1,0 +1,1122 @@
+---
+import Layout from '../layouts/Layout.astro';
+import graph from '../data/railway-graph.json';
+
+const stationCount = graph.metadata.totalStations.toLocaleString('en-IN');
+const title = 'Indian Railway TA (Travelling Allowance) Calculator — 8 km Rule & Daily Slab | RailKM';
+const description = `Free Indian Railway TA (Travelling Allowance) calculator for 7th CPC pay levels. Verify the 8 km headquarter station rule, duty duration and the 30% / 70% / 100% daily TA duration slabs across ${stationCount} indexed stations.`;
+
+const taFaqs = [
+	{
+		question: 'How is Indian Railway Travelling Allowance (TA) calculated for a duty journey?',
+		answer:
+			'Indian Railway TA for a duty journey is a daily-rate entitlement based on the time you spend away from your headquarters (HQ): up to 6 hours attracts 30% of the daily TA rate, above 6 hours and up to 12 hours attracts 70%, and above 12 hours attracts 100%. Every completed 24-hour period away from HQ attracts a further 100% block. The daily TA rate itself depends on your 7th CPC pay level. RailKM multiplies your daily rate by the applicable slab to give the total TA amount.',
+	},
+	{
+		question: 'What are the 30%, 70% and 100% TA duration slabs for railway employees?',
+		answer:
+			'The railway TA duration slabs are: 30% of the daily TA rate when the duty absence from HQ is up to 6 hours; 70% when it is more than 6 hours but not more than 12 hours; and 100% when it is more than 12 hours. For journeys spanning multiple days, each further block of 24 hours (or part thereof, subject to the rule applied) attracts an additional 100% of the daily rate. RailKM applies these slabs automatically from your departure and arrival times.',
+	},
+	{
+		question: 'What is the 8 km rule in Indian Railway Travelling Allowance?',
+		answer:
+			'The 8 km rule says that TA is admissible for a duty journey only when the place of duty is more than 8 km from your headquarters (or from the railway station nearest to your residence, as applicable). If the duty point is within 8 km of the HQ, generally no TA is payable. RailKM measures the rail track distance from your HQ station to the duty station and shows whether the 8 km condition is satisfied.',
+	},
+	{
+		question: 'What are the 7th CPC pay-level daily TA rates for railway employees?',
+		answer:
+			'Under the 7th CPC framework the daily TA rates used by this calculator are: Rs 500 per day for Pay Levels 1-5, Rs 800 for Levels 6-8, Rs 900 for Levels 9-11, Rs 1,000 for Levels 12 and 13A, and Rs 1,200 for Level 14 and above. When travelling on official duty that also carries a DA-eligible trip the effective rate used here rises to Rs 625, Rs 1,000, Rs 1,125, Rs 1,250 and Rs 1,500 respectively. Always confirm the currently notified rates with your administration, as they are revised from time to time.',
+	},
+	{
+		question: 'Is Railway TA payable for a night halt or a journey spanning more than one day?',
+		answer:
+			'Yes. When a duty journey includes a night halt or otherwise keeps you away from HQ beyond 24 hours, TA is computed in blocks of 24 hours at the 100% rate, in addition to the slab applicable to the time away. The absence is normally counted from the time you leave HQ until the time you return. RailKM sums each completed 24-hour block plus the final part-day slab to produce the total TA amount for the journey.',
+	},
+	{
+		question: 'Is the RailKM TA calculator official, and how accurate are the results?',
+		answer:
+			'RailKM is an independent planning tool and is not affiliated with Indian Railways. The TA figures are indicative estimates that apply the standard 30%, 70% and 100% duration slabs and the 7th CPC pay-level daily rates. Actual entitlement can vary with your specific rules, the notified DA position and the sanctioning authority, so treat the result as a planning guide and confirm the final amount with your railway administration.',
+	},
+];
+
+const faqSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: taFaqs.map((faq) => ({
+		'@type': 'Question',
+		name: faq.question,
+		acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+	})),
+};
+
+const taRates = [
+	{ level: 'Level 1-5', standard: '₹500', da: '₹625' },
+	{ level: 'Level 6-8', standard: '₹800', da: '₹1,000' },
+	{ level: 'Level 9-11', standard: '₹900', da: '₹1,125' },
+	{ level: 'Level 12-13A', standard: '₹1,000', da: '₹1,250' },
+	{ level: 'Level 14 and above', standard: '₹1,200', da: '₹1,500' },
+];
+---
+
+<Layout title={title} description={description} backHref="/" backLabel="Back to Route Calculator">
+	<div class="relative overflow-hidden">
+		<div
+			data-print="hide"
+			class="pointer-events-none absolute inset-x-0 top-0 h-[320px] bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(237,237,237,0.06),transparent)]"
+			aria-hidden="true"
+		>
+		</div>
+
+		<div class="relative mx-auto w-full max-w-4xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16 print:pt-0 print:pb-0">
+			<nav data-print="hide" aria-label="Breadcrumb" class="data-mono text-eyebrow uppercase text-muted">
+				<ol class="flex flex-wrap items-center gap-2">
+					<li><a class="focus-ring rounded-sm transition-colors hover:text-foreground" href="/">Home</a></li>
+					<li aria-hidden="true">/</li>
+					<li class="text-foreground">TA Calculator</li>
+				</ol>
+			</nav>
+
+			<p data-print="hide" class="mt-8 data-mono text-eyebrow font-medium uppercase text-muted">
+				Indian Railways · Travelling Allowance
+			</p>
+			<h1 data-print="hide" class="mt-5 text-balance text-heading-lg font-semibold text-foreground sm:text-display-xl">
+				Indian Railway TA (Travelling Allowance) Calculator
+			</h1>
+			<p data-print="hide" class="mt-4 max-w-2xl text-body-lg text-muted">
+				Work out the daily TA entitlement for a railway duty journey: pick the 7th CPC pay level and
+				daily TA rate, verify the 8 km station-distance rule from your headquarters, and let the
+				30% / 70% / 100% duration slabs compute the total amount.
+			</p>
+
+			<div data-print="hide" class="mt-10 grid gap-6">
+				<section
+					id="ta-setup"
+					aria-labelledby="setup-heading"
+					class="rounded-lg border border-line bg-surface p-5 sm:p-6"
+				>
+					<p class="data-mono text-eyebrow uppercase text-muted">Step 1 · Employee pay level</p>
+					<h2 id="setup-heading" class="mt-1 text-heading-md font-semibold text-foreground">
+						Pay level &amp; daily TA rate
+					</h2>
+
+					<div class="mt-5 grid gap-4 sm:grid-cols-2">
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted">7th CPC Pay Level</span>
+							<select
+								id="ta-level"
+								class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							>
+								<option value="1-5">Level 1 to 5 — ₹500 / ₹625</option>
+								<option value="6-8">Level 6 to 8 — ₹800 / ₹1000</option>
+								<option value="9-11">Level 9 to 11 — ₹900 / ₹1125</option>
+								<option value="12-13a">Level 12 to 13A — ₹1000 / ₹1250</option>
+								<option value="14">Level 14 and above — ₹1200 / ₹1500</option>
+							</select>
+						</label>
+
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted">DA Revision</span>
+							<select
+								id="ta-da"
+								class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							>
+								<option value="standard">Standard rate (no DA revision)</option>
+								<option value="da">With 50%+ DA revision</option>
+							</select>
+						</label>
+					</div>
+
+					<label class="mt-4 flex flex-col gap-1.5">
+						<span class="data-mono text-eyebrow uppercase text-muted">Daily 100% TA Rate (editable)</span>
+						<span class="relative">
+							<span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" aria-hidden="true">₹</span>
+							<input
+								id="ta-rate"
+								type="number"
+								min="0"
+								step="1"
+								value="500"
+								inputmode="numeric"
+								class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background py-2.5 pl-8 pr-4 text-body-md text-foreground"
+							/>
+						</span>
+						<span class="text-body-sm text-muted">
+							Preset from the selected level, then type any exact amount (₹500, ₹625, ₹800, ₹1000,
+							₹1250 …) to override.
+						</span>
+					</label>
+				</section>
+
+				<section
+					id="ta-distance"
+					aria-labelledby="distance-heading"
+					class="rounded-lg border border-line bg-surface p-5 sm:p-6"
+				>
+					<p class="data-mono text-eyebrow uppercase text-muted">Step 2 · Station distance (8 km rule)</p>
+					<h2 id="distance-heading" class="mt-1 text-heading-md font-semibold text-foreground">
+						Headquarter &amp; duty station
+					</h2>
+
+					<div class="mt-5 grid gap-4 sm:grid-cols-2">
+						<div class="flex flex-col gap-1.5">
+							<label class="data-mono text-eyebrow uppercase text-muted" for="ta-hq">Headquarter Station</label>
+							<div class="relative">
+								<input
+									id="ta-hq"
+									name="ta-hq"
+									type="text"
+									placeholder="e.g. VGLJ or Jhansi"
+									autocomplete="off"
+									autocapitalize="off"
+									autocorrect="off"
+									spellcheck="false"
+									role="combobox"
+									aria-expanded="false"
+									aria-controls="ta-hq-list"
+									aria-autocomplete="list"
+									class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground placeholder:text-muted"
+								/>
+								<ul
+									id="ta-hq-list"
+									role="listbox"
+									aria-label="Headquarter station suggestions"
+									class="absolute left-0 right-0 z-30 mt-1 hidden max-h-72 overflow-auto rounded-md border border-line bg-surface shadow-[0_12px_32px_-12px_rgba(0,0,0,0.8)]"></ul>
+							</div>
+							<p class="data-mono text-eyebrow text-muted hidden" data-caption="hq"></p>
+						</div>
+
+						<div class="flex flex-col gap-1.5">
+							<label class="data-mono text-eyebrow uppercase text-muted" for="ta-duty">Duty / Tour Station</label>
+							<div class="relative">
+								<input
+									id="ta-duty"
+									name="ta-duty"
+									type="text"
+									placeholder="e.g. BPL or Bhopal"
+									autocomplete="off"
+									autocapitalize="off"
+									autocorrect="off"
+									spellcheck="false"
+									role="combobox"
+									aria-expanded="false"
+									aria-controls="ta-duty-list"
+									aria-autocomplete="list"
+									class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground placeholder:text-muted"
+								/>
+								<ul
+									id="ta-duty-list"
+									role="listbox"
+									aria-label="Duty station suggestions"
+									class="absolute left-0 right-0 z-30 mt-1 hidden max-h-72 overflow-auto rounded-md border border-line bg-surface shadow-[0_12px_32px_-12px_rgba(0,0,0,0.8)]"></ul>
+							</div>
+							<p class="data-mono text-eyebrow text-muted hidden" data-caption="duty"></p>
+						</div>
+					</div>
+
+					<div id="ta-distance-result" class="mt-4"></div>
+				</section>
+
+				<section
+					id="ta-duty-time"
+					aria-labelledby="duty-time-heading"
+					class="rounded-lg border border-line bg-surface p-5 sm:p-6"
+				>
+					<p class="data-mono text-eyebrow uppercase text-muted">Step 3 · Duty duration</p>
+					<h2 id="duty-time-heading" class="mt-1 text-heading-md font-semibold text-foreground">
+						Time away from headquarters
+					</h2>
+
+					<div class="mt-5 grid gap-4 sm:grid-cols-2">
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted">Departure from HQ (Date &amp; Time)</span>
+							<input
+								id="ta-depart"
+								name="ta-depart"
+								type="datetime-local"
+								step="60"
+								class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							/>
+						</label>
+
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted">Arrival back at HQ (Date &amp; Time)</span>
+							<input
+								id="ta-arrive"
+								name="ta-arrive"
+								type="datetime-local"
+								step="60"
+								class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							/>
+						</label>
+					</div>
+
+					<ul class="mt-4 flex flex-wrap gap-2">
+						<li class="inline-flex items-center gap-1.5 rounded-full border border-line bg-background px-3 py-1.5 text-body-sm">
+							<span class="text-muted">Up to 6 h</span>
+							<span class="data-mono font-semibold text-foreground">30%</span>
+						</li>
+						<li class="inline-flex items-center gap-1.5 rounded-full border border-line bg-background px-3 py-1.5 text-body-sm">
+							<span class="text-muted">6–12 h</span>
+							<span class="data-mono font-semibold text-foreground">70%</span>
+						</li>
+						<li class="inline-flex items-center gap-1.5 rounded-full border border-line bg-background px-3 py-1.5 text-body-sm">
+							<span class="text-muted">12 h +</span>
+							<span class="data-mono font-semibold text-foreground">100%</span>
+						</li>
+					</ul>
+				</section>
+
+				<div id="ta-result"></div>
+			</div>
+
+			<section
+				id="ta-sheet-section"
+				aria-labelledby="sheet-heading"
+				class="mt-6 rounded-lg border border-line bg-surface p-5 sm:p-6 print:border-0 print:bg-transparent print:p-0"
+			>
+				<p class="data-mono text-eyebrow uppercase text-muted">Part 2B · Local draft</p>
+				<h2 id="sheet-heading" class="mt-1 text-heading-md font-semibold text-foreground">
+					MONTHLY TA STATEMENT (SAVED IN BROWSER)
+				</h2>
+				<p class="mt-2 max-w-2xl text-body-sm text-muted">
+					Add each calculated journey to build a month-wise TA log. Entries are stored only in this
+					browser — nothing is uploaded.
+				</p>
+
+				<div class="mt-4 flex flex-wrap items-center gap-2" data-print="hide">
+					<button
+						type="button"
+						id="ta-whatsapp"
+						class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-emerald-600/30 bg-emerald-500/10 px-4 py-2.5 text-label-sm text-emerald-700 transition-colors hover:border-emerald-600/60 hover:bg-emerald-500/20 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-500/20"
+					>
+						<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="shrink-0"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.18 8.18 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24Zm-2.6 4.36c-.13 0-.33.05-.5.24-.17.19-.66.64-.66 1.57 0 .93.68 1.83.77 1.95.09.12 1.31 2.1 3.25 2.88 1.61.64 1.94.51 2.29.48.35-.03 1.13-.46 1.29-.91.16-.45.16-.83.11-.91-.05-.08-.17-.13-.35-.22-.18-.09-1.13-.56-1.3-.62-.18-.07-.31-.1-.44.09-.13.19-.5.63-.62.76-.11.13-.23.14-.41.05-.18-.09-.77-.28-1.46-.9-.54-.48-.9-1.07-1.01-1.26-.11-.19-.01-.29.08-.38.08-.08.18-.23.27-.34.09-.11.12-.19.18-.31.06-.12.03-.23-.01-.32-.05-.09-.43-1.05-.6-1.43-.16-.38-.32-.33-.44-.33-.11 0-.24-.02-.36-.02Z"/></svg>
+						<span>Share TA Summary on WhatsApp</span>
+					</button>
+					<button
+						type="button"
+						id="ta-copy"
+						class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40"
+					>
+						Copy Text Summary
+					</button>
+					<button
+						type="button"
+						id="ta-print"
+						class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-foreground bg-foreground px-4 py-2.5 text-label-sm font-medium text-background transition-opacity hover:opacity-90"
+					>
+						Print / Save PDF
+					</button>
+					<button
+						type="button"
+						id="ta-clear"
+						class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40"
+					>
+						Clear All
+					</button>
+				</div>
+
+				<div
+					id="ta-sheet-container"
+					class="mt-5 overflow-x-auto rounded-md border border-line print:overflow-visible print:border-0"
+				>
+					<table class="w-full min-w-[52rem] border-collapse text-left print:min-w-0">
+						<caption class="sr-only">Saved monthly TA trips</caption>
+						<thead>
+							<tr class="border-b border-line bg-background/40">
+								<th scope="col" class="data-mono px-3 py-2.5 text-eyebrow uppercase text-muted">Date</th>
+								<th scope="col" class="px-3 py-2.5 text-eyebrow uppercase text-muted">HQ → Duty</th>
+								<th scope="col" class="px-3 py-2.5 text-right text-eyebrow uppercase text-muted">KM</th>
+								<th scope="col" class="px-3 py-2.5 text-eyebrow uppercase text-muted">Departure</th>
+								<th scope="col" class="px-3 py-2.5 text-eyebrow uppercase text-muted">Arrival</th>
+								<th scope="col" class="px-3 py-2.5 text-right text-eyebrow uppercase text-muted">Duration</th>
+								<th scope="col" class="px-3 py-2.5 text-right text-eyebrow uppercase text-muted">Slab</th>
+								<th scope="col" class="px-3 py-2.5 text-right text-eyebrow uppercase text-muted">TA ₹</th>
+								<th scope="col" data-print="hide" class="px-3 py-2.5 text-right text-eyebrow uppercase text-muted">
+									<span class="sr-only">Remove</span>
+								</th>
+							</tr>
+						</thead>
+						<tbody id="ta-sheet-body" class="text-body-sm"></tbody>
+						<tfoot id="ta-sheet-foot"></tfoot>
+					</table>
+				</div>
+				<p id="ta-sheet-empty" class="mt-5 text-body-sm text-muted">
+					No trips added yet. Calculate a TA amount above and press “+ Add Trip to Monthly TA Sheet”.
+				</p>
+			</section>
+
+			<p data-print="hide" class="mt-10 text-body-sm text-muted">
+				RailKM is an independent planning tool and is not affiliated with Indian Railways. TA figures
+				are indicative and use the standard duration slabs shown above — confirm entitlement with your
+				railway administration.
+			</p>
+
+			<section
+				id="ta-guide"
+				data-print="hide"
+				aria-labelledby="ta-guide-heading"
+				class="mt-12 scroll-mt-20 border-t border-line pt-10"
+			>
+				<p class="data-mono text-eyebrow uppercase text-muted">Reference guide</p>
+				<h2 id="ta-guide-heading" class="mt-1 text-balance text-heading-md font-semibold text-foreground">
+					Indian Railway Travelling Allowance rules explained
+				</h2>
+				<p class="mt-3 max-w-3xl text-body-md text-muted">
+					Travelling Allowance (TA) for a railway duty journey is driven by three things: the time you
+					spend away from your headquarters (HQ), the distance between your HQ and the place of duty,
+					and your 7th CPC pay level. The daily TA rate is fixed by pay level; the amount you actually
+					receive is a percentage of that rate set by the duration slabs below.
+				</p>
+
+				<div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<div class="rounded-lg border border-line bg-surface p-5">
+						<p class="data-mono text-eyebrow uppercase text-muted">Up to 6 hours</p>
+						<p class="mt-3 data-mono text-2xl font-semibold tabular-nums text-foreground">30%</p>
+						<p class="mt-2 text-body-sm text-muted">
+							Of the daily TA rate when the duty absence from HQ is 6 hours or less.
+						</p>
+					</div>
+					<div class="rounded-lg border border-line bg-surface p-5">
+						<p class="data-mono text-eyebrow uppercase text-muted">6 to 12 hours</p>
+						<p class="mt-3 data-mono text-2xl font-semibold tabular-nums text-foreground">70%</p>
+						<p class="mt-2 text-body-sm text-muted">
+							Of the daily TA rate when the duty absence is more than 6 but not more than 12 hours.
+						</p>
+					</div>
+					<div class="rounded-lg border border-line bg-surface p-5">
+						<p class="data-mono text-eyebrow uppercase text-muted">Above 12 hours</p>
+						<p class="mt-3 data-mono text-2xl font-semibold tabular-nums text-foreground">100%</p>
+						<p class="mt-2 text-body-sm text-muted">
+							Of the daily TA rate for more than 12 hours, plus 100% for every completed 24-hour block.
+						</p>
+					</div>
+				</div>
+
+				<div
+					class="mt-4 flex items-start gap-3 rounded-lg border border-emerald-600/30 bg-emerald-500/10 p-5 dark:border-emerald-500/30"
+				>
+					<span
+						class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600 dark:bg-emerald-400"
+						aria-hidden="true"></span>
+					<p class="text-body-sm text-muted">
+						<span class="font-medium text-foreground">8 km distance rule:</span> TA is admissible only when
+						the place of duty is more than 8 km from your headquarters station. Enter your HQ and duty
+						station above and RailKM measures the rail track distance to confirm the condition.
+					</p>
+				</div>
+
+				<h3 class="mt-10 text-heading-md font-semibold text-foreground">
+					7th CPC pay-level daily TA rates
+				</h3>
+				<p class="mt-2 max-w-3xl text-body-sm text-muted">
+					The calculator uses these standard daily rates by pay level, with the higher rate applied for
+					DA-eligible duty journeys. Rates are indicative and revised periodically.
+				</p>
+				<div class="mt-4 overflow-x-auto rounded-md border border-line">
+					<table class="w-full min-w-[32rem] border-collapse text-left">
+						<caption class="sr-only">Daily TA rates by 7th CPC pay level</caption>
+						<thead>
+							<tr class="border-b border-line bg-background/40">
+								<th scope="col" class="data-mono px-4 py-2.5 text-eyebrow uppercase text-muted">Pay Level</th>
+								<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">Standard Rate / Day</th>
+								<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">DA-Eligible Rate / Day</th>
+							</tr>
+						</thead>
+						<tbody class="text-body-sm">
+							{
+								taRates.map((rate) => (
+									<tr class="border-b border-line/60 last:border-b-0">
+										<th scope="row" class="px-4 py-2.5 text-left font-medium text-foreground">{rate.level}</th>
+										<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">{rate.standard}</td>
+										<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">{rate.da}</td>
+									</tr>
+								))
+							}
+						</tbody>
+					</table>
+				</div>
+
+				<h3 class="mt-10 text-heading-md font-semibold text-foreground">
+					Frequently asked questions about Railway TA
+				</h3>
+				<div class="mt-6 space-y-3">
+					{
+						taFaqs.map((faq) => (
+							<details class="group rounded-md border border-line bg-surface transition-colors hover:border-foreground/40">
+								<summary class="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-body-md font-medium text-foreground [&::-webkit-details-marker]:hidden">
+									<span>{faq.question}</span>
+									<svg
+										class="h-4 w-4 shrink-0 text-muted transition-transform group-open:rotate-180"
+										viewBox="0 0 12 12"
+										fill="none"
+										aria-hidden="true"
+									>
+										<path
+											d="M3 4.5L6 7.5l3-3"
+											stroke="currentColor"
+											stroke-width="1.5"
+											stroke-linecap="round"
+											stroke-linejoin="round"></path>
+									</svg>
+								</summary>
+								<div class="border-t border-line px-5 py-4 text-body-sm text-muted">{faq.answer}</div>
+							</details>
+						))
+					}
+				</div>
+			</section>
+		</div>
+	</div>
+
+	<script slot="head" type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
+
+	<script>
+		import { searchStations, resolveStation, shortestPath, stationInfo } from '../utils/routeEngine.js';
+
+		const LEVEL_PRESETS = {
+			'1-5': { standard: 500, da: 625 },
+			'6-8': { standard: 800, da: 1000 },
+			'9-11': { standard: 900, da: 1125 },
+			'12-13a': { standard: 1000, da: 1250 },
+			'14': { standard: 1200, da: 1500 },
+		};
+
+		const levelSelect = document.getElementById('ta-level');
+		const daSelect = document.getElementById('ta-da');
+		const rateInput = document.getElementById('ta-rate');
+		const departInput = document.getElementById('ta-depart');
+		const arriveInput = document.getElementById('ta-arrive');
+		const distanceResultEl = document.getElementById('ta-distance-result');
+		const resultEl = document.getElementById('ta-result');
+
+		let graph = null;
+		let distanceKm = null;
+
+		function esc(value) {
+			return String(value).replace(/[&<>"']/g, (ch) => {
+				return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+			});
+		}
+
+		/* --------------------------------------------------- Station autocomplete */
+
+		function setupStationField(input, list, caption) {
+			const idPrefix = input.id;
+			let results = [];
+			let active = -1;
+			let selected = { code: '', query: '' };
+
+			function updateCaption() {
+				if (!caption) return;
+				if (!selected.code) {
+					caption.textContent = '';
+					caption.classList.add('hidden');
+					return;
+				}
+				const info = graph ? stationInfo(graph, selected.code) : null;
+				caption.textContent = info ? `${selected.code} · ${info.name}` : selected.code;
+				caption.classList.remove('hidden');
+			}
+
+			function close() {
+				list.classList.add('hidden');
+				input.setAttribute('aria-expanded', 'false');
+				input.removeAttribute('aria-activedescendant');
+			}
+
+			function setActive(index) {
+				if (index < 0 || index >= results.length) return;
+				active = index;
+				list.querySelectorAll('[data-i]').forEach((option) => {
+					const on = Number(option.dataset.i) === index;
+					option.setAttribute('aria-selected', String(on));
+					option.classList.toggle('bg-foreground/10', on);
+				});
+				input.setAttribute('aria-activedescendant', `${idPrefix}-opt-${index}`);
+				const activeEl = document.getElementById(`${idPrefix}-opt-${index}`);
+				if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+			}
+
+			function choose(index) {
+				const result = results[index];
+				if (!result) return;
+				selected = { code: result.code, query: result.code };
+				input.value = result.code;
+				updateCaption();
+				close();
+				computeDistance();
+			}
+
+			function place(query) {
+				if (!graph) return;
+				const trimmed = query.trim();
+				if (!trimmed) {
+					close();
+					return;
+				}
+				results = searchStations(graph, trimmed, 8);
+				active = results.length ? 0 : -1;
+
+				if (!results.length) {
+					list.innerHTML = `<li class="px-4 py-3 text-body-sm text-muted" role="presentation">No stations match “${esc(trimmed)}”.</li>`;
+				} else {
+					list.innerHTML = results
+						.map((result, index) => {
+							const junctionTag = result.isJunction
+								? `<span class="data-mono shrink-0 rounded-sm border border-line px-1 py-0.5 text-[10px] uppercase text-muted">Jn</span>`
+								: '';
+							const aliasTag = result.matchedAlias
+								? `<span class="data-mono shrink-0 rounded-sm border border-line px-1 py-0.5 text-[10px] uppercase text-muted">aka ${esc(result.matchedAlias)}</span>`
+								: '';
+							const zoneBit = [result.zone, result.state].filter(Boolean).join(' · ');
+							return `<li
+								id="${idPrefix}-opt-${index}"
+								role="option"
+								data-i="${index}"
+								aria-selected="${index === active}"
+								class="flex min-h-[44px] cursor-pointer items-center gap-2 px-4 py-2.5 ${index === active ? 'bg-foreground/10' : ''}"
+							>
+								<span translate="no" class="data-mono shrink-0 rounded-sm border border-line bg-background px-1.5 py-0.5 text-eyebrow font-semibold text-foreground">${esc(result.code)}</span>
+								<span class="min-w-0 flex-1 truncate text-body-md text-foreground">${esc(result.name)}</span>
+								${aliasTag}
+								${zoneBit ? `<span class="data-mono hidden shrink-0 text-eyebrow text-muted sm:inline">${esc(zoneBit)}</span>` : ''}
+								${junctionTag}
+							</li>`;
+						})
+						.join('');
+					list.querySelectorAll('[data-i]').forEach((option) => {
+						const index = Number(option.dataset.i);
+						option.addEventListener('mousedown', (event) => event.preventDefault());
+						option.addEventListener('mouseenter', () => setActive(index));
+						option.addEventListener('click', () => choose(index));
+					});
+				}
+
+				list.classList.remove('hidden');
+				input.setAttribute('aria-expanded', 'true');
+				if (active >= 0) setActive(active);
+			}
+
+			input.addEventListener('focus', () => {
+				if (input.value.trim()) place(input.value);
+			});
+			input.addEventListener('input', () => {
+				selected = { code: '', query: input.value };
+				updateCaption();
+				computeDistance();
+				place(input.value);
+			});
+			input.addEventListener('keydown', (event) => {
+				const open = !list.classList.contains('hidden');
+				if (event.key === 'ArrowDown') {
+					event.preventDefault();
+					if (!open) place(input.value);
+					else setActive(Math.min(active + 1, results.length - 1));
+				} else if (event.key === 'ArrowUp') {
+					if (!open) return;
+					event.preventDefault();
+					setActive(Math.max(active - 1, 0));
+				} else if (event.key === 'Enter') {
+					if (open && active >= 0) {
+						event.preventDefault();
+						choose(active);
+					} else if (open && results.length) {
+						event.preventDefault();
+						choose(0);
+					}
+				} else if (event.key === 'Escape') {
+					close();
+				}
+			});
+			input.addEventListener('blur', () => {
+				window.setTimeout(() => {
+					close();
+					if (!selected.code && input.value.trim() && graph) {
+						const resolved = resolveStation(graph, input.value);
+						if (resolved) {
+							selected = { code: resolved.code, query: resolved.code };
+							input.value = resolved.code;
+							updateCaption();
+							computeDistance();
+						}
+					}
+				}, 150);
+			});
+
+			return {
+				get code() {
+					return selected.code;
+				},
+			};
+		}
+
+		const hqField = setupStationField(
+			document.getElementById('ta-hq'),
+			document.getElementById('ta-hq-list'),
+			document.querySelector('[data-caption="hq"]')
+		);
+		const dutyField = setupStationField(
+			document.getElementById('ta-duty'),
+			document.getElementById('ta-duty-list'),
+			document.querySelector('[data-caption="duty"]')
+		);
+
+		/* ------------------------------------------------ Distance (8 km rule) */
+
+		function computeDistance() {
+			if (!distanceResultEl) return;
+			const hq = hqField.code;
+			const duty = dutyField.code;
+
+			if (!graph || !hq || !duty) {
+				distanceKm = null;
+				distanceResultEl.innerHTML = `<p class="text-body-sm text-muted">Select both stations to verify the 8 km TA distance rule.</p>`;
+				render();
+				return;
+			}
+
+			const result = shortestPath(graph, hq, duty);
+			if (!result) {
+				distanceKm = null;
+				distanceResultEl.innerHTML = `<div class="rounded-md border border-error/40 bg-error/5 p-4" role="alert">
+					<p class="data-mono text-eyebrow uppercase text-error">No track route</p>
+					<p class="mt-1 text-body-sm text-muted">No continuous railway track route was found between ${esc(hq)} and ${esc(duty)}.</p>
+				</div>`;
+				render();
+				return;
+			}
+
+			distanceKm = result.distanceKm;
+			const eligible = distanceKm > 8;
+			const tone = eligible
+				? {
+						wrap: 'border-emerald-600/30 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/30 dark:text-emerald-400',
+						dot: 'bg-emerald-600 dark:bg-emerald-400',
+					}
+				: {
+						wrap: 'border-amber-600/30 bg-amber-500/10 text-amber-700 dark:border-amber-500/30 dark:text-amber-400',
+						dot: 'bg-amber-600 dark:bg-amber-400',
+					};
+			const label = eligible
+				? `✓ Eligible for TA (&gt; 8 km rule met: ${distanceKm.toLocaleString('en-IN')} km)`
+				: `⚠ Distance is &lt;= 8 km (TA generally requires &gt; 8 km from HQ)`;
+
+			distanceResultEl.innerHTML = `<div class="flex flex-col gap-3 rounded-md border border-line bg-background p-4">
+				<div class="flex flex-wrap items-center justify-between gap-2">
+					<p class="data-mono text-eyebrow uppercase text-muted">Shortest track distance</p>
+					<p class="data-mono text-body-md font-semibold text-foreground">${distanceKm.toLocaleString('en-IN')} km</p>
+				</div>
+				<span class="inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 ${tone.wrap}">
+					<span class="h-1.5 w-1.5 shrink-0 rounded-full ${tone.dot}" aria-hidden="true"></span>
+					<span class="data-mono min-w-0 text-eyebrow leading-tight">${label}</span>
+				</span>
+				<p class="text-body-sm text-muted">${esc(hq)} → ${esc(duty)} · shortest rail track route from the indexed network.</p>
+			</div>`;
+			render();
+		}
+
+		/* -------------------------------------------- Duty duration & TA slabs */
+
+		function dutyHours() {
+			if (!departInput || !arriveInput) return null;
+			if (!departInput.value || !arriveInput.value) return null;
+			const depart = new Date(departInput.value);
+			const arrive = new Date(arriveInput.value);
+			if (Number.isNaN(depart.getTime()) || Number.isNaN(arrive.getTime())) return null;
+			const ms = arrive.getTime() - depart.getTime();
+			if (ms <= 0) return { error: 'Arrival must be after the departure time.' };
+			return { hours: ms / 3600000 };
+		}
+
+		function slabBreakdown(hours) {
+			const blocks = [];
+			let remaining = hours;
+			while (remaining >= 24) {
+				blocks.push(100);
+				remaining -= 24;
+			}
+			if (remaining > 0.0001) {
+				blocks.push(remaining <= 6 ? 30 : remaining <= 12 ? 70 : 100);
+			}
+			if (!blocks.length) blocks.push(30);
+			return blocks;
+		}
+
+		function durationText(hours) {
+			const totalMinutes = Math.round(hours * 60);
+			const days = Math.floor(totalMinutes / 1440);
+			const rest = totalMinutes % 1440;
+			const hh = Math.floor(rest / 60);
+			const mm = rest % 60;
+			const parts = [];
+			if (days) parts.push(`${days} day${days > 1 ? 's' : ''}`);
+			parts.push(`${hh} h`);
+			parts.push(`${mm} m`);
+			return parts.join(' ');
+		}
+
+		function idleCard() {
+			return `<section aria-label="TA result placeholder" class="rounded-md border border-line bg-surface p-6">
+				<h2 class="text-heading-md font-semibold text-foreground">TA result</h2>
+				<p class="mt-2 max-w-2xl text-body-md text-muted">Set the pay level and daily TA rate, verify the duty-station distance, then enter the departure and arrival times. The total TA amount updates automatically.</p>
+			</section>`;
+		}
+
+		function render() {
+			if (!resultEl) return;
+			const rate = Number(rateInput && rateInput.value) || 0;
+			const time = dutyHours();
+
+			if (!time) {
+				resultEl.innerHTML = idleCard();
+				return;
+			}
+			if (time.error) {
+				resultEl.innerHTML = `<div class="rounded-md border border-error/40 bg-error/5 p-5" role="alert">
+					<p class="data-mono text-eyebrow uppercase text-error">Invalid duty time</p>
+					<p class="mt-2 text-body-sm text-muted">${esc(time.error)}</p>
+				</div>`;
+				return;
+			}
+
+			const hours = time.hours;
+			const blocks = slabBreakdown(hours);
+			const totalPct = blocks.reduce((sum, value) => sum + value, 0);
+			const amount = Math.round((rate * totalPct) / 100);
+			const slabLabel = blocks.map((value) => `${value}%`).join(' + ');
+			const distanceOk = typeof distanceKm === 'number';
+
+			let distanceNote;
+			if (!distanceOk) {
+				distanceNote = `<p class="mt-3 text-body-sm text-muted">Add both stations above to verify the 8 km TA distance rule.</p>`;
+			} else if (distanceKm > 8) {
+				distanceNote = `<p class="mt-3 text-body-sm text-emerald-700 dark:text-emerald-400">Station distance ${distanceKm.toLocaleString('en-IN')} km &gt; 8 km — the 8 km TA distance rule is satisfied.</p>`;
+			} else {
+				distanceNote = `<p class="mt-3 text-body-sm text-warning">Station distance ${distanceKm.toLocaleString('en-IN')} km is 8 km or less — TA generally requires the duty station to be more than 8 km from HQ.</p>`;
+			}
+
+			resultEl.innerHTML = `<section aria-label="Travelling allowance result" class="rounded-md border border-emerald-600/30 bg-emerald-500/10 p-5 dark:border-emerald-500/30">
+				<div class="flex flex-wrap items-center justify-between gap-2">
+					<h2 class="data-mono text-eyebrow uppercase text-emerald-700 dark:text-emerald-400">Travelling Allowance Result</h2>
+					<span class="data-mono text-eyebrow text-muted">Rate ₹${rate.toLocaleString('en-IN')} / day</span>
+				</div>
+				<dl class="mt-4 grid grid-cols-1 gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-3">
+					<div class="bg-surface p-4">
+						<dt class="data-mono text-eyebrow uppercase text-muted">Total Hours Away from HQ</dt>
+						<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">${hours.toFixed(1)}<span class="ml-1 text-label-sm font-normal text-muted">h</span></dd>
+						<dd class="mt-1 text-body-sm text-muted">${esc(durationText(hours))}</dd>
+					</div>
+					<div class="bg-surface p-4">
+						<dt class="data-mono text-eyebrow uppercase text-muted">Applicable TA Slab</dt>
+						<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">${slabLabel}</dd>
+						<dd class="mt-1 text-body-sm text-muted">${blocks.length > 1 ? `${blocks.length} × 24-hour blocks` : 'Single duty block'}</dd>
+					</div>
+					<div class="bg-surface p-4">
+						<dt class="data-mono text-eyebrow uppercase text-muted">Total TA Amount</dt>
+						<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">₹${amount.toLocaleString('en-IN')}</dd>
+						<dd class="mt-1 text-body-sm text-muted">${totalPct}% of ₹${rate.toLocaleString('en-IN')}</dd>
+					</div>
+				</dl>
+				${distanceNote}
+				<p class="mt-3 text-body-sm text-muted">*Indicative estimate using the Indian Railways TA duration slabs (up to 6 h → 30%, above 6–12 h → 70%, above 12 h → 100% per 24-hour block). Confirm entitlement with your administration.</p>
+				<div class="mt-4 flex flex-wrap items-center gap-3">
+					<button
+						type="button"
+						data-add-trip
+						class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-foreground bg-foreground px-4 py-2.5 text-label-sm font-medium text-background transition-opacity hover:opacity-90"
+					>
+						+ Add Trip to Monthly TA Sheet
+					</button>
+				</div>
+			</section>`;
+		}
+
+		/* ------------------------------------------- Monthly TA sheet (Part 2B) */
+
+		const SHEET_KEY = 'railkm_ta_sheet_v1';
+		const sheetBodyEl = document.getElementById('ta-sheet-body');
+		const sheetFootEl = document.getElementById('ta-sheet-foot');
+		const sheetEmptyEl = document.getElementById('ta-sheet-empty');
+		const sheetContainerEl = document.getElementById('ta-sheet-container');
+
+		function readSheet() {
+			try {
+				const parsed = JSON.parse(localStorage.getItem(SHEET_KEY) || '[]');
+				return Array.isArray(parsed) ? parsed.filter((entry) => entry && typeof entry === 'object') : [];
+			} catch {
+				return [];
+			}
+		}
+
+		function writeSheet(entries) {
+			try {
+				localStorage.setItem(SHEET_KEY, JSON.stringify(entries));
+			} catch {
+				/* storage unavailable (private mode) — keep the in-page list only */
+			}
+		}
+
+		const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+		function dateLabel(iso) {
+			if (!iso || typeof iso !== 'string') return '—';
+			const [year, month, day] = iso.slice(0, 10).split('-').map(Number);
+			if (!year || !month || !day) return iso;
+			return `${String(day).padStart(2, '0')} ${MONTHS[month - 1]} ${year}`;
+		}
+
+		function timeLabel(value) {
+			if (!value || typeof value !== 'string' || value.length < 16) return '—';
+			return value.slice(11, 16);
+		}
+
+		function buildTrip() {
+			const time = dutyHours();
+			if (!time || time.error) return null;
+
+			const rate = Number(rateInput && rateInput.value) || 0;
+			const hours = time.hours;
+			const blocks = slabBreakdown(hours);
+			const totalPct = blocks.reduce((sum, value) => sum + value, 0);
+			const amount = Math.round((rate * totalPct) / 100);
+
+			const hqInput = document.getElementById('ta-hq');
+			const dutyInput = document.getElementById('ta-duty');
+			const hqCode = hqField.code || (hqInput ? hqInput.value.trim().toUpperCase() : '');
+			const dutyCode = dutyField.code || (dutyInput ? dutyInput.value.trim().toUpperCase() : '');
+			const hqName = graph && hqField.code ? stationInfo(graph, hqField.code)?.name || '' : '';
+			const dutyName = graph && dutyField.code ? stationInfo(graph, dutyField.code)?.name || '' : '';
+
+			const depart = departInput ? departInput.value : '';
+			const arrive = arriveInput ? arriveInput.value : '';
+			const date = depart ? depart.slice(0, 10) : new Date().toISOString().slice(0, 10);
+			const id =
+				window.crypto && typeof window.crypto.randomUUID === 'function'
+					? window.crypto.randomUUID()
+					: `trip-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+			return {
+				id,
+				date,
+				hqCode,
+				hqName,
+				dutyCode,
+				dutyName,
+				km: typeof distanceKm === 'number' ? distanceKm : null,
+				depart,
+				arrive,
+				hours,
+				slab: blocks.map((value) => `${value}%`).join(' + '),
+				amount,
+				createdAt: Date.now(),
+			};
+		}
+
+		function addCurrentTrip(button) {
+			const trip = buildTrip();
+			if (!trip) return;
+			const entries = readSheet();
+			entries.push(trip);
+			writeSheet(entries);
+			renderSheet();
+			if (button) {
+				const original = button.textContent;
+				button.textContent = 'Added ✓';
+				button.disabled = true;
+				window.setTimeout(() => {
+					button.textContent = original;
+					button.disabled = false;
+				}, 1400);
+			}
+		}
+
+		function removeTrip(id) {
+			if (!id) return;
+			const entries = readSheet().filter((trip) => String(trip.id) !== String(id));
+			writeSheet(entries);
+			renderSheet();
+		}
+
+		function renderSheet() {
+			if (!sheetBodyEl || !sheetFootEl) return;
+			const trips = readSheet()
+				.slice()
+				.sort((a, b) => (Number(a.createdAt) || 0) - (Number(b.createdAt) || 0));
+
+			if (trips.length === 0) {
+				sheetBodyEl.innerHTML = '';
+				sheetFootEl.innerHTML = '';
+				if (sheetContainerEl) sheetContainerEl.classList.add('hidden');
+				if (sheetEmptyEl) sheetEmptyEl.classList.remove('hidden');
+				return;
+			}
+
+			if (sheetContainerEl) sheetContainerEl.classList.remove('hidden');
+			if (sheetEmptyEl) sheetEmptyEl.classList.add('hidden');
+
+			sheetBodyEl.innerHTML = trips
+				.map((trip) => {
+					const hq = trip.hqCode || trip.hqName || '—';
+					const duty = trip.dutyCode || trip.dutyName || '—';
+					const km = typeof trip.km === 'number' ? trip.km.toLocaleString('en-IN') : '—';
+					const names = [trip.hqName, trip.dutyName].filter(Boolean).join(' → ');
+					const amount = Number(trip.amount) || 0;
+					const hours = Number(trip.hours) || 0;
+					return `<tr class="border-b border-line/60">
+						<td class="data-mono whitespace-nowrap px-3 py-2.5 text-body-sm text-foreground">${esc(dateLabel(trip.date))}</td>
+						<td class="px-3 py-2.5 text-body-sm text-foreground">
+							<span class="data-mono font-semibold">${esc(hq)}</span> <span class="text-muted" aria-hidden="true">→</span> <span class="data-mono font-semibold">${esc(duty)}</span>
+							${names ? `<span class="mt-0.5 block text-body-sm text-muted">${esc(names)}</span>` : ''}
+						</td>
+						<td class="data-mono whitespace-nowrap px-3 py-2.5 text-right tabular-nums text-foreground">${km}</td>
+						<td class="data-mono whitespace-nowrap px-3 py-2.5 text-muted" title="${esc(trip.depart || '')}">${esc(timeLabel(trip.depart))}</td>
+						<td class="data-mono whitespace-nowrap px-3 py-2.5 text-muted" title="${esc(trip.arrive || '')}">${esc(timeLabel(trip.arrive))}</td>
+						<td class="data-mono whitespace-nowrap px-3 py-2.5 text-right tabular-nums text-foreground">${hours.toFixed(1)} h</td>
+						<td class="data-mono whitespace-nowrap px-3 py-2.5 text-right tabular-nums text-foreground">${esc(trip.slab || '—')}</td>
+						<td class="data-mono whitespace-nowrap px-3 py-2.5 text-right tabular-nums font-semibold text-foreground">₹${amount.toLocaleString('en-IN')}</td>
+						<td data-print="hide" class="px-3 py-2.5 text-right">
+							<button type="button" data-remove-trip="${esc(trip.id)}" aria-label="Remove trip" title="Remove trip" class="focus-ring inline-flex h-7 w-7 items-center justify-center rounded-sm text-muted transition-colors hover:text-foreground">×</button>
+						</td>
+					</tr>`;
+				})
+				.join('');
+
+			const total = trips.reduce((sum, trip) => sum + (Number(trip.amount) || 0), 0);
+			sheetFootEl.innerHTML = `<tr class="border-t-2 border-line">
+				<td colspan="9" class="bg-background/40 px-3 py-3">
+					<div class="flex flex-wrap items-center justify-between gap-3">
+						<span class="data-mono text-body-sm text-muted">Total Trips: <span class="font-semibold text-foreground">${trips.length}</span></span>
+						<span class="inline-flex items-center gap-2 rounded-full border border-emerald-600/30 bg-emerald-500/10 px-3 py-1.5 dark:border-emerald-500/30">
+							<span class="data-mono text-eyebrow uppercase text-emerald-700 dark:text-emerald-400">Grand Total Monthly TA</span>
+							<span class="data-mono text-body-md font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">₹${total.toLocaleString('en-IN')}</span>
+						</span>
+					</div>
+				</td>
+			</tr>`;
+		}
+
+		function monthlyText() {
+			const trips = readSheet();
+			const header = ['RailKM — Monthly TA Statement', `Total Trips: ${trips.length}`, ''];
+			if (!trips.length) return [...header, 'No trips added yet.'].join('\n');
+			const lines = trips.map((trip, index) => {
+				const km = typeof trip.km === 'number' ? `${trip.km.toLocaleString('en-IN')} km` : '—';
+				const amount = Number(trip.amount) || 0;
+				const hours = Number(trip.hours) || 0;
+				return `${index + 1}) ${dateLabel(trip.date)} · ${trip.hqCode || '—'} → ${trip.dutyCode || '—'} · ${km} · ${timeLabel(trip.depart)}–${timeLabel(trip.arrive)} · ${hours.toFixed(1)} h · ${trip.slab || '—'} · ₹${amount.toLocaleString('en-IN')}`;
+			});
+			const total = trips.reduce((sum, trip) => sum + (Number(trip.amount) || 0), 0);
+			return [...header, ...lines, '', `Grand Total Monthly TA: ₹${total.toLocaleString('en-IN')}`].join('\n');
+		}
+
+		async function copyText(text) {
+			try {
+				if (navigator.clipboard && window.isSecureContext) {
+					await navigator.clipboard.writeText(text);
+					return true;
+				}
+			} catch {
+				/* fall through to legacy copy */
+			}
+			try {
+				const area = document.createElement('textarea');
+				area.value = text;
+				area.setAttribute('readonly', '');
+				area.style.position = 'fixed';
+				area.style.opacity = '0';
+				document.body.appendChild(area);
+				area.select();
+				const ok = document.execCommand('copy');
+				document.body.removeChild(area);
+				return ok;
+			} catch {
+				return false;
+			}
+		}
+
+		function clearSheet() {
+			const trips = readSheet();
+			if (!trips.length) return;
+			const plural = trips.length === 1 ? '' : 's';
+			if (!window.confirm(`Clear all ${trips.length} saved trip${plural} from this browser?`)) return;
+			writeSheet([]);
+			renderSheet();
+		}
+
+		if (resultEl) {
+			resultEl.addEventListener('click', (event) => {
+				const button = event.target.closest('[data-add-trip]');
+				if (button) addCurrentTrip(button);
+			});
+		}
+		if (sheetBodyEl) {
+			sheetBodyEl.addEventListener('click', (event) => {
+				const button = event.target.closest('[data-remove-trip]');
+				if (button) removeTrip(button.dataset.removeTrip);
+			});
+		}
+
+		const whatsappBtn = document.getElementById('ta-whatsapp');
+		const copySummaryBtn = document.getElementById('ta-copy');
+		const printSheetBtn = document.getElementById('ta-print');
+		const clearSheetBtn = document.getElementById('ta-clear');
+
+		if (whatsappBtn) {
+			whatsappBtn.addEventListener('click', () => {
+				const text = monthlyText();
+				window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+			});
+		}
+		if (copySummaryBtn) {
+			copySummaryBtn.addEventListener('click', async () => {
+				const ok = await copyText(monthlyText());
+				copySummaryBtn.textContent = ok ? 'Copied!' : 'Copy failed';
+				window.setTimeout(() => {
+					copySummaryBtn.textContent = 'Copy Text Summary';
+				}, 1500);
+			});
+		}
+		if (printSheetBtn) {
+			printSheetBtn.addEventListener('click', () => window.print());
+		}
+		if (clearSheetBtn) {
+			clearSheetBtn.addEventListener('click', clearSheet);
+		}
+
+		/* --------------------------------------------------------------- Setup */
+
+		function applyPreset() {
+			const preset = LEVEL_PRESETS[levelSelect && levelSelect.value] || LEVEL_PRESETS['1-5'];
+			const value = daSelect && daSelect.value === 'da' ? preset.da : preset.standard;
+			if (rateInput) rateInput.value = String(value);
+			render();
+		}
+
+		if (levelSelect) levelSelect.addEventListener('change', applyPreset);
+		if (daSelect) daSelect.addEventListener('change', applyPreset);
+		if (rateInput) rateInput.addEventListener('input', render);
+		if (departInput) departInput.addEventListener('input', render);
+		if (arriveInput) arriveInput.addEventListener('input', render);
+
+		async function boot() {
+			applyPreset();
+			renderSheet();
+			try {
+				const response = await fetch('/api/railway-graph.json');
+				if (!response.ok) throw new Error(`Graph request failed (${response.status})`);
+				graph = await response.json();
+			} catch {
+				if (distanceResultEl) {
+					distanceResultEl.innerHTML = `<div class="rounded-md border border-error/40 bg-error/5 p-4" role="alert">
+						<p class="data-mono text-eyebrow uppercase text-error">Station index unavailable</p>
+						<p class="mt-1 text-body-sm text-muted">Could not load the railway graph. Reload the page to try again.</p>
+					</div>`;
+				}
+				return;
+			}
+			computeDistance();
+		}
+
+		boot();
+	</script>
+</Layout>
