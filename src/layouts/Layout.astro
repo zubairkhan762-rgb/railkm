@@ -86,9 +86,9 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 		</a>
 
 		<header data-print="hide" class="sticky top-0 z-50 border-b border-line bg-background/80 backdrop-blur-md">
-			<div class="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-				<div class="flex min-w-0 items-center gap-3 sm:gap-4">
-					<a href="/" class="flex items-center gap-2.5 text-foreground" aria-label="RailKM home">
+			<div class="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-2 px-3 sm:gap-4 sm:px-6">
+				<div class="flex min-w-0 items-center gap-1.5 sm:gap-4">
+					<a href="/" class="flex items-center gap-1.5 text-foreground sm:gap-2.5" aria-label="RailKM home">
 						<span
 							class="flex h-6 w-6 items-center justify-center rounded-sm border border-line bg-surface"
 							aria-hidden="true"
@@ -107,10 +107,10 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 					{
 						backHref && (
 							<>
-								<span class="h-4 w-px bg-line" aria-hidden="true" />
+								<span class="hidden h-4 w-px bg-line sm:block" aria-hidden="true" />
 								<a
 									href={backHref}
-									class="focus-ring inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm border border-line bg-surface px-2.5 py-1 text-label-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5"
+									class="focus-ring inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-sm border border-line bg-surface px-2 py-1 text-label-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5 sm:gap-1.5 sm:px-2.5"
 								>
 									<span aria-hidden="true">←</span>
 									<span class="hidden sm:inline" data-i18n="backToMapper">{backLabel}</span>
@@ -121,7 +121,7 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 					}
 				</div>
 
-				<div class="flex shrink-0 items-center gap-2">
+				<div class="flex shrink-0 items-center gap-1 sm:gap-2">
 					<span
 						class="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 sm:inline-flex"
 						title="Stations indexed from open railway data"
@@ -141,7 +141,7 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 							aria-expanded="false"
 							aria-label="Change language"
 							title="Change language"
-							class="focus-ring inline-flex h-10 items-center gap-1.5 rounded-sm border border-line bg-surface px-2.5 text-body-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5"
+							class="focus-ring inline-flex h-9 items-center gap-1 rounded-sm border border-line bg-surface px-2 text-body-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5 sm:h-10 sm:gap-1.5 sm:px-2.5"
 						>
 							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0 text-muted">
 								<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"></circle>
@@ -151,7 +151,7 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 									stroke-width="1.5"></path>
 							</svg>
 							<span id="lang-current" class="data-mono text-eyebrow uppercase text-foreground">EN</span>
-							<svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true" class="shrink-0 text-muted">
+							<svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true" class="hidden shrink-0 text-muted sm:block">
 								<path
 									d="M3 4.5L6 7.5l3-3"
 									stroke="currentColor"
@@ -187,7 +187,7 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 						href="/ta-calculator"
 						aria-label="Open the Indian Railway TA Calculator"
 						title="Indian Railway TA Calculator"
-						class="focus-ring inline-flex h-10 shrink-0 items-center gap-1.5 rounded-sm border border-emerald-600/30 bg-emerald-500/10 px-2.5 text-label-sm text-emerald-700 transition-colors hover:border-emerald-600/60 hover:bg-emerald-500/20 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-500/20"
+						class="focus-ring inline-flex h-9 shrink-0 items-center gap-1 rounded-sm border border-emerald-600/30 bg-emerald-500/10 px-2 text-label-sm text-emerald-700 transition-colors hover:border-emerald-600/60 hover:bg-emerald-500/20 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-500/20 sm:h-10 sm:gap-1.5 sm:px-2.5"
 					>
 						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
 							<rect x="4" y="2.5" width="16" height="19" rx="2.5" stroke="currentColor" stroke-width="1.6"></rect>
@@ -205,7 +205,7 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 						id="cmdk-trigger"
 						aria-label="Search stations (Ctrl + K)"
 						title="Search stations (Ctrl + K)"
-						class="focus-ring inline-flex h-10 shrink-0 items-center gap-2 rounded-sm border border-line bg-surface px-2.5 text-body-sm text-muted transition-colors hover:border-foreground/40 hover:bg-foreground/5 hover:text-foreground"
+						class="focus-ring inline-flex h-9 shrink-0 items-center gap-1 rounded-sm border border-line bg-surface px-2 text-body-sm text-muted transition-colors hover:border-foreground/40 hover:bg-foreground/5 hover:text-foreground sm:h-10 sm:gap-2 sm:px-2.5"
 					>
 						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
 							<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.75"></circle>
@@ -223,7 +223,7 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 						id="theme-toggle"
 						aria-label="Toggle light and dark theme"
 						title="Toggle light and dark theme"
-						class="focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-line bg-surface text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5"
+						class="focus-ring inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-line bg-surface text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5 sm:h-10 sm:w-10"
 					>
 						<svg class="hidden h-4 w-4 dark:block" viewBox="0 0 24 24" fill="none" aria-hidden="true">
 							<circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.75"></circle>
