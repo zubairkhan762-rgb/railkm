@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import BackToTop from '../components/BackToTop.astro';
 import { buildPopularRoutes } from '../utils/popularRoutes.js';
 
 const presets = [
@@ -651,6 +652,7 @@ const appSchema = {
 	</div>
 	<script slot="head" type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
 	<script slot="head" type="application/ld+json" is:inline set:html={JSON.stringify(appSchema)} />
+	<BackToTop />
 </Layout>
 
 <script>

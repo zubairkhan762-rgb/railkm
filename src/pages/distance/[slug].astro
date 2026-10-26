@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import BackToTop from '../../components/BackToTop.astro';
 import { buildPopularRoutes } from '../../utils/popularRoutes.js';
 import { estimateFares } from '../../utils/routeEngine.js';
 
@@ -371,4 +372,5 @@ const breadcrumbSchema = {
 
 	<script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
 	<script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
+	<BackToTop />
 </Layout>

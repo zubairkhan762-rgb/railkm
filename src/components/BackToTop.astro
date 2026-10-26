@@ -1,0 +1,51 @@
+---
+---
+
+<button
+	id="back-to-top"
+	type="button"
+	aria-label="Back to top"
+	title="Back to top"
+	tabindex="-1"
+	data-print="hide"
+	class="focus-ring fixed bottom-5 right-5 z-40 inline-flex h-11 w-11 translate-y-2 items-center justify-center rounded-full border border-emerald-600/30 bg-surface text-emerald-700 opacity-0 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] transition-all duration-200 pointer-events-none hover:border-emerald-600/60 hover:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-500/20"
+>
+	<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+		<path
+			d="M12 19V5M5 12l7-7 7 7"
+			stroke="currentColor"
+			stroke-width="1.8"
+			stroke-linecap="round"
+			stroke-linejoin="round"></path>
+	</svg>
+</button>
+
+<script>
+	const button = document.getElementById('back-to-top');
+
+	if (button) {
+		const HIDDEN = ['opacity-0', 'pointer-events-none', 'translate-y-2'];
+		const VISIBLE = ['opacity-100', 'pointer-events-auto', 'translate-y-0'];
+		let frame = 0;
+
+		const sync = () => {
+			frame = 0;
+			const visible = window.scrollY > 400;
+			button.classList.remove(...(visible ? HIDDEN : VISIBLE));
+			button.classList.add(...(visible ? VISIBLE : HIDDEN));
+			button.tabIndex = visible ? 0 : -1;
+		};
+
+		const requestSync = () => {
+			if (!frame) frame = window.requestAnimationFrame(sync);
+		};
+
+		button.addEventListener('click', () => {
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		});
+
+		window.addEventListener('scroll', requestSync, { passive: true });
+		window.addEventListener('resize', requestSync, { passive: true });
+		sync();
+	}
+</script>

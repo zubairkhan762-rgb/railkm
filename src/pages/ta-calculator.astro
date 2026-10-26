@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import BackToTop from '../components/BackToTop.astro';
 import graph from '../data/railway-graph.json';
 
 const stationCount = graph.metadata.totalStations.toLocaleString('en-IN');
@@ -1309,4 +1310,5 @@ const taRates = [
 
 		boot();
 	</script>
+	<BackToTop />
 </Layout>
