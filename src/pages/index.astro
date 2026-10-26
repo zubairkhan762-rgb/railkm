@@ -142,18 +142,18 @@ const appSchema = {
 
 		<section
 			data-print="hide"
-			class="relative mx-auto w-full max-w-6xl scroll-mt-20 px-4 pt-6 pb-8 sm:px-6 sm:pt-8"
+			class="relative mx-auto w-full max-w-6xl scroll-mt-20 px-4 pt-4 pb-3 sm:px-6 sm:pt-8 sm:pb-8"
 		>
 			<p class="data-mono text-eyebrow font-medium uppercase text-muted" data-i18n="heroEyebrow">
 				Indian Railways · Distance Engine
 			</p>
 			<h1
-				class="mt-4 max-w-4xl text-balance text-heading-lg font-semibold text-foreground sm:text-display-xl"
+				class="mt-2 max-w-4xl text-balance text-2xl font-semibold text-foreground sm:mt-4 sm:text-display-xl"
 				data-i18n="heroTitle"
 			>
 				Exact Railway Track Distance &amp; Multi-Via Route Mapper
 			</h1>
-			<p class="mt-4 max-w-2xl text-body-lg text-muted" data-i18n="heroDesc">
+			<p class="mt-3 hidden max-w-2xl text-body-lg text-muted sm:mt-4 sm:block" data-i18n="heroDesc">
 				Compute shortest-track kilometres between any two stations, chain multiple via stops
 				for break-journey routing, and inspect every intermediate halt — with cumulative
 				kilometres, HRMS Pass 15% extra distance limit, and automatic double-back detection.
@@ -161,10 +161,10 @@ const appSchema = {
 		</section>
 
 		<section id="mapper" class="relative mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6">
-			<div data-print="hide" class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+			<div data-print="hide" class="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
 				<div class="lg:col-span-5">
-					<div class="flex flex-col gap-6 lg:sticky lg:top-20">
-						<div class="rounded-lg border border-line bg-surface p-5 sm:p-6">
+					<div class="flex flex-col gap-4 lg:sticky lg:top-20 lg:gap-6">
+						<div class="rounded-lg border border-line bg-surface p-4 sm:p-6">
 							<div class="flex items-center justify-between gap-4">
 								<div>
 									<p class="data-mono text-eyebrow uppercase text-muted" data-i18n="routeBuilder">Route Builder</p>
@@ -175,13 +175,13 @@ const appSchema = {
 								<span class="data-mono hidden text-eyebrow text-muted sm:inline" data-i18n="upToStops">Up to 8 stops</span>
 							</div>
 
-							<div id="chain-builder" class="mt-5 flex flex-col gap-4">
+							<div id="chain-builder" class="mt-3 flex flex-col gap-3 sm:mt-5 sm:gap-4">
 								<p class="text-body-sm text-muted">Loading station index…</p>
 							</div>
 
 							<label
 								for="hrms-pass"
-								class="mt-4 flex cursor-pointer items-start gap-3 rounded-sm border border-emerald-600/30 bg-emerald-500/10 p-3.5 transition-colors hover:border-emerald-600/60 dark:border-emerald-500/30 dark:hover:border-emerald-500/60"
+								class="mt-3 flex cursor-pointer items-start gap-3 rounded-sm border border-emerald-600/30 bg-emerald-500/10 p-3 transition-colors hover:border-emerald-600/60 sm:mt-4 sm:p-3.5 dark:border-emerald-500/30 dark:hover:border-emerald-500/60"
 							>
 								<input
 									id="hrms-pass"
@@ -196,7 +196,7 @@ const appSchema = {
 								</span>
 							</label>
 
-							<div class="mt-5 flex flex-wrap items-center gap-2 border-t border-line pt-4">
+							<div class="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3 sm:mt-5 sm:pt-4">
 								<button
 									type="button"
 									id="add-via"
@@ -242,7 +242,7 @@ const appSchema = {
 								</button>
 							</div>
 
-							<div id="saved-routes" class="mt-5 border-t border-line pt-4"></div>
+							<div id="saved-routes" class="mt-3 border-t border-line pt-3 sm:mt-5 sm:pt-4"></div>
 						</div>
 
 						<div>
