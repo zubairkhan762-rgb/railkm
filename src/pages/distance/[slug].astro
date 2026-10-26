@@ -102,7 +102,7 @@ const breadcrumbSchema = {
 		>
 		</div>
 
-		<div class="relative mx-auto w-full max-w-4xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16">
+		<div class="relative mx-auto w-full max-w-4xl px-4 pt-12 pb-6 sm:px-6 sm:pt-16 sm:pb-24">
 			<nav aria-label="Breadcrumb" class="data-mono text-eyebrow uppercase text-muted">
 				<ol class="flex flex-wrap items-center gap-2">
 					<li><a class="focus-ring rounded-sm transition-colors hover:text-foreground" href="/">Home</a></li>
@@ -243,7 +243,7 @@ const breadcrumbSchema = {
 
 			{
 				junctions.length > 0 && (
-					<section aria-labelledby="junctions-heading" class="mt-12">
+					<section aria-labelledby="junctions-heading" class="mt-8 sm:mt-12">
 						<h2 id="junctions-heading" class="text-heading-md font-semibold text-foreground">
 							Major junctions on route
 						</h2>
@@ -260,7 +260,7 @@ const breadcrumbSchema = {
 				)
 			}
 
-			<section aria-labelledby="table-heading" class="mt-12">
+			<section aria-labelledby="table-heading" class="mt-8 sm:mt-12">
 				<h2 id="table-heading" class="text-heading-md font-semibold text-foreground">
 					Station-by-station distance table
 				</h2>
@@ -301,14 +301,14 @@ const breadcrumbSchema = {
 				</div>
 			</section>
 
-			<section aria-labelledby="faq-heading" class="mt-12">
+			<section aria-labelledby="faq-heading" class="mt-8 sm:mt-12">
 				<h2 id="faq-heading" class="text-heading-md font-semibold text-foreground">
 					Frequently asked questions
 				</h2>
 				<div class="mt-4 flex flex-col gap-3">
 					{faqs.map((faq) => (
 						<details class="group rounded-md border border-line bg-surface transition-colors hover:border-foreground/40">
-							<summary class="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-body-md font-medium text-foreground [&::-webkit-details-marker]:hidden">
+							<summary class="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 p-4 text-body-md font-medium text-foreground sm:p-5 [&::-webkit-details-marker]:hidden">
 								<span>{faq.question}</span>
 								<svg
 									class="h-4 w-4 shrink-0 text-muted transition-transform group-open:rotate-180"
@@ -325,13 +325,13 @@ const breadcrumbSchema = {
 									/>
 								</svg>
 							</summary>
-							<div class="border-t border-line px-5 py-4 text-body-sm text-muted">{faq.answer}</div>
+							<div class="border-t border-line px-4 py-3 text-body-sm text-muted sm:px-5 sm:py-4">{faq.answer}</div>
 						</details>
 					))}
 				</div>
 			</section>
 
-			<p class="mt-10 text-body-sm text-muted">
+			<p class="mt-6 text-body-sm text-muted sm:mt-10">
 				Distances are shortest available track kilometres, derived from open railway timetable
 				data (DataMeet). For a multi-via, break-journey plan, open the
 				<a class="focus-ring rounded-sm text-link transition-colors hover:text-foreground" href={mapperUrl}>RailKM route mapper</a>.
