@@ -712,6 +712,15 @@ const appSchema = {
 		if (input) input.focus();
 	}
 
+	/** Enter moves down the chain; on the last stop it calculates the route. */
+	function advanceFromInput(index) {
+		if (index < slots.length - 1) {
+			focusInput(index + 1);
+			return;
+		}
+		computeRoute();
+	}
+
 	/* ---------------------------------------------------------------- Builder */
 
 	function renderBuilder(focusIndex = null) {
@@ -960,13 +969,13 @@ const appSchema = {
 			event.preventDefault();
 			setActive(index, Math.max(state.active - 1, 0));
 		} else if (event.key === 'Enter') {
+			event.preventDefault();
 			if (open && state.active >= 0) {
-				event.preventDefault();
 				selectStation(index, state.results[state.active]);
 			} else if (open && state.results.length) {
-				event.preventDefault();
 				selectStation(index, state.results[0]);
 			}
+			advanceFromInput(index);
 		} else if (event.key === 'Tab' && open && state.active >= 0) {
 			event.preventDefault();
 			selectStation(index, state.results[state.active]);
