@@ -270,9 +270,20 @@ const nameOf = (graph, code) => {
 	return key ? officialNameForGraphKey(key, graph.stations[key]) : code;
 };
 
+/**
+ * The raw graph flags any station with 3+ track neighbours as a junction, which
+ * creates false positives for ordinary halts (e.g. Liluah, Bally). A real
+ * junction must instead carry "JN"/"JUNCTION" in its official station name.
+ */
+const JUNCTION_NAME_RE = /(?:^|\s)(?:JN|JUNCTION)\b/i;
+
+const isJunctionName = (name) => JUNCTION_NAME_RE.test(name || '');
+
 const isJunctionOf = (graph, code) => {
 	const key = graphKeyFor(graph, code);
-	return !!(key && graph.stations[key]?.isJunction);
+	if (!key) return false;
+	const node = graph.stations[key];
+	return isJunctionName(officialNameForGraphKey(key, node));
 };
 
 /** Public, display-ready view of a station (official code + name + metadata). */

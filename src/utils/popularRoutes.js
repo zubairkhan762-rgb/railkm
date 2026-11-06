@@ -38,7 +38,7 @@ export const POPULAR_ROUTE_PAIRS = Object.freeze([
 	['HWH', 'RNC'], ['HWH', 'BPL'],
 	// — Cross-country —
 	['JP', 'NDLS'], ['LKO', 'NDLS'], ['PNBE', 'NDLS'], ['SC', 'BZA'], ['VGLJ', 'BPL'],
-	['RTM', 'JAO'], ['GKP', 'NDLS'], ['BPL', 'NGP'], ['AGC', 'GWL'], ['GWL', 'BPL'],
+	['RTM', 'JAO'], ['RTM', 'JP'], ['GKP', 'NDLS'], ['BPL', 'NGP'], ['AGC', 'GWL'], ['GWL', 'BPL'],
 	['SUR', 'PUNE'], ['ADI', 'BRC'], ['PNBE', 'HWH'], ['BBS', 'HWH'], ['CNB', 'LKO'],
 	['BPL', 'NDLS'], ['ADI', 'MMCT'], ['PUNE', 'CSMT'],
 ]);

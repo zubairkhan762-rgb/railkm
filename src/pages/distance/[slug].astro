@@ -122,7 +122,7 @@ const breadcrumbSchema = {
 				passing {intermediateStops} intermediate stations across {route.stopCount} halts.
 			</p>
 
-			<dl class="mt-8 grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-3">
+			<dl class="mt-8 grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
 				<div class="bg-surface p-5">
 					<dt class="data-mono text-eyebrow uppercase text-muted">Total Track Distance</dt>
 					<dd class="mt-3 data-mono text-3xl font-semibold tabular-nums tracking-normal text-foreground sm:text-4xl">
@@ -134,6 +134,13 @@ const breadcrumbSchema = {
 					<dd class="mt-3 data-mono text-3xl font-semibold tabular-nums tracking-normal text-foreground sm:text-4xl">
 						{intermediateStops.toLocaleString('en-IN')}
 					</dd>
+				</div>
+				<div class="bg-surface p-5">
+					<dt class="data-mono text-eyebrow uppercase text-emerald-700 dark:text-emerald-400">HRMS +15% Max Limit</dt>
+					<dd class="mt-3 data-mono text-3xl font-semibold tabular-nums tracking-normal text-foreground sm:text-4xl">
+						{hrmsMaxText}<span class="ml-1 text-label-sm font-normal text-muted">km</span>
+					</dd>
+					<p class="mt-1 data-mono text-eyebrow text-emerald-700 dark:text-emerald-400">+{hrmsExtraText} km grace</p>
 				</div>
 				<div class="bg-surface p-5">
 					<dt class="data-mono text-eyebrow uppercase text-muted">Major Junctions</dt>
