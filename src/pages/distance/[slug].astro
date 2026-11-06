@@ -32,8 +32,8 @@ const hrmsMax = Math.round((route.totalDistanceKm + hrmsExtra) * 10) / 10;
 const hrmsExtraText = hrmsExtra.toLocaleString('en-IN', { maximumFractionDigits: 1 });
 const hrmsMaxText = hrmsMax.toLocaleString('en-IN', { maximumFractionDigits: 1 });
 
-const title = `Exact Railway Distance from ${fromName} (${from}) to ${toName} (${to}) — ${route.totalDistanceKm} km | RailKM`;
-const description = `The shortest Indian Railways track distance from ${fromName} (${from}) to ${toName} (${to}) is ${route.totalDistanceKm} km, passing ${intermediateStops} intermediate stations${junctions.length ? ` and ${junctions.length} junctions` : ''}. Full station-by-station cumulative-kilometre table and break-journey via planner.`;
+const title = `${fromName} to ${toName} Train Track Distance (${route.totalDistanceKm.toLocaleString('en-IN')} KM) — Intermediate Stations, Route Map & HRMS 15% Limit`;
+const description = `Exact railway track distance from ${fromName} (${from}) to ${toName} (${to}) is ${route.totalDistanceKm.toLocaleString('en-IN')} km (not road distance). View all intermediate junction halts, shortest path via junction, HRMS Pass max allowed KM (${hrmsMaxText} km) & fare slabs.`;
 
 const faqs = [
 	{
