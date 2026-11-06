@@ -657,25 +657,34 @@ export function calculateMultiViaRoute(graph, stationChain) {
 /* ------------------------------------------------------------------ Fares */
 
 /**
- * Approximate standard Indian Railways passenger fares, by class.
+ * Approximate standard Indian Railways Mail/Express passenger fares, by class.
  *
- * Modelled on the ordinary Express/Mail fare structure — a fixed base-fare
- * component plus a per-kilometre charge, with the standard reservation fee and
- * superfast surcharge folded into those two components. The result is rounded
- * to the nearest ₹5 (IR fares conventionally end in 0 or 5).
+ * Indian Railways uses telescopic distance slabs: the per-kilometre charge
+ * falls as the journey gets longer. Instead of a flat multiplier we model that
+ * decline with a power curve —
  *
- * Calibration check — a 278 km run (e.g. NDLS → JP):
- *   Sleeper ₹30 + 278×₹0.85 ≈ ₹265   ·   AC 3-Tier ₹250 + 278×₹2.20 ≈ ₹860
+ *   fare = base + rate × km^0.75
+ *
+ * where `base` folds in the minimum/reservation charge and `rate` is the
+ * class-specific per-km factor. The exponent below 1 reproduces the shrinking
+ * marginal rate of the real slab table. Results are rounded to the nearest ₹5
+ * (IR fares conventionally end in 0 or 5).
+ *
+ * Calibration check against ordinary Mail/Express fares:
+ *   342 km  → SL ₹245 · 3AC ₹650 · 2AC ₹950 · 1AC ₹1550
+ *   1400 km → SL ₹630 · 3AC ₹1650 · 2AC ₹2400 · 1AC ₹4100
  *
  * These remain planning estimates only — real fares vary by train type,
  * distance slab, dynamic pricing and GST.
  */
 const FARE_CLASSES = Object.freeze([
-	Object.freeze({ code: 'SL', short: 'Sleeper', label: 'Sleeper (SL)', base: 30, rate: 0.85 }),
-	Object.freeze({ code: '3AC', short: '3AC', label: 'AC 3-Tier (3AC)', base: 250, rate: 2.2 }),
-	Object.freeze({ code: '2AC', short: '2AC', label: 'AC 2-Tier (2AC)', base: 350, rate: 3.2 }),
-	Object.freeze({ code: '1AC', short: '1AC', label: 'AC First Class (1AC)', base: 600, rate: 5.5 }),
+	Object.freeze({ code: 'SL', short: 'Sleeper', label: 'Sleeper (SL)', base: 40, rate: 2.5779 }),
+	Object.freeze({ code: '3AC', short: '3AC', label: 'AC 3-Tier (3AC)', base: 117.5, rate: 6.6959 }),
+	Object.freeze({ code: '2AC', short: '2AC', label: 'AC 2-Tier (2AC)', base: 177.9, rate: 9.709 }),
+	Object.freeze({ code: '1AC', short: '1AC', label: 'AC First Class (1AC)', base: 192.1, rate: 17.0745 }),
 ]);
+
+const FARE_DISTANCE_EXPONENT = 0.75;
 
 const roundFare = (value) => Math.max(0, Math.round(value / 5) * 5);
 
@@ -687,8 +696,9 @@ const roundFare = (value) => Math.max(0, Math.round(value / 5) * 5);
 export function estimateFares(totalKm) {
 	const km = Number(totalKm);
 	const distanceKm = Number.isFinite(km) && km > 0 ? km : 0;
+	const distanceFactor = distanceKm > 0 ? Math.pow(distanceKm, FARE_DISTANCE_EXPONENT) : 0;
 	return FARE_CLASSES.map((cls) => {
-		const fare = distanceKm > 0 ? roundFare(cls.base + distanceKm * cls.rate) : 0;
+		const fare = distanceKm > 0 ? roundFare(cls.base + cls.rate * distanceFactor) : 0;
 		return { code: cls.code, short: cls.short, label: cls.label, fare };
 	});
 }
