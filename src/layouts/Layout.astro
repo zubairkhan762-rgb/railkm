@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import graph from '../data/railway-graph.json';
-import { LANGUAGES } from '../utils/i18n.js';
+import { AVAILABLE_LANGUAGES } from '../utils/i18n.js';
 
 interface Props {
 	title?: string;
@@ -167,7 +167,7 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 							class="absolute right-0 z-50 mt-1 hidden max-h-80 w-44 overflow-auto rounded-md border border-line bg-surface p-1 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.8)]"
 						>
 							{
-								LANGUAGES.map((option) => (
+								AVAILABLE_LANGUAGES.map((option) => (
 									<button
 										type="button"
 										data-lang-option={option.code}
