@@ -1,0 +1,67 @@
+---
+import Layout from '../layouts/Layout.astro';
+import BackToTop from '../components/BackToTop.astro';
+import { buildPopularRoutes } from '../utils/popularRoutes.js';
+
+const popularRoutes = buildPopularRoutes();
+
+const title = 'All Popular Railway Distance Routes — RailKM Route Directory';
+const description = `Browse all ${popularRoutes.length} pre-computed Indian Railways shortest-track distance routes, with intermediate stations, major junctions, HRMS 15% limits and fare estimates.`;
+---
+
+<Layout title={title} description={description} backHref="/" backLabel="Back to Route Mapper">
+	<div class="relative mx-auto w-full max-w-6xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16">
+		<nav aria-label="Breadcrumb" class="data-mono text-eyebrow uppercase text-muted">
+			<ol class="flex flex-wrap items-center gap-2">
+				<li><a class="focus-ring rounded-sm transition-colors hover:text-foreground" href="/">Home</a></li>
+				<li aria-hidden="true">/</li>
+				<li class="text-foreground">All Routes</li>
+			</ol>
+		</nav>
+
+		<p class="mt-8 data-mono text-eyebrow font-medium uppercase text-muted">Route Directory</p>
+		<h1 class="mt-5 text-balance text-heading-lg font-semibold text-foreground">
+			All popular railway distance routes
+		</h1>
+		<p class="mt-4 max-w-2xl text-body-lg text-muted">
+			{popularRoutes.length} pre-computed shortest-track routes across the Indian Railways network.
+			Open any route for its station-by-station distance table, major junctions, HRMS 15% limit and
+			estimated fares.
+		</p>
+
+		<div class="mt-8 grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+			{
+				popularRoutes.map((entry) => (
+					<a
+						href={`/distance/${entry.slug}`}
+						class="focus-ring group flex h-full items-center justify-between gap-3 rounded-md border border-line bg-surface p-4 transition-colors hover:border-foreground/40 hover:bg-foreground/5"
+					>
+						<span class="min-w-0">
+							<span class="data-mono block text-body-md font-semibold text-foreground">
+								{entry.from}
+								<span class="text-muted" aria-hidden="true"> → </span>
+								{entry.to}
+							</span>
+							<span class="mt-0.5 block truncate text-body-sm text-muted">
+								{entry.fromName} to {entry.toName}
+							</span>
+						</span>
+						<span class="data-mono shrink-0 text-body-sm tabular-nums text-muted">
+							{entry.route.totalDistanceKm.toLocaleString('en-IN')} km
+						</span>
+					</a>
+				))
+			}
+		</div>
+
+		<div class="mt-8 border-t border-line pt-6">
+			<p class="text-body-sm text-muted">
+				Cannot find your route? Open the
+				<a class="focus-ring rounded-sm text-link transition-colors hover:text-foreground" href="/">RailKM route mapper</a>
+				to calculate any station pair or chain up to eight via stops.
+			</p>
+		</div>
+	</div>
+
+	<BackToTop />
+</Layout>

@@ -31,6 +31,7 @@ export const GET: APIRoute = ({ site }) => {
 			changefreq: 'monthly',
 			priority: '0.8',
 		})),
+		{ loc: new URL('/routes', base).href, lastmod, changefreq: 'weekly', priority: '0.7' },
 		{ loc: new URL('/about', base).href, lastmod, changefreq: 'monthly', priority: '0.5' },
 		{ loc: new URL('/contact', base).href, lastmod, changefreq: 'monthly', priority: '0.5' },
 		{ loc: new URL('/privacy-policy', base).href, lastmod, changefreq: 'yearly', priority: '0.3' },
