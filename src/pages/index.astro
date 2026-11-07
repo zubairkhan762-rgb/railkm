@@ -672,6 +672,7 @@ const appSchema = {
 
 <script>
 	import {
+		alternativeRoutes,
 		calculateMultiViaRoute,
 		resolveStation,
 		searchStations,
@@ -1045,6 +1046,25 @@ const appSchema = {
 		computeRoute();
 	}
 
+	function applyAlternativeVia(code) {
+		if (!graph) return;
+		const resolved = resolveStation(graph, code);
+		if (!resolved) return;
+
+		const origin = slots[0].code;
+		const destination = slots[slots.length - 1].code;
+		if (!origin || !destination) return;
+
+		slots = [
+			{ code: origin, query: origin },
+			{ code: resolved.code, query: resolved.code },
+			{ code: destination, query: destination },
+		];
+		renderBuilder();
+		computeRoute();
+		announce(`Alternative route via ${resolved.code} applied.`);
+	}
+
 	function setStationFromSearch(role, code) {
 		if (!graph) return;
 		const resolved = resolveStation(graph, code);
@@ -1150,6 +1170,56 @@ const appSchema = {
 		</section>`;
 	}
 
+	const alternativeCache = new Map();
+	const ALT_CACHE_LIMIT = 40;
+
+	function getAlternatives(origin, destination) {
+		const key = `${origin}>${destination}`;
+		const cached = alternativeCache.get(key);
+		if (cached) return cached;
+
+		const alternatives = alternativeRoutes(graph, origin, destination, { maxRoutes: 2 });
+		if (alternativeCache.size >= ALT_CACHE_LIMIT) {
+			alternativeCache.delete(alternativeCache.keys().next().value);
+		}
+		alternativeCache.set(key, alternatives);
+		return alternatives;
+	}
+
+	function alternativesHtml(route) {
+		if (!graph || route.chain.length > 3) return '';
+
+		const origin = route.chain[0];
+		const destination = route.chain[route.chain.length - 1];
+		const currentVias = new Set(route.chain.slice(1, -1));
+		const alternatives = getAlternatives(origin, destination).filter(
+			(alt) => !currentVias.has(alt.via.code)
+		);
+		if (!alternatives.length) return '';
+
+		const chips = alternatives
+			.map((alt) => {
+				const delta = alt.deltaKm > 0 ? `+${alt.deltaKm.toLocaleString('en-IN')}` : alt.deltaKm.toLocaleString('en-IN');
+				const title = `${alt.via.code} · ${alt.via.name} · ${alt.distanceKm.toLocaleString('en-IN')} km (${delta} km)`;
+				const aria = `Calculate route via ${alt.via.code}, ${alt.via.name}, ${alt.distanceKm.toLocaleString('en-IN')} kilometres, ${delta} kilometres longer`;
+				return `<li>
+					<button type="button" data-alt-via="${esc(alt.via.code)}" title="${esc(title)}" aria-label="${esc(aria)}" class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-full border border-line bg-background px-4 py-2 text-body-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5">
+						<span>Via <span translate="no" class="data-mono font-semibold">${esc(alt.via.code)}</span></span>
+						<span class="data-mono text-eyebrow text-muted">${esc(delta)} km</span>
+					</button>
+				</li>`;
+			})
+			.join('');
+
+		return `<section aria-label="Alternative routes" class="rounded-md border border-line bg-surface p-4 sm:p-5">
+			<div class="flex flex-wrap items-center justify-between gap-2">
+				<h2 class="data-mono text-eyebrow uppercase text-muted">Alternative Routes</h2>
+				<span class="data-mono text-eyebrow text-muted">Click a chip to apply</span>
+			</div>
+			<ul class="mt-3 flex flex-wrap gap-2">${chips}</ul>
+		</section>`;
+	}
+
 	function hrmsHtml(totalKm) {
 		const extra = Math.round(totalKm * 0.15 * 10) / 10;
 		const max = Math.round((totalKm + extra) * 10) / 10;
@@ -1236,6 +1306,7 @@ const appSchema = {
 				</div>
 			</div>
 			${bentoHtml({ total: route.totalDistanceKm, legs: route.legCount, stops: intermediate, status })}
+			${alternativesHtml(route)}
 			${hrmsCheckbox && hrmsCheckbox.checked ? hrmsHtml(route.totalDistanceKm) : ''}
 			${faresHtml(route.totalDistanceKm)}
 			<section aria-label="Leg-by-leg track path" class="flex flex-col gap-3">
@@ -1367,6 +1438,10 @@ const appSchema = {
 				window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
 			});
 		}
+
+		resultsEl.querySelectorAll('[data-alt-via]').forEach((chip) => {
+			chip.addEventListener('click', () => applyAlternativeVia(chip.dataset.altVia));
+		});
 
 		resultsEl.querySelectorAll('[data-leg-toggle]').forEach((toggle) => {
 			toggle.addEventListener('click', () => {

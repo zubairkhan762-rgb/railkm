@@ -381,6 +381,268 @@ export function shortestPath(graph, from, to) {
 	return { path, links, distanceKm: dist.get(goal) };
 }
 
+/* -------------------------------------------------- Alternative routes */
+
+/**
+ * Alternative-route tuning. A candidate must stay within 60% of the primary
+ * distance, differ from it by at least 10% of its length, and route through a
+ * junction that is not merely a neighbour of the primary path.
+ */
+const ALT_MAX_DETOUR_RATIO = 1.6;
+const ALT_MIN_UNIQUE_RATIO = 0.1;
+const ALT_MIN_JUNCTION_DEGREE = 3;
+const ALT_MAX_OVERLAP = 0.85;
+
+/**
+ * Dijkstra from one source to every reachable station, bounded by `limit` km.
+ * Returns `{ dist, prev }` keyed by graph station code. Used to score every
+ * potential via-junction in two passes instead of running a full search per
+ * candidate (which is what makes Yen's algorithm too slow in a browser).
+ */
+function shortestPathTree(graph, source, limit) {
+	const dist = new Map();
+	const prev = new Map();
+	const settled = new Set();
+	const heap = new MinHeap(1024);
+
+	dist.set(source, 0);
+	heap.push(source, 0);
+
+	while (heap.size > 0) {
+		heap.pop();
+		const u = heap.poppedNode;
+		const d = heap.poppedDist;
+		if (settled.has(u)) continue;
+		settled.add(u);
+
+		const neighbors = graph.edges[u];
+		if (!neighbors) continue;
+		for (let i = 0; i < neighbors.length; i++) {
+			const edge = neighbors[i];
+			if (settled.has(edge.to)) continue;
+			const nextDist = d + edge.km;
+			if (nextDist > limit) continue;
+			const known = dist.get(edge.to);
+			if (known === undefined || nextDist < known) {
+				dist.set(edge.to, nextDist);
+				prev.set(edge.to, { from: u, to: edge.to, km: edge.km });
+				heap.push(edge.to, nextDist);
+			}
+		}
+	}
+
+	return { dist, prev };
+}
+
+/** Walk a Dijkstra predecessor tree from `source` to `target`. */
+function pathFromTree(prev, source, target) {
+	const path = [];
+	const links = [];
+	const visited = new Set();
+	let cursor = target;
+
+	while (cursor !== source) {
+		if (visited.has(cursor)) return null;
+		visited.add(cursor);
+		const link = prev.get(cursor);
+		if (!link) return null;
+		links.push(link);
+		path.push(cursor);
+		cursor = link.from;
+	}
+
+	path.push(source);
+	path.reverse();
+	links.reverse();
+	return { path, links };
+}
+
+/** Join start→via and via→goal halves into one loopless path. */
+function buildViaPath(treeStart, treeGoal, start, via, goal) {
+	const forward = pathFromTree(treeStart.prev, start, via);
+	const backward = pathFromTree(treeGoal.prev, goal, via);
+	if (!forward || !backward) return null;
+
+	const tail = backward.path.slice(0, -1).reverse();
+	const path = forward.path.concat(tail);
+	const tailLinks = backward.links
+		.slice()
+		.reverse()
+		.map((link) => ({ from: link.to, to: link.from, km: link.km }));
+
+	return { path, links: forward.links.concat(tailLinks) };
+}
+
+/**
+ * On a discovered alternative corridor, label it with the most central major
+ * junction rather than whichever spur junction happened to generate it. This
+ * turns an obscure early junction into a recognisable name such as BPL or KOTA.
+ */
+function pickViaOnPath(graph, pathKeys, baseSet, seenVia) {
+	const n = pathKeys.length;
+	if (n < 3) return null;
+	let best = null;
+	const half = (n - 1) / 2 || 1;
+
+	for (let i = 1; i < n - 1; i++) {
+		const key = pathKeys[i];
+		if (baseSet.has(key)) continue;
+		const node = graph.stations[key];
+		if (!node) continue;
+		const name = officialNameForGraphKey(key, node);
+		if (!isJunctionName(name)) continue;
+		const code = officialCodeForGraphKey(key);
+		if (seenVia.has(code)) continue;
+		const neighbors = graph.edges[key] || [];
+		if (neighbors.length < ALT_MIN_JUNCTION_DEGREE) continue;
+
+		const centrality = 1 - Math.abs(i - half) / half;
+		const score = centrality * 10 + Math.min(neighbors.length, 8);
+		if (!best || score > best.score) {
+			best = { key, code, name, score };
+		}
+	}
+
+	return best ? { code: best.code, name: best.name, graphCode: best.key } : null;
+}
+
+/**
+ * Practical alternative routes between two stations.
+ *
+ * Runs two bounded Dijkstra trees (from the origin and from the destination),
+ * then evaluates every major junction as a possible via point using
+ * `dist(origin→J) + dist(J→destination)`. Because the suggestion is exactly
+ * that junction, clicking it reproduces the advertised distance through the
+ * normal multi-via planner. Candidates are ranked by distance and filtered so
+ * each one is a genuinely different corridor.
+ *
+ * Returns [{ via: { code, name, graphCode }, distanceKm, deltaKm, path }].
+ */
+export function alternativeRoutes(graph, from, to, options = {}) {
+	if (!graph?.stations || !graph?.edges) return [];
+
+	const maxRoutes = Number.isInteger(options.maxRoutes) ? options.maxRoutes : 2;
+	const maxDetourRatio = Number.isFinite(options.maxDetourRatio)
+		? options.maxDetourRatio
+		: ALT_MAX_DETOUR_RATIO;
+
+	const start = graphKeyFor(graph, from);
+	const goal = graphKeyFor(graph, to);
+	if (!start || !goal || start === goal) return [];
+
+	const base = shortestPath(graph, from, to);
+	if (!base || base.path.length < 3 || !(base.distanceKm > 0)) return [];
+
+	const baseKm = base.distanceKm;
+	const baseKeys = base.path.map((code) => graphKeyFor(graph, code));
+	const baseSet = new Set(baseKeys);
+	const baseEdges = new Set();
+	for (const link of base.links) {
+		const a = graphKeyFor(graph, link.from);
+		const b = graphKeyFor(graph, link.to);
+		baseEdges.add(`${a}>${b}`);
+		baseEdges.add(`${b}>${a}`);
+	}
+
+	const limit = baseKm * maxDetourRatio;
+	const startTree = shortestPathTree(graph, start, limit);
+	const goalTree = shortestPathTree(graph, goal, limit);
+	const minUniqueKm = Math.max(10, baseKm * ALT_MIN_UNIQUE_RATIO);
+
+	const candidates = [];
+	for (const key of Object.keys(graph.stations)) {
+		if (baseSet.has(key)) continue;
+
+		const toVia = startTree.dist.get(key);
+		const fromVia = goalTree.dist.get(key);
+		if (toVia === undefined || fromVia === undefined) continue;
+
+		const viaKm = toVia + fromVia;
+		if (viaKm > limit || viaKm < baseKm + minUniqueKm) continue;
+
+		const node = graph.stations[key];
+		const name = officialNameForGraphKey(key, node);
+		if (!isJunctionName(name)) continue;
+
+		const neighbors = graph.edges[key] || [];
+		if (neighbors.length < ALT_MIN_JUNCTION_DEGREE) continue;
+		// A junction touching the primary path is only a micro-detour, not a corridor.
+		if (neighbors.some((edge) => baseSet.has(edge.to))) continue;
+
+		candidates.push({
+			key,
+			code: officialCodeForGraphKey(key),
+			name,
+			viaKm,
+			degree: neighbors.length,
+		});
+	}
+
+	candidates.sort(
+		(a, b) =>
+			a.viaKm - b.viaKm ||
+			b.degree - a.degree ||
+			(a.code < b.code ? -1 : a.code > b.code ? 1 : 0)
+	);
+
+	const results = [];
+	const acceptedPaths = [];
+	const seenVia = new Set();
+
+	for (const candidate of candidates) {
+		if (results.length >= maxRoutes) break;
+
+		const built = buildViaPath(startTree, goalTree, start, candidate.key, goal);
+		if (!built) continue;
+
+		const via = pickViaOnPath(graph, built.path, baseSet, seenVia);
+		if (!via) continue;
+
+		const toVia = startTree.dist.get(via.graphCode);
+		const fromVia = goalTree.dist.get(via.graphCode);
+		if (toVia === undefined || fromVia === undefined) continue;
+
+		const viaKm = toVia + fromVia;
+		if (viaKm > limit || viaKm < baseKm + minUniqueKm) continue;
+
+		const viaBuilt = buildViaPath(startTree, goalTree, start, via.graphCode, goal);
+		if (!viaBuilt) continue;
+
+		const pathSet = new Set(viaBuilt.path);
+		if (pathSet.size !== viaBuilt.path.length) continue; // loopless only
+
+		let uniqueKm = 0;
+		for (const link of viaBuilt.links) {
+			if (!baseEdges.has(`${link.from}>${link.to}`)) uniqueKm += link.km;
+		}
+		if (uniqueKm < minUniqueKm) continue;
+
+		let tooSimilar = false;
+		for (const accepted of acceptedPaths) {
+			let shared = 0;
+			for (const node of pathSet) {
+				if (accepted.has(node)) shared += 1;
+			}
+			if (shared / pathSet.size > ALT_MAX_OVERLAP) {
+				tooSimilar = true;
+				break;
+			}
+		}
+		if (tooSimilar) continue;
+
+		seenVia.add(via.code);
+		acceptedPaths.push(pathSet);
+		results.push({
+			via,
+			distanceKm: Math.round(viaKm * 10) / 10,
+			deltaKm: Math.round((viaKm - baseKm) * 10) / 10,
+			path: viaBuilt.path.map((key) => officialCodeForGraphKey(key)),
+		});
+	}
+
+	return results;
+}
+
 /** Resolve user input (code, alias or exact name) to a graph station. */
 export function resolveStation(graph, input) {
 	if (!input || typeof input !== 'string' || !graph?.stations) return null;
