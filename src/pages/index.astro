@@ -676,6 +676,7 @@ const appSchema = {
 		calculateMultiViaRoute,
 		resolveStation,
 		searchStations,
+		shortestPath,
 		stationInfo,
 		estimateFares,
 	} from '../utils/routeEngine.js';
@@ -1065,6 +1066,15 @@ const appSchema = {
 		announce(`Alternative route via ${resolved.code} applied.`);
 	}
 
+	function applyDirectRoute() {
+		if (!graph) return;
+		const origin = slots[0].code;
+		const destination = slots[slots.length - 1].code;
+		if (!origin || !destination) return;
+		applyRoute([origin, destination]);
+		announce('Direct shortest route applied.');
+	}
+
 	function setStationFromSearch(role, code) {
 		if (!graph) return;
 		const resolved = resolveStation(graph, code);
@@ -1173,17 +1183,21 @@ const appSchema = {
 	const alternativeCache = new Map();
 	const ALT_CACHE_LIMIT = 40;
 
-	function getAlternatives(origin, destination) {
+	function getAlternativeData(origin, destination) {
 		const key = `${origin}>${destination}`;
 		const cached = alternativeCache.get(key);
 		if (cached) return cached;
 
-		const alternatives = alternativeRoutes(graph, origin, destination, { maxRoutes: 2 });
+		const direct = shortestPath(graph, origin, destination);
+		const data = {
+			directKm: direct ? direct.distanceKm : null,
+			alternatives: alternativeRoutes(graph, origin, destination, { maxRoutes: 2 }),
+		};
 		if (alternativeCache.size >= ALT_CACHE_LIMIT) {
 			alternativeCache.delete(alternativeCache.keys().next().value);
 		}
-		alternativeCache.set(key, alternatives);
-		return alternatives;
+		alternativeCache.set(key, data);
+		return data;
 	}
 
 	function alternativesHtml(route) {
@@ -1192,31 +1206,41 @@ const appSchema = {
 		const origin = route.chain[0];
 		const destination = route.chain[route.chain.length - 1];
 		const currentVias = new Set(route.chain.slice(1, -1));
-		const alternatives = getAlternatives(origin, destination).filter(
-			(alt) => !currentVias.has(alt.via.code)
-		);
-		if (!alternatives.length) return '';
+		const { directKm, alternatives: allAlternatives } = getAlternativeData(origin, destination);
+		const alternatives = allAlternatives.filter((alt) => !currentVias.has(alt.via.code));
+		const hasVia = currentVias.size > 0;
+		if (!hasVia && !alternatives.length) return '';
 
-		const chips = alternatives
-			.map((alt) => {
-				const delta = alt.deltaKm > 0 ? `+${alt.deltaKm.toLocaleString('en-IN')}` : alt.deltaKm.toLocaleString('en-IN');
-				const title = `${alt.via.code} · ${alt.via.name} · ${alt.distanceKm.toLocaleString('en-IN')} km (${delta} km)`;
-				const aria = `Calculate route via ${alt.via.code}, ${alt.via.name}, ${alt.distanceKm.toLocaleString('en-IN')} kilometres, ${delta} kilometres longer`;
-				return `<li>
-					<button type="button" data-alt-via="${esc(alt.via.code)}" title="${esc(title)}" aria-label="${esc(aria)}" class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-full border border-line bg-background px-4 py-2 text-body-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5">
-						<span>Via <span translate="no" class="data-mono font-semibold">${esc(alt.via.code)}</span></span>
-						<span class="data-mono text-eyebrow text-muted">${esc(delta)} km</span>
-					</button>
-				</li>`;
-			})
-			.join('');
+		const chips = [];
+
+		if (hasVia && typeof directKm === 'number') {
+			const directLabel = directKm.toLocaleString('en-IN');
+			chips.push(`<li>
+				<button type="button" data-direct-route title="Direct shortest route · ${directLabel} km" aria-label="Apply direct shortest route, ${directLabel} kilometres" class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-full border border-line bg-background px-4 py-2 text-body-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5">
+					<span>Direct Route</span>
+					<span class="data-mono text-eyebrow text-muted">${directLabel} km</span>
+				</button>
+			</li>`);
+		}
+
+		alternatives.forEach((alt) => {
+			const delta = alt.deltaKm > 0 ? `+${alt.deltaKm.toLocaleString('en-IN')}` : alt.deltaKm.toLocaleString('en-IN');
+			const title = `${alt.via.code} · ${alt.via.name} · ${alt.distanceKm.toLocaleString('en-IN')} km (${delta} km)`;
+			const aria = `Calculate route via ${alt.via.code}, ${alt.via.name}, ${alt.distanceKm.toLocaleString('en-IN')} kilometres, ${delta} kilometres longer`;
+			chips.push(`<li>
+				<button type="button" data-alt-via="${esc(alt.via.code)}" title="${esc(title)}" aria-label="${esc(aria)}" class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-full border border-line bg-background px-4 py-2 text-body-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5">
+					<span>Via <span translate="no" class="data-mono font-semibold">${esc(alt.via.code)}</span></span>
+					<span class="data-mono text-eyebrow text-muted">${esc(delta)} km</span>
+				</button>
+			</li>`);
+		});
 
 		return `<section aria-label="Alternative routes" class="rounded-md border border-line bg-surface p-4 sm:p-5">
 			<div class="flex flex-wrap items-center justify-between gap-2">
 				<h2 class="data-mono text-eyebrow uppercase text-muted">Alternative Routes</h2>
 				<span class="data-mono text-eyebrow text-muted">Click a chip to apply</span>
 			</div>
-			<ul class="mt-3 flex flex-wrap gap-2">${chips}</ul>
+			<ul class="mt-3 flex flex-wrap gap-2">${chips.join('')}</ul>
 		</section>`;
 	}
 
@@ -1442,6 +1466,9 @@ const appSchema = {
 		resultsEl.querySelectorAll('[data-alt-via]').forEach((chip) => {
 			chip.addEventListener('click', () => applyAlternativeVia(chip.dataset.altVia));
 		});
+
+		const directChip = resultsEl.querySelector('[data-direct-route]');
+		if (directChip) directChip.addEventListener('click', applyDirectRoute);
 
 		resultsEl.querySelectorAll('[data-leg-toggle]').forEach((toggle) => {
 			toggle.addEventListener('click', () => {
