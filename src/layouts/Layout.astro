@@ -200,6 +200,25 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 						<span class="hidden sm:inline">TA Calculator</span>
 					</a>
 
+					<a
+						href="/bike-parcel-calculator"
+						aria-label="Open the Railway Bike & Parcel Charges Calculator"
+						title="Railway Bike & Parcel Charges Calculator"
+						class="focus-ring inline-flex h-9 shrink-0 items-center gap-1 rounded-sm border border-line bg-surface px-2 text-label-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5 sm:h-10 sm:gap-1.5 sm:px-2.5"
+					>
+						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
+							<circle cx="5.5" cy="17" r="3.5" stroke="currentColor" stroke-width="1.6"></circle>
+							<circle cx="18.5" cy="17" r="3.5" stroke="currentColor" stroke-width="1.6"></circle>
+							<path
+								d="M5.5 17l4-7h5l4 7M9.5 10l2-4h4M12 17h3"
+								stroke="currentColor"
+								stroke-width="1.6"
+								stroke-linecap="round"
+								stroke-linejoin="round"></path>
+						</svg>
+						<span class="hidden sm:inline">Bike &amp; Parcel</span>
+					</a>
+
 					<button
 						type="button"
 						id="cmdk-trigger"
@@ -276,6 +295,22 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 						>
 					</nav>
 				</div>
+				<nav
+					aria-label="Calculators"
+					class="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line pt-4"
+				>
+					<span class="data-mono text-eyebrow uppercase text-muted">Calculators</span>
+					<a
+						href="/ta-calculator"
+						class="focus-ring rounded-sm text-body-sm text-muted transition-colors hover:text-foreground"
+						>TA Calculator</a
+					>
+					<a
+						href="/bike-parcel-calculator"
+						class="focus-ring rounded-sm text-body-sm text-muted transition-colors hover:text-foreground"
+						>Bike &amp; Parcel Calculator</a
+					>
+				</nav>
 				<p class="data-mono text-eyebrow text-muted">
 					DATAMEET OPEN DATA · {stationCountLabel} STATIONS
 				</p>

@@ -1,0 +1,1457 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Railway Bike & Parcel Charges Calculator (Per KG & Two-Wheeler) | RailKM';
+const description =
+	'Estimate Indian Railways parcel charges for two-wheelers, household appliances and luggage boxes by weight. Enter your origin, destination and item details to see an indicative per-kg parcel rate before booking.';
+
+const faqs = [
+	{
+		q: 'How much does it cost to parcel a bike for 500 km or 1000 km?',
+		a: `Using this calculator's indicative formula, a 200 kg standard bike on Scale-P with a declared value of ₹85,000 comes to roughly ₹1,900–2,000 for 500 km and ₹2,100–2,200 for 1,000 km, including GST, insurance and the optional ₹350 packing charge. Actual railway tariff, loading and station charges may differ.`,
+	},
+	{
+		q: "Can I send a bike registered in someone else's name?",
+		a: `Yes. Carry the original RC, the registered owner's ID copy and a signed authorization or consent letter, plus your own government ID. Some parcel offices also ask for proof of relationship or a no-objection declaration. Call the station in advance because local practice varies.`,
+	},
+	{
+		q: 'What happens if fuel is left in the tank?',
+		a: `The bike may be refused or delayed until the tank is drained. Fuel is a fire hazard in the parcel van and is not permitted. Empty the tank completely and run the engine until it stops before reaching the parcel office.`,
+	},
+	{
+		q: 'Which documents do I need for bike parcel booking?',
+		a: `Original RC, government photo ID of the consignor, copies for the parcel office, the filled Forwarding Note, consignee ID and phone details, and the train ticket if booking as luggage. Keep the Railway Receipt safe; it is required at delivery.`,
+	},
+	{
+		q: 'Is insurance mandatory for a bike parcel?',
+		a: `No. Insurance is optional and is usually charged at 1% of the declared value. If you declare a value, keep it realistic and retain photos and invoices. Without insurance, compensation is limited by railway rules.`,
+	},
+	{
+		q: 'How long does a bike parcel take, and can I track it?',
+		a: `Transit depends on the train, distance, connections and destination handling; many routes take 1–5 days. Use the PRR or PWB number from your receipt and the train's running status to track it. Collect promptly to avoid wharfage.`,
+	},
+];
+
+const pageUrl = 'https://railkm.com/bike-parcel-calculator';
+
+const structuredData = {
+	'@context': 'https://schema.org',
+	'@graph': [
+		{
+			'@type': 'WebApplication',
+			'@id': `${pageUrl}#app`,
+			name: 'Railway Bike & Parcel Charges Calculator',
+			url: pageUrl,
+			description,
+			applicationCategory: 'UtilitiesApplication',
+			operatingSystem: 'Any',
+			browserRequirements: 'Requires JavaScript',
+			isAccessibleForFree: true,
+			inLanguage: 'en-IN',
+			offers: {
+				'@type': 'Offer',
+				price: '0',
+				priceCurrency: 'INR',
+			},
+			featureList: [
+				'Station-code and station-name search across the RailKM railway graph',
+				'Bike parcel charge estimate by distance and chargeable weight',
+				'Chargeable-weight estimates for fridges, washing machines, bicycles and household cartons',
+				'Parcel and luggage booking comparison',
+				'Train scale multiplier comparison for Scale-R, Scale-P and Scale-S',
+				'GST, insurance and optional packing charge breakdown',
+			],
+			publisher: {
+				'@type': 'Organization',
+				name: 'RailKM',
+				url: 'https://railkm.com',
+			},
+		},
+		{
+			'@type': 'FAQPage',
+			'@id': `${pageUrl}#faq`,
+			mainEntity: faqs.map((faq) => ({
+				'@type': 'Question',
+				name: faq.q,
+				acceptedAnswer: {
+					'@type': 'Answer',
+					text: faq.a,
+				},
+			})),
+		},
+	],
+};
+---
+
+<Layout title={title} description={description} backHref="/" backLabel="Back to Route Mapper">
+	<script slot="head" type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+	<div class="relative overflow-hidden">
+		<div
+			class="pointer-events-none absolute inset-x-0 top-0 h-[320px] bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(237,237,237,0.06),transparent)]"
+			aria-hidden="true"
+		>
+		</div>
+
+		<div class="relative mx-auto w-full max-w-4xl px-4 pt-5 pb-6 sm:px-6 sm:pt-16 sm:pb-24">
+			<nav aria-label="Breadcrumb" class="data-mono text-eyebrow uppercase text-muted">
+				<ol class="flex flex-wrap items-center gap-2">
+					<li><a class="focus-ring rounded-sm transition-colors hover:text-foreground" href="/">Home</a></li>
+					<li aria-hidden="true">/</li>
+					<li class="text-foreground">Bike &amp; Parcel Calculator</li>
+				</ol>
+			</nav>
+
+			<p class="mt-4 data-mono text-eyebrow font-medium uppercase text-muted sm:mt-8">
+				Indian Railways · Bike &amp; Parcel
+			</p>
+			<h1 class="mt-2 text-balance text-2xl font-semibold text-foreground sm:mt-5 sm:text-display-xl">
+				Railway Bike &amp; Parcel Charges Calculator
+			</h1>
+			<p class="mt-3 max-w-2xl text-body-lg text-muted sm:mt-4">
+				Estimate what Indian Railways charges to carry a two-wheeler, household appliance or luggage
+				box as parcel. Enter the origin and destination stations and your item details to get an
+				indicative parcel charge per kg before you book it at the parcel office.
+			</p>
+
+			<form
+				id="bike-parcel-form"
+				class="mt-6 grid gap-4 sm:mt-10 sm:gap-6"
+				novalidate
+			>
+				<section
+					aria-labelledby="route-heading"
+					class="rounded-lg border border-line bg-surface p-5 sm:p-6"
+				>
+					<p class="data-mono text-eyebrow uppercase text-muted">Step 1 · Route</p>
+					<h2 id="route-heading" class="mt-1 text-heading-md font-semibold text-foreground">
+						Journey stations
+					</h2>
+
+					<div class="relative mt-5 grid gap-4 sm:grid-cols-2 sm:gap-x-16">
+						<div class="flex flex-col gap-1.5">
+							<label class="data-mono text-eyebrow uppercase text-muted" for="bike-origin">From Station</label>
+							<div class="relative">
+								<input
+									id="bike-origin"
+									name="origin"
+									type="text"
+									placeholder="e.g. NDLS or New Delhi"
+									autocomplete="off"
+									autocapitalize="off"
+									autocorrect="off"
+									spellcheck="false"
+									role="combobox"
+									aria-expanded="false"
+									aria-controls="bike-origin-list"
+									aria-autocomplete="list"
+									class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground placeholder:text-muted"
+								/>
+								<ul
+									id="bike-origin-list"
+									role="listbox"
+									aria-label="Origin station suggestions"
+									class="absolute left-0 right-0 z-30 mt-1 hidden max-h-72 overflow-auto rounded-md border border-line bg-surface shadow-[0_12px_32px_-12px_rgba(0,0,0,0.8)]"></ul>
+							</div>
+							<p class="data-mono text-eyebrow text-muted hidden" data-caption="bike-origin"></p>
+						</div>
+
+						<button
+							type="button"
+							id="bike-swap"
+							aria-label="Swap origin and destination stations"
+							title="Swap stations"
+							class="focus-ring inline-flex h-10 w-10 items-center justify-center justify-self-center self-center rounded-full border border-line bg-surface text-body-lg text-muted transition-colors hover:border-foreground hover:text-foreground sm:absolute sm:left-1/2 sm:top-11 sm:z-10 sm:-translate-x-1/2 sm:-translate-y-1/2"
+						>
+							<span aria-hidden="true">⇄</span>
+						</button>
+
+						<div class="flex flex-col gap-1.5">
+							<label class="data-mono text-eyebrow uppercase text-muted" for="bike-destination">To Station</label>
+							<div class="relative">
+								<input
+									id="bike-destination"
+									name="destination"
+									type="text"
+									placeholder="e.g. BPL or Bhopal"
+									autocomplete="off"
+									autocapitalize="off"
+									autocorrect="off"
+									spellcheck="false"
+									role="combobox"
+									aria-expanded="false"
+									aria-controls="bike-destination-list"
+									aria-autocomplete="list"
+									class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground placeholder:text-muted"
+								/>
+								<ul
+									id="bike-destination-list"
+									role="listbox"
+									aria-label="Destination station suggestions"
+									class="absolute left-0 right-0 z-30 mt-1 hidden max-h-72 overflow-auto rounded-md border border-line bg-surface shadow-[0_12px_32px_-12px_rgba(0,0,0,0.8)]"></ul>
+							</div>
+							<p class="data-mono text-eyebrow text-muted hidden" data-caption="bike-destination"></p>
+						</div>
+					</div>
+
+					<div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+						<p class="text-body-sm text-muted">
+							Search across 8,989+ Indian Railways stations by code or name.
+						</p>
+						<button
+							type="button"
+							id="bike-reset"
+							class="focus-ring rounded-sm text-body-sm font-medium text-muted underline decoration-line underline-offset-4 transition-colors hover:text-foreground"
+						>
+							Clear / Reset
+						</button>
+					</div>
+				</section>
+
+				<section
+					aria-labelledby="bike-details-heading"
+					class="rounded-lg border border-line bg-surface p-5 sm:p-6"
+				>
+					<p class="data-mono text-eyebrow uppercase text-muted">Step 2 · Item details</p>
+					<h2 id="bike-details-heading" class="mt-1 text-heading-md font-semibold text-foreground">
+						Item &amp; declared value
+					</h2>
+
+					<fieldset class="mt-5">
+						<legend class="sr-only">Item category</legend>
+						<div class="grid grid-cols-1 gap-1 rounded-md border border-line bg-background p-1 sm:grid-cols-2">
+							<label class="cursor-pointer">
+								<input
+									id="category-two-wheeler"
+									name="itemCategory"
+									type="radio"
+									value="two-wheeler"
+									checked
+									class="peer sr-only"
+								/>
+								<span
+									class="flex min-h-[44px] items-center justify-center rounded-sm border border-transparent px-3 py-2 text-center text-body-sm font-medium text-muted transition-colors hover:text-foreground peer-checked:border-foreground peer-checked:bg-foreground peer-checked:font-semibold peer-checked:text-background peer-checked:hover:text-background peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-foreground"
+								>
+									Two-Wheeler (Bike / Scooter)
+								</span>
+							</label>
+							<label class="cursor-pointer">
+								<input
+									id="category-appliances"
+									name="itemCategory"
+									type="radio"
+									value="appliances"
+									class="peer sr-only"
+								/>
+								<span
+									class="flex min-h-[44px] items-center justify-center rounded-sm border border-transparent px-3 py-2 text-center text-body-sm font-medium text-muted transition-colors hover:text-foreground peer-checked:border-foreground peer-checked:bg-foreground peer-checked:font-semibold peer-checked:text-background peer-checked:hover:text-background peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-foreground"
+								>
+									Appliances, Boxes &amp; Other Items (By Weight)
+								</span>
+							</label>
+						</div>
+					</fieldset>
+
+					<div data-item-panel="two-wheeler" class="mt-4 grid gap-4 sm:grid-cols-2">
+						<label class="flex flex-col gap-1.5 sm:col-span-2">
+							<span class="data-mono text-eyebrow uppercase text-muted">Vehicle Type</span>
+							<select
+								id="bike-type"
+								name="bikeType"
+								class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							>
+								<option value="moped">Scooty / Moped (Up to 100cc)</option>
+								<option value="standard" selected>Standard Bike (100cc – 150cc)</option>
+								<option value="heavy">Heavy Bike (150cc – 350cc)</option>
+								<option value="superbike">Cruiser / Superbike (Above 350cc)</option>
+							</select>
+						</label>
+					</div>
+
+					<div data-item-panel="appliances" class="mt-4 hidden grid gap-4 sm:grid-cols-2">
+						<label class="flex flex-col gap-1.5 sm:col-span-2">
+							<span class="data-mono text-eyebrow uppercase text-muted">Item Preset</span>
+							<select
+								id="item-preset"
+								name="itemPreset"
+								class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							>
+								<option value="custom" selected>
+									Custom Box / Carton / Luggage (Enter exact weight) — 50 kg
+								</option>
+								<option value="fridge">
+									Refrigerator / Fridge (Single/Double Door) — 100 kg
+								</option>
+								<option value="washer">Washing Machine / Air Cooler — 85 kg</option>
+								<option value="tv">LED TV / Monitor (Crated) — 40 kg</option>
+								<option value="bicycle">Bicycle / E-Cycle — 40 kg</option>
+								<option value="furniture">Furniture / Sofa / Bed (Disassembled) — 150 kg</option>
+								<option value="commercial">Commercial Goods / Bulk Sack — 100 kg</option>
+							</select>
+						</label>
+
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted">
+								Chargeable Weight per Item (kg)
+							</span>
+							<input
+								id="item-weight"
+								name="itemWeight"
+								type="number"
+								min="10"
+								step="10"
+								value="50"
+								inputmode="numeric"
+								class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							/>
+							<span class="text-body-sm text-muted">
+								Minimum 10 kg, rounded up to the nearest 10 kg slab.
+							</span>
+						</label>
+
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted">
+								Number of Packages / Items
+							</span>
+							<input
+								id="item-packages"
+								name="itemPackages"
+								type="number"
+								min="1"
+								step="1"
+								value="1"
+								inputmode="numeric"
+								class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							/>
+							<span class="text-body-sm text-muted">
+								Total weight and packing cost multiply by this number.
+							</span>
+						</label>
+					</div>
+
+					<div class="mt-4 grid gap-4 sm:grid-cols-2">
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted">Declared Value (₹)</span>
+							<span class="relative">
+								<span
+									class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+									aria-hidden="true">₹</span
+								>
+								<input
+									id="bike-value"
+									name="declaredValue"
+									type="number"
+									min="0"
+									step="1000"
+									inputmode="numeric"
+									placeholder="e.g. 85000"
+									class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background py-2.5 pl-8 pr-4 text-body-md text-foreground placeholder:text-muted"
+								/>
+							</span>
+						</label>
+					</div>
+
+					<fieldset class="mt-4">
+						<legend class="data-mono text-eyebrow uppercase text-muted">Booking Type</legend>
+						<div class="mt-2 grid gap-2 sm:grid-cols-2">
+							<label class="flex cursor-pointer items-start gap-2.5 rounded-sm border border-line bg-background p-3 transition-colors hover:border-foreground/40">
+								<input
+									id="bike-booking-parcel"
+									name="bookingType"
+									type="radio"
+									value="parcel"
+									checked
+									class="focus-ring mt-0.5 h-4 w-4 accent-foreground"
+								/>
+								<span>
+									<span class="block text-body-sm font-medium text-foreground">Parcel</span>
+									<span class="block text-body-sm text-muted">
+										Send without travelling — selected train scale applies.
+									</span>
+								</span>
+							</label>
+
+							<label class="flex cursor-pointer items-start gap-2.5 rounded-sm border border-line bg-background p-3 transition-colors hover:border-foreground/40">
+								<input
+									id="bike-booking-luggage"
+									name="bookingType"
+									type="radio"
+									value="luggage"
+									class="focus-ring mt-0.5 h-4 w-4 accent-foreground"
+								/>
+								<span>
+									<span class="block text-body-sm font-medium text-foreground">Luggage</span>
+									<span class="block text-body-sm text-muted">
+										Carry on your same train ticket — Scale-L (≈1.25×) applies.
+									</span>
+								</span>
+							</label>
+						</div>
+					</fieldset>
+
+					<div class="mt-4 grid gap-4 sm:grid-cols-2">
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted">Train Scale / Speed Category</span>
+							<select
+								id="bike-scale"
+								name="trainScale"
+								class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							>
+								<option value="p" selected>Scale-P (Premier / Superfast / Mail Express) - 1.0×</option>
+								<option value="r">Scale-R (Rajdhani / Shatabdi / Duronto / Fast Parcel) - 1.35×</option>
+								<option value="s">Scale-S (Standard / Ordinary Passenger Trains) - 0.70×</option>
+							</select>
+							<span id="bike-scale-hint" class="text-body-sm text-muted">
+								Parcel freight uses the selected train scale.
+							</span>
+						</label>
+
+						<label class="flex cursor-pointer items-start gap-2.5 self-end rounded-sm border border-line bg-background p-4 transition-colors hover:border-foreground/40">
+							<input
+								id="bike-packing"
+								name="includePacking"
+								type="checkbox"
+								checked
+								class="focus-ring mt-0.5 h-4 w-4 accent-foreground"
+							/>
+							<span>
+								<span id="packing-title" class="block text-body-sm font-medium text-foreground">
+									Include station packing charge (~₹350)
+								</span>
+								<span id="packing-hint" class="block text-body-sm text-muted">
+									Optional packing and handling at the parcel office.
+								</span>
+							</span>
+						</label>
+					</div>
+				</section>
+
+				<button
+					type="submit"
+					class="focus-ring inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-sm border border-foreground bg-foreground px-6 py-3 text-label-sm font-medium text-background transition-opacity hover:opacity-90"
+				>
+					Calculate Parcel Charges
+					<span aria-hidden="true">→</span>
+				</button>
+			</form>
+
+			<div id="bike-result" role="status" aria-live="polite" class="mt-4 hidden sm:mt-6"></div>
+
+			<article class="mt-10 border-t border-line pt-8 sm:mt-14 sm:pt-12" aria-labelledby="bike-parcel-guide-heading">
+				<header>
+					<p class="data-mono text-eyebrow uppercase text-muted">Bike &amp; parcel guide</p>
+					<h2 id="bike-parcel-guide-heading" class="mt-1.5 text-balance text-heading-lg font-semibold text-foreground">
+						Indian Railways Bike &amp; Parcel Charges: Complete Guide
+					</h2>
+					<p class="mt-3 text-body-lg text-muted">
+						Sending a motorcycle, appliance or household carton by train can be far cheaper than hiring
+						a transporter, but the final bill depends on more than distance. Indian Railways uses
+						chargeable weight slabs, the train scale, declared value, GST and optional packing. Use the
+						calculator above for an estimate, then read this guide to understand what the parcel office
+						will check and charge.
+					</p>
+				</header>
+
+				<section class="mt-8" aria-labelledby="bike-charges-heading">
+					<h3 id="bike-charges-heading" class="text-heading-md font-semibold text-foreground">
+						How Indian Railways Bike &amp; Parcel Charges Are Calculated
+					</h3>
+					<div class="mt-3 space-y-3 text-body-lg text-muted">
+						<p>
+							Indian Railways does not bill a two-wheeler at its actual kerb weight. The parcel office
+							converts the bike into a chargeable weight slab and applies the freight rate for the
+							booked distance and service. This calculator follows the same structure:
+						</p>
+						<ul class="grid list-disc gap-2 pl-5 marker:text-muted">
+							<li>
+								<strong class="font-medium text-foreground">Chargeable weight:</strong> about 100 kg
+								for scooters and mopeds up to 100 cc, 200 kg for standard 100–150 cc commuter bikes,
+								250 kg for 150–350 cc bikes, and 250–300 kg for heavy cruisers and superbikes.
+							</li>
+							<li>
+								<strong class="font-medium text-foreground">Base freight:</strong> distance ×
+								chargeable weight × the applicable scale multiplier. Longer routes and premium
+								services cost more.
+							</li>
+							<li>
+								<strong class="font-medium text-foreground">Development surcharge:</strong> 2% of
+								the base freight.
+							</li>
+							<li>
+								<strong class="font-medium text-foreground">Insurance:</strong> 1% of the declared
+								value when you declare a value above zero. Insurance is optional, but a realistic
+								declaration gives you a basis for a claim if the bike is damaged or lost.
+							</li>
+							<li>
+								<strong class="font-medium text-foreground">GST:</strong> 5% on base freight plus
+								development surcharge plus insurance.
+							</li>
+							<li>
+								<strong class="font-medium text-foreground">Packing:</strong> an optional station
+								packing and handling charge, shown here at about ₹350.
+							</li>
+						</ul>
+						<p>
+							The result is an indicative counter-to-counter estimate. Actual railway tariff tables,
+							minimum charges, loading or unloading help and local taxes can change the final amount,
+							so confirm the figure at the parcel office before booking.
+						</p>
+					</div>
+				</section>
+
+				<section class="mt-8" aria-labelledby="bike-appliance-weight-heading">
+					<h3 id="bike-appliance-weight-heading" class="text-heading-md font-semibold text-foreground">
+						Chargeable Weight for Fridge, Washing Machine, Bicycle &amp; Household Boxes
+					</h3>
+					<div class="mt-3 space-y-3 text-body-lg text-muted">
+						<p>
+							Household goods are billed by chargeable weight rather than by the number of items.
+							Railway rules use a minimum of 10 kg per consignment and round the weight up to the
+							next 10 kg slab. Bulky but light cartons can also be charged on volumetric weight, which
+							converts the space the item occupies (length × width × height) into kilograms; the
+							higher of actual and volumetric weight usually applies.
+						</p>
+						<div class="overflow-x-auto rounded-lg border border-line">
+							<table class="w-full min-w-[640px] border-collapse text-left">
+								<caption class="sr-only">
+									Indicative chargeable weights for common household items
+								</caption>
+								<thead class="bg-background">
+									<tr>
+										<th scope="col" class="border-b border-line px-4 py-3 text-label-sm font-semibold text-foreground">
+											Item
+										</th>
+										<th scope="col" class="border-b border-l border-line px-4 py-3 text-label-sm font-semibold text-foreground">
+											Typical Chargeable Weight
+										</th>
+										<th scope="col" class="border-b border-l border-line px-4 py-3 text-label-sm font-semibold text-foreground">
+											Notes
+										</th>
+									</tr>
+								</thead>
+								<tbody class="divide-y divide-line bg-surface">
+									<tr>
+										<th scope="row" class="px-4 py-3 text-body-sm font-medium text-foreground">Refrigerator / Fridge</th>
+										<td class="border-l border-line px-4 py-3 text-body-sm text-muted">100 kg</td>
+										<td class="border-l border-line px-4 py-3 text-body-sm text-muted">Single or double door; remove shelves and secure the door.</td>
+									</tr>
+									<tr>
+										<th scope="row" class="px-4 py-3 text-body-sm font-medium text-foreground">Washing Machine / Air Cooler</th>
+										<td class="border-l border-line px-4 py-3 text-body-sm text-muted">85 kg</td>
+										<td class="border-l border-line px-4 py-3 text-body-sm text-muted">Drain the water and pack the drum or blades securely.</td>
+									</tr>
+									<tr>
+										<th scope="row" class="px-4 py-3 text-body-sm font-medium text-foreground">Bicycle / E-Cycle</th>
+										<td class="border-l border-line px-4 py-3 text-body-sm text-muted">40 kg</td>
+										<td class="border-l border-line px-4 py-3 text-body-sm text-muted">Remove pedals and turn the handlebar to reduce volume.</td>
+									</tr>
+									<tr>
+										<th scope="row" class="px-4 py-3 text-body-sm font-medium text-foreground">Household Cartons / Luggage</th>
+										<td class="border-l border-line px-4 py-3 text-body-sm text-muted">50 kg default</td>
+										<td class="border-l border-line px-4 py-3 text-body-sm text-muted">Enter the actual weight; it is rounded up to the next 10 kg slab.</td>
+									</tr>
+									<tr>
+										<th scope="row" class="px-4 py-3 text-body-sm font-medium text-foreground">Furniture / Sofa / Bed</th>
+										<td class="border-l border-line px-4 py-3 text-body-sm text-muted">150 kg</td>
+										<td class="border-l border-line px-4 py-3 text-body-sm text-muted">Dismantle where possible; volumetric weight may apply.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<p>
+							These figures are practical starting points, not a substitute for the official tariff.
+							The parcel office weighs the consignment, may measure it for volumetric weight and
+							applies the higher figure. Packing for general items is typically charged per package,
+							unlike the single ₹350 packing charge used for two-wheelers.
+						</p>
+					</div>
+				</section>
+
+				<section class="mt-8" aria-labelledby="bike-parcel-vs-luggage-heading">
+					<h3 id="bike-parcel-vs-luggage-heading" class="text-heading-md font-semibold text-foreground">
+						Parcel vs Luggage Booking
+					</h3>
+					<p class="mt-3 text-body-lg text-muted">
+						Parcel booking and luggage booking are not the same product. Parcel is for sending a bike
+						without a passenger ticket; luggage is for carrying it on the train you are travelling on.
+						The table below summarises the practical differences.
+					</p>
+
+					<div class="mt-4 overflow-x-auto rounded-lg border border-line">
+						<table class="w-full min-w-[720px] border-collapse text-left">
+							<caption class="sr-only">
+								Comparison of parcel booking without a passenger ticket and luggage booking on a
+								confirmed ticket
+							</caption>
+							<thead class="bg-background">
+								<tr>
+									<th scope="col" class="border-b border-line px-4 py-3 text-label-sm font-semibold text-foreground">
+										Feature
+									</th>
+									<th scope="col" class="border-b border-l border-line px-4 py-3 text-label-sm font-semibold text-foreground">
+										Parcel Booking (Without Passenger Ticket)
+									</th>
+									<th scope="col" class="border-b border-l border-line px-4 py-3 text-label-sm font-semibold text-foreground">
+										Luggage Booking (On Confirmed Ticket)
+									</th>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-line bg-surface">
+								<tr>
+									<th scope="row" class="px-4 py-3 text-body-sm font-medium text-foreground">Ticket requirement</th>
+									<td class="border-l border-line px-4 py-3 text-body-sm text-muted">No passenger ticket needed.</td>
+									<td class="border-l border-line px-4 py-3 text-body-sm text-muted">Valid confirmed or RAC ticket for the same journey.</td>
+								</tr>
+								<tr>
+									<th scope="row" class="px-4 py-3 text-body-sm font-medium text-foreground">Cost / scale</th>
+									<td class="border-l border-line px-4 py-3 text-body-sm text-muted">Uses the selected Scale-P, Scale-R or Scale-S rate.</td>
+									<td class="border-l border-line px-4 py-3 text-body-sm text-muted">Uses Scale-L, roughly 1.25× the Scale-P rate.</td>
+								</tr>
+								<tr>
+									<th scope="row" class="px-4 py-3 text-body-sm font-medium text-foreground">Speed</th>
+									<td class="border-l border-line px-4 py-3 text-body-sm text-muted">Depends on the parcel, mail or express train booked. Premium services are faster.</td>
+									<td class="border-l border-line px-4 py-3 text-body-sm text-muted">Travels on your own train and usually arrives with you.</td>
+								</tr>
+								<tr>
+									<th scope="row" class="px-4 py-3 text-body-sm font-medium text-foreground">Delivery guarantee</th>
+									<td class="border-l border-line px-4 py-3 text-body-sm text-muted">No door delivery or fixed guarantee; collect from the destination parcel office.</td>
+									<td class="border-l border-line px-4 py-3 text-body-sm text-muted">No door delivery, but the bike is carried on your train and collected at the destination luggage office.</td>
+								</tr>
+								<tr>
+									<th scope="row" class="px-4 py-3 text-body-sm font-medium text-foreground">Booking window</th>
+									<td class="border-l border-line px-4 py-3 text-body-sm text-muted">At many stations, up to about 4 hours before the scheduled departure, subject to office cut-off.</td>
+									<td class="border-l border-line px-4 py-3 text-body-sm text-muted">Book before your train departs at the originating station; allow extra time for weighing and paperwork.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<p class="mt-3 text-body-lg text-muted">
+						Luggage is usually faster and simpler when you are travelling on the same route. Parcel is
+						the practical choice when nobody is travelling with the bike or when it needs to move on a
+						different service.
+					</p>
+				</section>
+
+				<section class="mt-8" aria-labelledby="bike-scales-heading">
+					<h3 id="bike-scales-heading" class="text-heading-md font-semibold text-foreground">
+						Understanding Train Scales (Scale-R, Scale-P, Scale-S)
+					</h3>
+					<p class="mt-3 text-body-lg text-muted">
+						Indian Railways parcel freight uses service-based scales. The scale comes from the service
+						on which the consignment is booked, not from the bike's engine size.
+					</p>
+
+					<div class="mt-4 grid gap-3 sm:grid-cols-3">
+						<div class="rounded-md border border-line bg-surface p-4">
+							<p class="data-mono text-eyebrow uppercase text-muted">Scale-R</p>
+							<p class="mt-1 data-mono text-heading-md font-semibold text-foreground">1.35×</p>
+							<p class="mt-2 text-body-sm text-muted">
+								Rajdhani, Shatabdi, Duronto and fast parcel services. Highest rate, usually the
+								fastest transit and priority handling.
+							</p>
+						</div>
+						<div class="rounded-md border border-line bg-surface p-4">
+							<p class="data-mono text-eyebrow uppercase text-muted">Scale-P</p>
+							<p class="mt-1 data-mono text-heading-md font-semibold text-foreground">1.0×</p>
+							<p class="mt-2 text-body-sm text-muted">
+								Premier, superfast, mail and express services. The default for most bike parcels and
+								a good balance of cost and speed.
+							</p>
+						</div>
+						<div class="rounded-md border border-line bg-surface p-4">
+							<p class="data-mono text-eyebrow uppercase text-muted">Scale-S</p>
+							<p class="mt-1 data-mono text-heading-md font-semibold text-foreground">0.70×</p>
+							<p class="mt-2 text-body-sm text-muted">
+								Standard and ordinary passenger services. Lowest freight, but slower transit and
+								fewer suitable trains.
+							</p>
+						</div>
+					</div>
+
+					<p class="mt-3 text-body-lg text-muted">
+						Scale-L applies when a bike is booked as luggage on a passenger ticket and carried in the
+						brake van or luggage van of that train; it is roughly 1.25× of Scale-P. A higher scale does
+						not automatically guarantee faster delivery because train timings, loading, transhipment and
+						destination handling still matter. Ask the parcel office which train and scale will be used
+						before you pay.
+					</p>
+				</section>
+
+				<section class="mt-8" aria-labelledby="bike-procedure-heading">
+					<h3 id="bike-procedure-heading" class="text-heading-md font-semibold text-foreground">
+						Step-by-Step Procedure to Send a Bike by Train
+					</h3>
+					<p class="mt-3 text-body-lg text-muted">
+						The station process is straightforward, but the details matter. Arrive early and keep original
+						documents plus photocopies ready.
+					</p>
+
+					<ol class="mt-4 grid gap-3">
+						<li class="flex gap-3 rounded-md border border-line bg-surface p-4">
+							<span class="data-mono flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-line bg-background text-eyebrow font-semibold text-foreground">1</span>
+							<div>
+								<p class="text-body-md font-medium text-foreground">Empty the fuel tank completely</p>
+								<p class="mt-1 text-body-sm text-muted">
+									Drain the petrol and run the engine until it stops. Railways do not accept bikes
+									with fuel because of fire risk; leftover fuel can cause refusal or delay.
+								</p>
+							</div>
+						</li>
+						<li class="flex gap-3 rounded-md border border-line bg-surface p-4">
+							<span class="data-mono flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-line bg-background text-eyebrow font-semibold text-foreground">2</span>
+							<div>
+								<p class="text-body-md font-medium text-foreground">Pack and protect the bike</p>
+								<p class="mt-1 text-body-sm text-muted">
+									Remove mirrors, luggage and loose accessories, then use bubble wrap, cardboard and
+									straps. A packed bike is easier to handle and less likely to be damaged. Use
+									station packing if you have not packed it yourself.
+								</p>
+							</div>
+						</li>
+						<li class="flex gap-3 rounded-md border border-line bg-surface p-4">
+							<span class="data-mono flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-line bg-background text-eyebrow font-semibold text-foreground">3</span>
+							<div>
+								<p class="text-body-md font-medium text-foreground">Fill the Forwarding Note</p>
+								<p class="mt-1 text-body-sm text-muted">
+									At the parcel office, enter consignor and consignee names, addresses, phone
+									numbers, origin and destination, bike registration, engine and chassis number and
+									declared value. Carry the original RC, ID proof and photocopies.
+								</p>
+							</div>
+						</li>
+						<li class="flex gap-3 rounded-md border border-line bg-surface p-4">
+							<span class="data-mono flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-line bg-background text-eyebrow font-semibold text-foreground">4</span>
+							<div>
+								<p class="text-body-md font-medium text-foreground">Weigh, value and pay</p>
+								<p class="mt-1 text-body-sm text-muted">
+									The clerk weighs or measures the bike, confirms the chargeable weight and scale,
+									records the declared value and calculates freight, development surcharge,
+									insurance if opted, GST and packing. Check the amount before leaving the counter.
+								</p>
+							</div>
+						</li>
+						<li class="flex gap-3 rounded-md border border-line bg-surface p-4">
+							<span class="data-mono flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-line bg-background text-eyebrow font-semibold text-foreground">5</span>
+							<div>
+								<p class="text-body-md font-medium text-foreground">Collect the Railway Receipt (RR)</p>
+								<p class="mt-1 text-body-sm text-muted">
+									The RR or Parcel Way Bill is your proof of booking and is required for delivery.
+									Send the original or a signed authorization to the consignee, keep a copy and note
+									the PRR number for tracking.
+								</p>
+							</div>
+						</li>
+					</ol>
+				</section>
+
+				<section class="mt-8" aria-labelledby="bike-wharfage-heading">
+					<h3 id="bike-wharfage-heading" class="text-heading-md font-semibold text-foreground">
+						Wharfage (Demurrage / Storage Fine) Rules
+					</h3>
+					<div class="mt-3 space-y-3 text-body-lg text-muted">
+						<p>
+							Wharfage is the railway term for storage charges when a consignment is not removed from
+							railway premises within the free time. For two-wheelers the free collection window is
+							short: commonly 6 working hours at notified stations and up to 18 working hours at other
+							stations after unloading. Sundays, holidays and parcel office working hours can affect the
+							count.
+						</p>
+						<p>
+							After the free time ends, wharfage is charged per hour or part thereof, and the rate depends
+							on the station category and consignment type. The charge continues until collection. If the
+							bike is not collected for several days, the storage bill can become a significant part of
+							the total cost.
+						</p>
+					</div>
+
+					<div class="mt-4 rounded-md border border-warning/30 bg-warning/5 p-4">
+						<p class="text-body-md font-medium text-foreground">Collect as soon as the train arrives</p>
+						<p class="mt-1 text-body-sm text-muted">
+							Track the train, call the destination parcel office, and bring the RR, consignee ID and an
+							authorization letter if someone else is collecting. In everyday speech people call this a
+							storage fine or demurrage, but for parcels the railway term is wharfage.
+						</p>
+					</div>
+				</section>
+
+				<section class="mt-8" aria-labelledby="bike-parcel-faqs">
+					<h3 id="bike-parcel-faqs" class="text-heading-md font-semibold text-foreground">
+						Frequently Asked Questions
+					</h3>
+					<div class="mt-4 divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
+						{faqs.map((faq) => (
+							<details class="group">
+								<summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-body-md font-medium text-foreground transition-colors hover:bg-foreground/5 [&::-webkit-details-marker]:hidden">
+									<span>{faq.q}</span>
+									<span class="shrink-0 text-muted transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+								</summary>
+								<div class="px-5 pb-5 text-body-md text-muted">{faq.a}</div>
+							</details>
+						))}
+					</div>
+				</section>
+			</article>
+
+			<p class="mt-6 text-body-sm text-muted sm:mt-10">
+				RailKM is an independent planning tool and is not affiliated with Indian Railways. Parcel
+				figures are indicative — confirm the actual charge with the parcel office at your station.
+			</p>
+		</div>
+	</div>
+</Layout>
+
+<script>
+	// @ts-nocheck
+	import { searchStations, resolveStation, shortestPath, stationInfo } from '../utils/routeEngine.js';
+
+	const form = document.getElementById('bike-parcel-form');
+	const resultEl = document.getElementById('bike-result');
+	const originInput = document.getElementById('bike-origin');
+	const destinationInput = document.getElementById('bike-destination');
+	const originList = document.getElementById('bike-origin-list');
+	const destinationList = document.getElementById('bike-destination-list');
+	const originCaption = document.querySelector('[data-caption="bike-origin"]');
+	const destinationCaption = document.querySelector('[data-caption="bike-destination"]');
+	const swapBtn = document.getElementById('bike-swap');
+	const resetBtn = document.getElementById('bike-reset');
+	const categoryTwoWheelerRadio = document.getElementById('category-two-wheeler');
+	const categoryAppliancesRadio = document.getElementById('category-appliances');
+	const itemPanels = document.querySelectorAll('[data-item-panel]');
+	const bikeTypeSelect = document.getElementById('bike-type');
+	const itemPresetSelect = document.getElementById('item-preset');
+	const itemWeightInput = document.getElementById('item-weight');
+	const itemPackagesInput = document.getElementById('item-packages');
+	const valueInput = document.getElementById('bike-value');
+	const bookingParcelRadio = document.getElementById('bike-booking-parcel');
+	const bookingLuggageRadio = document.getElementById('bike-booking-luggage');
+	const scaleSelect = document.getElementById('bike-scale');
+	const scaleHint = document.getElementById('bike-scale-hint');
+	const packingCheckbox = document.getElementById('bike-packing');
+	const packingTitle = document.getElementById('packing-title');
+	const packingHint = document.getElementById('packing-hint');
+	const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+
+	const PACKING_CHARGE = 350;
+	const PACKING_CHARGE_PER_PACKAGE = 150;
+	const FALLBACK_KM = 850;
+	const LUGGAGE_MULTIPLIER = 1.25;
+
+	const SCALE_META = {
+		p: { label: 'Scale-P', multiplier: 1 },
+		r: { label: 'Scale-R', multiplier: 1.35 },
+		s: { label: 'Scale-S', multiplier: 0.7 },
+	};
+
+	const ITEM_PRESETS = {
+		custom: { weight: 50, label: 'Custom Box / Carton / Luggage' },
+		fridge: { weight: 100, label: 'Refrigerator / Fridge' },
+		washer: { weight: 85, label: 'Washing Machine / Air Cooler' },
+		tv: { weight: 40, label: 'LED TV / Monitor (Crated)' },
+		bicycle: { weight: 40, label: 'Bicycle / E-Cycle' },
+		furniture: { weight: 150, label: 'Furniture / Sofa / Bed' },
+		commercial: { weight: 100, label: 'Commercial Goods / Bulk Sack' },
+	};
+
+	function chargeableWeightFor(bikeType) {
+		switch (bikeType) {
+			case 'moped':
+				return 100;
+			case 'heavy':
+				return 250;
+			case 'superbike':
+				return 300;
+			default:
+				return 200;
+		}
+	}
+
+	function roundUpToSlab(weight) {
+		const value = Number(weight);
+		if (!Number.isFinite(value) || value <= 0) return 10;
+		return Math.max(10, Math.ceil(value / 10) * 10);
+	}
+
+	function isApplianceCategory() {
+		return !!categoryAppliancesRadio?.checked;
+	}
+
+	function syncCategoryUI() {
+		const category = isApplianceCategory() ? 'appliances' : 'two-wheeler';
+		itemPanels.forEach((panel) => {
+			panel.classList.toggle('hidden', panel.dataset.itemPanel !== category);
+		});
+		if (packingTitle) {
+			packingTitle.textContent = isApplianceCategory()
+				? 'Include packing charge (₹150 per package)'
+				: 'Include station packing charge (~₹350)';
+		}
+		if (packingHint) {
+			packingHint.textContent = isApplianceCategory()
+				? 'Optional packing and handling per package at the parcel office.'
+				: 'Optional packing and handling at the parcel office.';
+		}
+	}
+
+	function applyPresetWeight() {
+		if (!itemPresetSelect || !itemWeightInput) return;
+		const preset = ITEM_PRESETS[itemPresetSelect.value] || ITEM_PRESETS.custom;
+		itemWeightInput.value = String(preset.weight);
+	}
+
+	categoryTwoWheelerRadio?.addEventListener('change', syncCategoryUI);
+	categoryAppliancesRadio?.addEventListener('change', syncCategoryUI);
+	itemPresetSelect?.addEventListener('change', applyPresetWeight);
+	itemWeightInput?.addEventListener('change', () => {
+		itemWeightInput.value = String(roundUpToSlab(itemWeightInput.value));
+	});
+	syncCategoryUI();
+
+	function syncBookingTypeUI() {
+		const isLuggage = !!bookingLuggageRadio?.checked;
+		if (scaleSelect) {
+			scaleSelect.disabled = isLuggage;
+			scaleSelect.classList.toggle('cursor-not-allowed', isLuggage);
+			scaleSelect.classList.toggle('opacity-50', isLuggage);
+		}
+		if (scaleHint) {
+			scaleHint.textContent = isLuggage
+				? 'Luggage uses Scale-L (≈1.25× of Scale-P) automatically.'
+				: 'Parcel freight uses the selected train scale.';
+		}
+	}
+
+	bookingParcelRadio?.addEventListener('change', syncBookingTypeUI);
+	bookingLuggageRadio?.addEventListener('change', syncBookingTypeUI);
+	syncBookingTypeUI();
+
+	let graph = null;
+	let graphPromise = null;
+
+	function loadGraph() {
+		if (graph) return Promise.resolve(graph);
+		if (!graphPromise) {
+			graphPromise = fetch('/api/railway-graph.json')
+				.then((response) => (response.ok ? response.json() : null))
+				.then((data) => {
+					graph = data;
+					return graph;
+				})
+				.catch(() => null);
+		}
+		return graphPromise;
+	}
+
+	async function getDistance(from, to) {
+		await loadGraph();
+		if (!graph) {
+			return { km: FALLBACK_KM, approximate: true, fromCode: from, toCode: to };
+		}
+		const origin = resolveStation(graph, from);
+		const destination = resolveStation(graph, to);
+		if (!origin) {
+			throw new Error(`Could not find the origin station “${from}”. Try a code such as NDLS.`);
+		}
+		if (!destination) {
+			throw new Error(`Could not find the destination station “${to}”. Try a code such as BPL.`);
+		}
+		if (origin.code === destination.code) {
+			throw new Error('Origin and destination must be different stations.');
+		}
+		const route = shortestPath(graph, origin.code, destination.code);
+		if (!route) {
+			throw new Error(`No rail route could be found between ${origin.code} and ${destination.code}.`);
+		}
+		return { km: route.distanceKm, approximate: false, fromCode: origin.code, toCode: destination.code };
+	}
+
+	/* --------------------------------------------------- Station autocomplete */
+
+	function setupStationField(input, list, caption) {
+		if (!input || !list) {
+			return {
+				get code() {
+					return '';
+				},
+				setStation() {},
+				clear() {},
+			};
+		}
+
+		const idPrefix = input.id;
+		let results = [];
+		let active = -1;
+		let selected = { code: '', query: '' };
+
+		function updateCaption() {
+			if (!caption) return;
+			if (!selected.code) {
+				caption.textContent = '';
+				caption.classList.add('hidden');
+				return;
+			}
+			const info = graph ? stationInfo(graph, selected.code) : null;
+			caption.textContent = info ? `${selected.code} · ${info.name}` : selected.code;
+			caption.classList.remove('hidden');
+		}
+
+		function close() {
+			list.classList.add('hidden');
+			input.setAttribute('aria-expanded', 'false');
+			input.removeAttribute('aria-activedescendant');
+		}
+
+		function setActive(index) {
+			if (index < 0 || index >= results.length) return;
+			active = index;
+			list.querySelectorAll('[data-i]').forEach((option) => {
+				const on = Number(option.dataset.i) === index;
+				option.setAttribute('aria-selected', String(on));
+				option.classList.toggle('bg-foreground/10', on);
+			});
+			input.setAttribute('aria-activedescendant', `${idPrefix}-opt-${index}`);
+			const activeEl = document.getElementById(`${idPrefix}-opt-${index}`);
+			if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+		}
+
+		function choose(index) {
+			const result = results[index];
+			if (!result) return;
+			selected = { code: result.code, query: result.code };
+			input.value = result.code;
+			updateCaption();
+			close();
+		}
+
+		function place(query) {
+			const trimmed = query.trim();
+			if (!trimmed) {
+				close();
+				return;
+			}
+			if (!graph) {
+				loadGraph().then(() => {
+					if (graph && document.activeElement === input && input.value.trim() === trimmed) {
+						place(trimmed);
+					}
+				});
+				close();
+				return;
+			}
+			results = searchStations(graph, trimmed, 8);
+			active = results.length ? 0 : -1;
+
+			if (!results.length) {
+				list.innerHTML = `<li class="px-4 py-3 text-body-sm text-muted" role="presentation">No stations found for “${escapeHtml(trimmed)}”. Try a different code or name.</li>`;
+			} else {
+				list.innerHTML = results
+					.map((result, index) => {
+						const junctionTag = result.isJunction
+							? `<span class="data-mono shrink-0 rounded-sm border border-line px-1 py-0.5 text-[10px] uppercase text-muted">Jn</span>`
+							: '';
+						const aliasTag = result.matchedAlias
+							? `<span class="data-mono shrink-0 rounded-sm border border-line px-1 py-0.5 text-[10px] uppercase text-muted">aka ${escapeHtml(result.matchedAlias)}</span>`
+							: '';
+						const zoneBit = [result.zone, result.state].filter(Boolean).join(' · ');
+						return `<li
+							id="${idPrefix}-opt-${index}"
+							role="option"
+							data-i="${index}"
+							aria-selected="${index === active}"
+							class="flex min-h-[44px] cursor-pointer items-center gap-2 px-4 py-2.5 ${index === active ? 'bg-foreground/10' : ''}"
+						>
+							<span translate="no" class="data-mono shrink-0 rounded-sm border border-line bg-background px-1.5 py-0.5 text-eyebrow font-semibold text-foreground">${escapeHtml(result.code)}</span>
+							<span class="min-w-0 flex-1 truncate text-body-md text-foreground">${escapeHtml(result.name)}</span>
+							${aliasTag}
+							${zoneBit ? `<span class="data-mono hidden shrink-0 text-eyebrow text-muted sm:inline">${escapeHtml(zoneBit)}</span>` : ''}
+							${junctionTag}
+						</li>`;
+					})
+					.join('');
+				list.querySelectorAll('[data-i]').forEach((option) => {
+					const index = Number(option.dataset.i);
+					option.addEventListener('mousedown', (event) => event.preventDefault());
+					option.addEventListener('mouseenter', () => setActive(index));
+					option.addEventListener('click', () => choose(index));
+				});
+			}
+
+			list.classList.remove('hidden');
+			input.setAttribute('aria-expanded', 'true');
+			if (active >= 0) setActive(active);
+		}
+
+		function setStation(value) {
+			const trimmed = (value || '').trim();
+			if (!trimmed) {
+				selected = { code: '', query: '' };
+				input.value = '';
+				updateCaption();
+				close();
+				return;
+			}
+			const resolved = graph ? resolveStation(graph, trimmed) : null;
+			if (resolved) {
+				selected = { code: resolved.code, query: resolved.code };
+				input.value = resolved.code;
+			} else {
+				selected = { code: '', query: trimmed };
+				input.value = trimmed;
+			}
+			updateCaption();
+			close();
+		}
+
+		input.addEventListener('focus', () => {
+			if (input.value.trim()) place(input.value);
+		});
+		input.addEventListener('input', () => {
+			selected = { code: '', query: input.value };
+			updateCaption();
+			place(input.value);
+		});
+		input.addEventListener('keydown', (event) => {
+			const open = !list.classList.contains('hidden');
+			if (event.key === 'ArrowDown') {
+				event.preventDefault();
+				if (!open) place(input.value);
+				else setActive(Math.min(active + 1, results.length - 1));
+			} else if (event.key === 'ArrowUp') {
+				if (!open) return;
+				event.preventDefault();
+				setActive(Math.max(active - 1, 0));
+			} else if (event.key === 'Enter') {
+				if (open && active >= 0) {
+					event.preventDefault();
+					choose(active);
+				} else if (open && results.length) {
+					event.preventDefault();
+					choose(0);
+				}
+			} else if (event.key === 'Escape') {
+				close();
+			}
+		});
+		input.addEventListener('blur', () => {
+			window.setTimeout(() => {
+				close();
+				if (!selected.code && input.value.trim()) {
+					if (!graph) {
+						loadGraph().then(() => setStation(input.value));
+						return;
+					}
+					const resolved = resolveStation(graph, input.value);
+					if (resolved) {
+						selected = { code: resolved.code, query: resolved.code };
+						input.value = resolved.code;
+						updateCaption();
+					}
+				}
+			}, 150);
+		});
+
+		return {
+			get code() {
+				return selected.code;
+			},
+			setStation,
+			clear() {
+				selected = { code: '', query: '' };
+				input.value = '';
+				updateCaption();
+				close();
+			},
+		};
+	}
+
+	const originField = setupStationField(originInput, originList, originCaption);
+	const destinationField = setupStationField(destinationInput, destinationList, destinationCaption);
+
+	if (swapBtn) {
+		swapBtn.addEventListener('click', () => {
+			const fromValue = originInput ? originInput.value : '';
+			const toValue = destinationInput ? destinationInput.value : '';
+			originField.setStation(toValue);
+			destinationField.setStation(fromValue);
+			if (resultEl) {
+				resultEl.innerHTML = '';
+				resultEl.classList.add('hidden');
+			}
+		});
+	}
+
+	if (resetBtn) {
+		resetBtn.addEventListener('click', () => {
+			originField.clear();
+			destinationField.clear();
+			if (categoryTwoWheelerRadio) categoryTwoWheelerRadio.checked = true;
+			if (categoryAppliancesRadio) categoryAppliancesRadio.checked = false;
+			if (bikeTypeSelect) bikeTypeSelect.value = 'standard';
+			if (itemPresetSelect) itemPresetSelect.value = 'custom';
+			if (itemWeightInput) itemWeightInput.value = '50';
+			if (itemPackagesInput) itemPackagesInput.value = '1';
+			if (valueInput) valueInput.value = '';
+			if (bookingParcelRadio) bookingParcelRadio.checked = true;
+			if (bookingLuggageRadio) bookingLuggageRadio.checked = false;
+			if (scaleSelect) scaleSelect.value = 'p';
+			if (packingCheckbox) packingCheckbox.checked = true;
+			syncCategoryUI();
+			syncBookingTypeUI();
+			if (resultEl) {
+				resultEl.innerHTML = '';
+				resultEl.classList.add('hidden');
+			}
+			if (originInput) originInput.focus();
+		});
+	}
+
+	loadGraph();
+
+	function money(amount) {
+		return `₹${Math.round(amount).toLocaleString('en-IN')}`;
+	}
+
+	function escapeHtml(value) {
+		return String(value).replace(/[&<>"']/g, (ch) => {
+			switch (ch) {
+				case '&':
+					return '&amp;';
+				case '<':
+					return '&lt;';
+				case '>':
+					return '&gt;';
+				case '"':
+					return '&quot;';
+				case "'":
+					return '&#39;';
+				default:
+					return ch;
+			}
+		});
+	}
+
+	function errorCard(message) {
+		return `<div class="rounded-md border border-error/40 bg-error/5 p-5" role="alert">
+			<p class="data-mono text-eyebrow uppercase text-error">Could not calculate</p>
+			<p class="mt-2 text-body-sm text-muted">${escapeHtml(message)}</p>
+		</div>`;
+	}
+
+	function renderResult({
+		distanceKm,
+		approximate,
+		fromCode,
+		toCode,
+		itemLabel,
+		chargeableWeight,
+		perItemWeight,
+		packages,
+		isAppliance,
+		scaleBadge,
+		rateMultiplier,
+		breakdown,
+	}) {
+		const packingRowLabel =
+			breakdown.packing > 0
+				? isAppliance
+					? `Packing Charge (₹${PACKING_CHARGE_PER_PACKAGE} × ${packages} package${
+							packages === 1 ? '' : 's'
+						})`
+					: 'Packing Charge (estimated)'
+				: 'Packing Charge (not included)';
+
+		const rows = [
+			{ label: 'Base Freight', value: breakdown.baseFreight },
+			{ label: 'Development Surcharge (2%)', value: breakdown.development },
+			{ label: 'Insurance Charge (1% of declared value)', value: breakdown.insurance },
+			{ label: 'GST (5%)', value: breakdown.gst },
+			{ label: packingRowLabel, value: breakdown.packing },
+		];
+
+		const badges = [
+			`${chargeableWeight} kg billed`,
+			...(isAppliance ? [`${packages} pkg × ${perItemWeight} kg`] : []),
+			scaleBadge,
+			`${distanceKm.toLocaleString('en-IN')} km`,
+		];
+
+		const checklistHeading = isAppliance
+			? 'Required at Parcel Office'
+			: 'Document Checklist at Parcel Office';
+		const checklist = isAppliance
+			? [
+					'Govt ID Proof (Aadhaar/PAN)',
+					'Strong Cardboard/Bubble-wrap Packing with Name & Station written clearly',
+					'Train Ticket (if booking as Luggage)',
+				]
+			: [
+					'Original RC + 2 Photocopies',
+					'Govt ID Proof (Aadhaar/DL)',
+					'Completely Empty Petrol Tank (0 ml fuel)',
+					'Train Ticket (if booking as Luggage)',
+				];
+
+		return `<section aria-label="${
+			isAppliance ? 'Appliance' : 'Bike'
+		} parcel estimate" class="rounded-lg border border-line bg-surface p-5 sm:p-6">
+			<div>
+				<p class="data-mono text-eyebrow uppercase text-muted">Estimated parcel charge</p>
+				<p class="mt-2 data-mono text-3xl font-semibold tabular-nums text-foreground">${money(
+					breakdown.total
+				)}</p>
+			</div>
+
+			<div class="mt-3 flex flex-wrap gap-2" aria-label="Estimate summary">
+				${badges
+					.map(
+						(text) => `<span class="inline-flex items-center rounded-full border border-line bg-background px-3 py-1.5">
+							<span class="data-mono text-eyebrow text-muted">${escapeHtml(text)}</span>
+						</span>`
+					)
+					.join('')}
+			</div>
+
+			<p class="mt-3 text-body-sm text-muted">
+				${escapeHtml(fromCode)} → ${escapeHtml(toCode)} · ${escapeHtml(itemLabel)}
+			</p>
+
+			<dl class="mt-5 grid grid-cols-1 gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2">
+				${rows
+					.map(
+						(row) => `<div class="flex items-center justify-between gap-3 bg-background p-4">
+							<dt class="text-body-sm text-muted">${row.label}</dt>
+							<dd class="data-mono text-body-md font-semibold tabular-nums text-foreground">${money(
+								row.value
+							)}</dd>
+						</div>`
+					)
+					.join('')}
+				<div class="flex items-center justify-between gap-3 bg-surface p-4 sm:col-span-2">
+					<dt class="text-body-md font-semibold text-foreground">Total Estimated Cost</dt>
+					<dd class="data-mono text-heading-md font-semibold tabular-nums text-foreground">${money(
+						breakdown.total
+					)}</dd>
+				</div>
+			</dl>
+
+			<p class="mt-3 text-body-sm text-muted">
+				Rate basis: ${escapeHtml(scaleBadge)} at ${rateMultiplier}× of the base parcel rate.
+			</p>
+
+			<div class="mt-4 rounded-md border border-line bg-background p-4">
+				<p class="data-mono text-eyebrow uppercase text-muted">${escapeHtml(checklistHeading)}</p>
+				<ol class="mt-2 grid list-none gap-2 text-body-sm text-muted">
+					${checklist
+						.map(
+							(text, index) => `<li class="flex gap-2">
+								<span class="data-mono shrink-0 font-semibold text-foreground">${index + 1}.</span>
+								<span>${escapeHtml(text)}</span>
+							</li>`
+						)
+						.join('')}
+				</ol>
+			</div>
+
+			${
+				approximate
+					? `<p class="mt-3 text-body-sm text-warning">Station index unavailable — showing a placeholder distance of ${FALLBACK_KM} km.</p>`
+					: ''
+			}
+			<p class="mt-3 text-body-sm text-muted">
+				Indicative estimate only. Confirm the actual charge with the parcel office before booking.
+			</p>
+		</section>`;
+	}
+
+	if (form && resultEl) {
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+
+			const from = originInput ? originInput.value.trim() : '';
+			const to = destinationInput ? destinationInput.value.trim() : '';
+			const bikeType = bikeTypeSelect ? bikeTypeSelect.value : 'standard';
+			const declaredValue = valueInput ? Math.max(0, Number(valueInput.value) || 0) : 0;
+			const isLuggage = !!bookingLuggageRadio?.checked;
+			const scale = SCALE_META[scaleSelect ? scaleSelect.value : 'p'] || SCALE_META.p;
+			const includePacking = packingCheckbox ? packingCheckbox.checked : true;
+			const isAppliance = isApplianceCategory();
+			const packages = isAppliance
+				? Math.max(1, Math.floor(Number(itemPackagesInput ? itemPackagesInput.value : 1) || 1))
+				: 1;
+			const preset =
+				ITEM_PRESETS[itemPresetSelect ? itemPresetSelect.value : 'custom'] || ITEM_PRESETS.custom;
+			const perItemWeight = isAppliance
+				? roundUpToSlab(itemWeightInput ? itemWeightInput.value : preset.weight)
+				: chargeableWeightFor(bikeType);
+
+			if (!from || !to) {
+				resultEl.innerHTML = errorCard('Enter both the origin and destination stations.');
+				resultEl.classList.remove('hidden');
+				return;
+			}
+
+			if (submitBtn) {
+				submitBtn.disabled = true;
+				submitBtn.classList.add('cursor-wait', 'opacity-60');
+			}
+
+			try {
+				const distance = await getDistance(from, to);
+				const distanceKm = distance.km;
+				const chargeableWeight = perItemWeight * packages;
+				const scaleBadge = isLuggage ? 'Luggage' : scale.label;
+				const rateMultiplier = isLuggage ? LUGGAGE_MULTIPLIER : scale.multiplier;
+
+				const baseFreight = Math.round(
+					(distanceKm * 0.3 + chargeableWeight * 2.5) * rateMultiplier
+				);
+				const development = Math.round(baseFreight * 0.02);
+				const insurance = declaredValue > 0 ? Math.round(declaredValue * 0.01) : 0;
+				const gst = Math.round((baseFreight + development + insurance) * 0.05);
+				const packing = includePacking
+					? isAppliance
+						? PACKING_CHARGE_PER_PACKAGE * packages
+						: PACKING_CHARGE
+					: 0;
+				const total = baseFreight + development + insurance + gst + packing;
+
+				const selectedOption = bikeTypeSelect
+					? bikeTypeSelect.options[bikeTypeSelect.selectedIndex]
+					: null;
+				const presetOption = itemPresetSelect
+					? itemPresetSelect.options[itemPresetSelect.selectedIndex]
+					: null;
+				const itemLabel = isAppliance
+					? `${presetOption?.textContent?.trim() || preset.label} · ${packages} package${
+							packages === 1 ? '' : 's'
+						}`
+					: selectedOption?.textContent || 'Bike';
+
+				resultEl.innerHTML = renderResult({
+					distanceKm,
+					approximate: distance.approximate,
+					fromCode: distance.fromCode,
+					toCode: distance.toCode,
+					itemLabel,
+					chargeableWeight,
+					perItemWeight,
+					packages,
+					isAppliance,
+					scaleBadge,
+					rateMultiplier,
+					breakdown: { baseFreight, development, insurance, gst, packing, total },
+				});
+				resultEl.classList.remove('hidden');
+				resultEl.scrollIntoView({ block: 'start' });
+			} catch (error) {
+				resultEl.innerHTML = errorCard(error instanceof Error ? error.message : 'Something went wrong.');
+				resultEl.classList.remove('hidden');
+			} finally {
+				if (submitBtn) {
+					submitBtn.disabled = false;
+					submitBtn.classList.remove('cursor-wait', 'opacity-60');
+				}
+			}
+		});
+	}
+</script>

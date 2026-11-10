@@ -25,6 +25,13 @@ export const GET: APIRoute = ({ site }) => {
 
 	const urls = [
 		{ loc: new URL('/', base).href, lastmod, changefreq: 'weekly', priority: '1.0' },
+		{ loc: new URL('/ta-calculator', base).href, lastmod, changefreq: 'monthly', priority: '0.9' },
+		{
+			loc: new URL('/bike-parcel-calculator', base).href,
+			lastmod,
+			changefreq: 'monthly',
+			priority: '0.9',
+		},
 		...buildPopularRoutes().map((entry) => ({
 			loc: new URL(`/distance/${entry.slug}`, base).href,
 			lastmod,
