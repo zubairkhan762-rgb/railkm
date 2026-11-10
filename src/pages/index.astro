@@ -202,21 +202,37 @@ const appSchema = {
 								</span>
 							</label>
 
-							<div class="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3 sm:mt-5 sm:pt-4">
-								<button
-									type="button"
-									id="add-via"
-									class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40 disabled:cursor-not-allowed disabled:opacity-40"
-								>
-									<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="shrink-0">
-										<path
-											d="M8 2.5v11M2.5 8h11"
-											stroke="currentColor"
-											stroke-width="1.5"
-											stroke-linecap="round"></path>
-									</svg>
-									<span data-i18n="addVia">Add Via Station</span>
-								</button>
+							<div class="mt-3 flex flex-col gap-3 border-t border-line pt-3 sm:mt-5 sm:pt-4">
+								<div class="flex flex-row gap-3">
+									<button
+										type="button"
+										id="add-via"
+										class="focus-ring inline-flex min-h-[44px] flex-1 items-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40 disabled:cursor-not-allowed disabled:opacity-40"
+									>
+										<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="shrink-0">
+											<path
+												d="M8 2.5v11M2.5 8h11"
+												stroke="currentColor"
+												stroke-width="1.5"
+												stroke-linecap="round"></path>
+										</svg>
+										<span data-i18n="addVia">Add Via Station</span>
+									</button>
+									<button
+										type="button"
+										id="clear-route"
+										class="focus-ring inline-flex min-h-[44px] flex-none items-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40"
+									>
+										<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="shrink-0">
+											<path
+												d="M4 4l8 8M12 4l-8 8"
+												stroke="currentColor"
+												stroke-width="1.5"
+												stroke-linecap="round"></path>
+										</svg>
+										<span data-i18n="clearRoute">Clear Route</span>
+									</button>
+								</div>
 								<button
 									type="button"
 									id="swap"
@@ -231,20 +247,6 @@ const appSchema = {
 											stroke-linejoin="round"></path>
 									</svg>
 									<span data-i18n="swap">Swap Origin / Destination</span>
-								</button>
-								<button
-									type="button"
-									id="clear-route"
-									class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40"
-								>
-									<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="shrink-0">
-										<path
-											d="M4 4l8 8M12 4l-8 8"
-											stroke="currentColor"
-											stroke-width="1.5"
-											stroke-linecap="round"></path>
-									</svg>
-									<span data-i18n="clearRoute">Clear Route</span>
 								</button>
 							</div>
 
