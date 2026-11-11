@@ -751,7 +751,7 @@ const kmaRates = [
 			return `${now.getFullYear()}-${month}-${day}`;
 		}
 
-		function setupStationField(input, list, caption) {
+		function setupStationField(input, list, caption, onSelect) {
 			const idPrefix = input.id;
 			let results = [];
 			let active = -1;
@@ -797,6 +797,7 @@ const kmaRates = [
 				updateCaption();
 				close();
 				computeDistance();
+				if (onSelect) onSelect(result);
 			}
 
 			function place(query) {
@@ -910,7 +911,10 @@ const kmaRates = [
 		const originField = setupStationField(
 			originInput,
 			document.getElementById('kma-origin-list'),
-			document.querySelector('[data-caption="kma-origin"]')
+			document.querySelector('[data-caption="kma-origin"]'),
+			() => {
+				if (destInput) destInput.focus();
+			}
 		);
 		const viaField = setupStationField(
 			viaInput,
