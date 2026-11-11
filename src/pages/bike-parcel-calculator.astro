@@ -1021,6 +1021,7 @@ const structuredData = {
 			input.value = result.code;
 			updateCaption();
 			close();
+			if (input === originInput && destinationInput) destinationInput.focus();
 		}
 
 		function place(query) {
