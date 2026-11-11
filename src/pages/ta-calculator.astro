@@ -691,7 +691,7 @@ const taRates = [
 
 		/* --------------------------------------------------- Station autocomplete */
 
-		function setupStationField(input, list, caption) {
+		function setupStationField(input, list, caption, onSelect) {
 			const idPrefix = input.id;
 			let results = [];
 			let active = -1;
@@ -736,6 +736,7 @@ const taRates = [
 				updateCaption();
 				close();
 				computeDistance();
+				if (onSelect) onSelect(result);
 			}
 
 			function place(query) {
@@ -844,7 +845,11 @@ const taRates = [
 		const hqField = setupStationField(
 			document.getElementById('ta-hq'),
 			document.getElementById('ta-hq-list'),
-			document.querySelector('[data-caption="hq"]')
+			document.querySelector('[data-caption="hq"]'),
+			() => {
+				const dutyInput = document.getElementById('ta-duty');
+				if (dutyInput) dutyInput.focus();
+			}
 		);
 		const dutyField = setupStationField(
 			document.getElementById('ta-duty'),
