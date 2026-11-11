@@ -201,7 +201,13 @@ const mobileToolRowClass = (active: boolean) =>
 						href="/ta-calculator"
 						aria-label="Open the Indian Railway TA Calculator"
 						title="Indian Railway TA Calculator"
-						class="focus-ring hidden h-9 shrink-0 items-center gap-1 rounded-sm border border-emerald-600/30 bg-emerald-500/10 px-2 text-label-sm text-emerald-700 transition-colors hover:border-emerald-600/60 hover:bg-emerald-500/20 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-500/20 md:inline-flex sm:h-10 sm:gap-1.5 sm:px-2.5"
+						aria-current={isTaActive ? 'page' : undefined}
+						class:list={[
+							'focus-ring hidden h-9 shrink-0 items-center gap-1 rounded-sm border px-2 text-label-sm transition-colors md:inline-flex sm:h-10 sm:gap-1.5 sm:px-2.5',
+							isTaActive
+								? 'border-emerald-600/30 bg-emerald-500/10 text-emerald-700 hover:border-emerald-600/60 hover:bg-emerald-500/20 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-500/20'
+								: 'border-line bg-surface text-foreground hover:border-foreground/40 hover:bg-foreground/5',
+						]}
 					>
 						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
 							<rect x="4" y="2.5" width="16" height="19" rx="2.5" stroke="currentColor" stroke-width="1.6"></rect>
@@ -218,7 +224,13 @@ const mobileToolRowClass = (active: boolean) =>
 						href="/bike-parcel-calculator"
 						aria-label="Open the Railway Bike & Parcel Charges Calculator"
 						title="Railway Bike & Parcel Charges Calculator"
-						class="focus-ring hidden h-9 shrink-0 items-center gap-1 rounded-sm border border-line bg-surface px-2 text-label-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5 md:inline-flex sm:h-10 sm:gap-1.5 sm:px-2.5"
+						aria-current={isBikeActive ? 'page' : undefined}
+						class:list={[
+							'focus-ring hidden h-9 shrink-0 items-center gap-1 rounded-sm border px-2 text-label-sm transition-colors md:inline-flex sm:h-10 sm:gap-1.5 sm:px-2.5',
+							isBikeActive
+								? 'border-emerald-600/30 bg-emerald-500/10 text-emerald-700 hover:border-emerald-600/60 hover:bg-emerald-500/20 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-500/20'
+								: 'border-line bg-surface text-foreground hover:border-foreground/40 hover:bg-foreground/5',
+						]}
 					>
 						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
 							<circle cx="5.5" cy="17" r="3.5" stroke="currentColor" stroke-width="1.6"></circle>
@@ -241,7 +253,7 @@ const mobileToolRowClass = (active: boolean) =>
 						class:list={[
 							'focus-ring hidden h-9 shrink-0 items-center gap-1 rounded-sm border px-2 text-label-sm transition-colors md:inline-flex sm:h-10 sm:gap-1.5 sm:px-2.5',
 							isKmaActive
-								? 'border-emerald-600/30 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/30 dark:text-emerald-400'
+								? 'border-emerald-600/30 bg-emerald-500/10 text-emerald-700 hover:border-emerald-600/60 hover:bg-emerald-500/20 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-500/20'
 								: 'border-line bg-surface text-foreground hover:border-foreground/40 hover:bg-foreground/5',
 						]}
 					>
