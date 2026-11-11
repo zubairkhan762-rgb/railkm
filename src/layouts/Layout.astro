@@ -100,8 +100,8 @@ const mobileToolRowClass = (active: boolean) =>
 		</a>
 
 		<header data-print="hide" class="sticky top-0 z-50 border-b border-line bg-background/80 backdrop-blur-md">
-			<div class="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-2 px-3 sm:gap-4 sm:px-6">
-				<div class="flex min-w-0 items-center gap-1.5 sm:gap-4">
+			<div class="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6 xl:max-w-7xl">
+				<div class="flex shrink-0 items-center gap-1.5 sm:gap-3">
 					<a href="/" class="flex items-center gap-1.5 text-foreground sm:gap-2.5" aria-label="RailKM home">
 						<span
 							class="flex h-6 w-6 items-center justify-center rounded-sm border border-line bg-surface"
@@ -127,8 +127,8 @@ const mobileToolRowClass = (active: boolean) =>
 									class="focus-ring inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-sm border border-line bg-surface px-2 py-1 text-label-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5 sm:gap-1.5 sm:px-2.5"
 								>
 									<span aria-hidden="true">←</span>
-									<span class="hidden sm:inline" data-i18n="backToMapper">{backLabel}</span>
-									<span class="sm:hidden">Mapper</span>
+									<span class="hidden shrink-0 whitespace-nowrap lg:inline" data-i18n="backToMapper">{backLabel}</span>
+									<span class="shrink-0 whitespace-nowrap lg:hidden">Mapper</span>
 								</a>
 							</>
 						)
@@ -137,7 +137,7 @@ const mobileToolRowClass = (active: boolean) =>
 
 				<div class="flex shrink-0 items-center gap-1 sm:gap-2">
 					<span
-						class="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 xl:inline-flex"
+						class="hidden shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-line bg-surface px-3 py-1 xl:inline-flex"
 						title="Stations indexed from open railway data"
 					>
 						<span class="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.55)]"
