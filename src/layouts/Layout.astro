@@ -22,6 +22,19 @@ const {
 const SITE_URL = 'https://railkm.com';
 const canonicalURL = new URL(Astro.url.pathname, SITE_URL);
 const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
+
+const currentPath = Astro.url.pathname;
+const isMapperActive = currentPath === '/' || currentPath.startsWith('/distance');
+const isTaActive = currentPath.startsWith('/ta-calculator');
+const isBikeActive = currentPath.startsWith('/bike-parcel-calculator');
+const isRoutesActive = currentPath.startsWith('/routes');
+
+const mobileToolRowClass = (active: boolean) =>
+	`focus-ring flex min-h-[44px] w-full items-center gap-3 rounded-sm px-2.5 py-2 text-body-md transition-colors ${
+		active
+			? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+			: 'text-foreground hover:bg-foreground/5'
+	}`;
 ---
 
 <!doctype html>
@@ -123,7 +136,7 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 
 				<div class="flex shrink-0 items-center gap-1 sm:gap-2">
 					<span
-						class="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 sm:inline-flex"
+						class="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 md:inline-flex"
 						title="Stations indexed from open railway data"
 					>
 						<span class="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.55)]"
@@ -133,7 +146,7 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 						</span>
 					</span>
 
-					<div id="lang" class="relative shrink-0">
+					<div id="lang" class="relative hidden shrink-0 md:block">
 						<button
 							type="button"
 							id="lang-trigger"
@@ -187,7 +200,7 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 						href="/ta-calculator"
 						aria-label="Open the Indian Railway TA Calculator"
 						title="Indian Railway TA Calculator"
-						class="focus-ring inline-flex h-9 shrink-0 items-center gap-1 rounded-sm border border-emerald-600/30 bg-emerald-500/10 px-2 text-label-sm text-emerald-700 transition-colors hover:border-emerald-600/60 hover:bg-emerald-500/20 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-500/20 sm:h-10 sm:gap-1.5 sm:px-2.5"
+						class="focus-ring hidden h-9 shrink-0 items-center gap-1 rounded-sm border border-emerald-600/30 bg-emerald-500/10 px-2 text-label-sm text-emerald-700 transition-colors hover:border-emerald-600/60 hover:bg-emerald-500/20 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-500/20 md:inline-flex sm:h-10 sm:gap-1.5 sm:px-2.5"
 					>
 						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
 							<rect x="4" y="2.5" width="16" height="19" rx="2.5" stroke="currentColor" stroke-width="1.6"></rect>
@@ -204,7 +217,7 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 						href="/bike-parcel-calculator"
 						aria-label="Open the Railway Bike & Parcel Charges Calculator"
 						title="Railway Bike & Parcel Charges Calculator"
-						class="focus-ring inline-flex h-9 shrink-0 items-center gap-1 rounded-sm border border-line bg-surface px-2 text-label-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5 sm:h-10 sm:gap-1.5 sm:px-2.5"
+						class="focus-ring hidden h-9 shrink-0 items-center gap-1 rounded-sm border border-line bg-surface px-2 text-label-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5 md:inline-flex sm:h-10 sm:gap-1.5 sm:px-2.5"
 					>
 						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
 							<circle cx="5.5" cy="17" r="3.5" stroke="currentColor" stroke-width="1.6"></circle>
@@ -240,9 +253,10 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 					<button
 						type="button"
 						id="theme-toggle"
+						data-theme-toggle
 						aria-label="Toggle light and dark theme"
 						title="Toggle light and dark theme"
-						class="focus-ring inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-line bg-surface text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5 sm:h-10 sm:w-10"
+						class="focus-ring hidden h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-line bg-surface text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5 md:inline-flex sm:h-10 sm:w-10"
 					>
 						<svg class="hidden h-4 w-4 dark:block" viewBox="0 0 24 24" fill="none" aria-hidden="true">
 							<circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.75"></circle>
@@ -260,6 +274,178 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 								stroke-linejoin="round"></path>
 						</svg>
 					</button>
+
+					<div class="relative md:hidden">
+						<button
+							type="button"
+							id="mobile-menu-trigger"
+							aria-haspopup="menu"
+							aria-expanded="false"
+							aria-controls="mobile-menu"
+							aria-label="Open tools and preferences"
+							title="Tools & preferences"
+							class="focus-ring inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-line bg-surface text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/5"
+						>
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+								<path
+									d="M4 7h8M18 7h2M4 17h2M10 17h10M4 12h16"
+									stroke="currentColor"
+									stroke-width="1.75"
+									stroke-linecap="round"></path>
+								<circle cx="15" cy="7" r="2" stroke="currentColor" stroke-width="1.6"></circle>
+								<circle cx="7" cy="17" r="2" stroke="currentColor" stroke-width="1.6"></circle>
+							</svg>
+						</button>
+						<div
+							id="mobile-menu"
+							role="menu"
+							aria-label="Tools and preferences"
+							class="absolute right-0 top-full z-50 mt-2 hidden w-72 max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-md border border-line bg-surface shadow-[0_12px_32px_-12px_rgba(0,0,0,0.8)]"
+						>
+							<div class="p-2">
+								<p class="data-mono px-2.5 pb-1.5 pt-1 text-eyebrow uppercase text-muted">Railway Tools</p>
+								<a
+									href="/"
+									role="menuitem"
+									aria-current={isMapperActive ? 'page' : undefined}
+									class={mobileToolRowClass(isMapperActive)}
+								>
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
+										<circle cx="6" cy="6" r="2.5" stroke="currentColor" stroke-width="1.6"></circle>
+										<circle cx="18" cy="18" r="2.5" stroke="currentColor" stroke-width="1.6"></circle>
+										<path
+											d="M8.5 6H13a4 4 0 0 1 0 8H9a4 4 0 0 0 0 8h6.5"
+											stroke="currentColor"
+											stroke-width="1.6"
+											stroke-linecap="round"></path>
+									</svg>
+									<span class="min-w-0 flex-1 truncate">Route Distance Mapper</span>
+								</a>
+								<a
+									href="/ta-calculator"
+									role="menuitem"
+									aria-current={isTaActive ? 'page' : undefined}
+									class={mobileToolRowClass(isTaActive)}
+								>
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
+										<rect x="4" y="2.5" width="16" height="19" rx="2.5" stroke="currentColor" stroke-width="1.6"></rect>
+										<path
+											d="M8 7h8M8 11.5h.01M12 11.5h.01M16 11.5h.01M8 15.5h.01M12 15.5h.01M16 15.5h.01"
+											stroke="currentColor"
+											stroke-width="1.8"
+											stroke-linecap="round"></path>
+									</svg>
+									<span class="min-w-0 flex-1 truncate">TA Calculator</span>
+								</a>
+								<a
+									href="/bike-parcel-calculator"
+									role="menuitem"
+									aria-current={isBikeActive ? 'page' : undefined}
+									class={mobileToolRowClass(isBikeActive)}
+								>
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
+										<circle cx="5.5" cy="17" r="3.5" stroke="currentColor" stroke-width="1.6"></circle>
+										<circle cx="18.5" cy="17" r="3.5" stroke="currentColor" stroke-width="1.6"></circle>
+										<path
+											d="M5.5 17l4-7h5l4 7M9.5 10l2-4h4M12 17h3"
+											stroke="currentColor"
+											stroke-width="1.6"
+											stroke-linecap="round"
+											stroke-linejoin="round"></path>
+									</svg>
+									<span class="min-w-0 flex-1 truncate">Bike &amp; Parcel</span>
+								</a>
+								<a
+									href="/routes"
+									role="menuitem"
+									aria-current={isRoutesActive ? 'page' : undefined}
+									class={mobileToolRowClass(isRoutesActive)}
+								>
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
+										<circle cx="12" cy="5" r="2.2" stroke="currentColor" stroke-width="1.6"></circle>
+										<circle cx="5" cy="18" r="2.2" stroke="currentColor" stroke-width="1.6"></circle>
+										<circle cx="19" cy="18" r="2.2" stroke="currentColor" stroke-width="1.6"></circle>
+										<path
+											d="M10.6 6.9 6.2 16M13.4 6.9 17.8 16M7.2 18h9.6"
+											stroke="currentColor"
+											stroke-width="1.6"
+											stroke-linecap="round"></path>
+									</svg>
+									<span class="min-w-0 flex-1 truncate">Route Network</span>
+								</a>
+								<div
+									role="menuitem"
+									aria-disabled="true"
+									class="flex min-h-[44px] w-full cursor-not-allowed items-center gap-3 rounded-sm px-2.5 py-2 text-body-md text-muted opacity-70"
+								>
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
+										<rect x="5" y="3" width="14" height="13" rx="3" stroke="currentColor" stroke-width="1.6"></rect>
+										<path
+											d="M5 10h14M8 16l-1.5 3M16 16l1.5 3"
+											stroke="currentColor"
+											stroke-width="1.6"
+											stroke-linecap="round"></path>
+										<circle cx="9" cy="13" r=".9" fill="currentColor"></circle>
+										<circle cx="15" cy="13" r=".9" fill="currentColor"></circle>
+									</svg>
+									<span class="min-w-0 flex-1 truncate">Loco Pilot KMA</span>
+									<span class="data-mono shrink-0 rounded-sm border border-line px-1.5 py-0.5 text-[10px] uppercase text-muted">Soon</span>
+								</div>
+							</div>
+							<div class="border-t border-line p-2">
+								<p class="data-mono px-2.5 pb-1.5 pt-1 text-eyebrow uppercase text-muted">Preferences</p>
+								<div class="flex min-h-[44px] items-center justify-between gap-3 rounded-sm px-2.5 py-1.5">
+									<span class="text-body-md text-foreground">Language</span>
+									<div role="group" aria-label="Language" class="flex items-center gap-1 rounded-sm border border-line bg-background p-0.5">
+										<button
+											type="button"
+											data-mobile-lang-option="en"
+											data-mobile-menu-close
+											aria-pressed="false"
+											class="focus-ring inline-flex h-7 min-w-[2.5rem] items-center justify-center rounded-sm px-2 data-mono text-eyebrow uppercase text-muted transition-colors hover:text-foreground aria-pressed:bg-emerald-500/10 aria-pressed:text-emerald-700 dark:aria-pressed:text-emerald-400"
+										>
+											EN
+										</button>
+										<button
+											type="button"
+											data-mobile-lang-option="hi"
+											data-mobile-menu-close
+											aria-pressed="false"
+											class="focus-ring inline-flex h-7 min-w-[2.5rem] items-center justify-center rounded-sm px-2 data-mono text-eyebrow uppercase text-muted transition-colors hover:text-foreground aria-pressed:bg-emerald-500/10 aria-pressed:text-emerald-700 dark:aria-pressed:text-emerald-400"
+										>
+											HI
+										</button>
+									</div>
+								</div>
+								<button
+									type="button"
+									data-theme-toggle
+									data-mobile-menu-close
+									class="focus-ring flex min-h-[44px] w-full items-center justify-between gap-3 rounded-sm px-2.5 py-1.5 text-body-md text-foreground transition-colors hover:bg-foreground/5"
+								>
+									<span class="flex items-center gap-3">
+										<svg class="hidden h-4 w-4 shrink-0 text-muted dark:block" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+											<circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.75"></circle>
+											<path
+												d="M12 2.5v2M12 19.5v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2.5 12h2M19.5 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+												stroke="currentColor"
+												stroke-width="1.75"
+												stroke-linecap="round"></path>
+										</svg>
+										<svg class="h-4 w-4 shrink-0 text-muted dark:hidden" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+											<path
+												d="M20.5 13.2A8.4 8.4 0 1 1 10.8 3.5a6.6 6.6 0 0 0 9.7 9.7Z"
+												stroke="currentColor"
+												stroke-width="1.75"
+												stroke-linejoin="round"></path>
+										</svg>
+										<span>Theme</span>
+									</span>
+									<span data-theme-label class="data-mono text-eyebrow uppercase text-muted">Dark</span>
+								</button>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</header>
@@ -360,20 +546,38 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 		</div>
 
 		<script>
-			const themeToggle = document.getElementById('theme-toggle');
-			if (themeToggle) {
-				themeToggle.addEventListener('click', () => {
-					const root = document.documentElement;
-					const next = root.dataset.theme === 'light' ? 'dark' : 'light';
-					root.dataset.theme = next;
-					try {
-						localStorage.setItem('railkm-theme', next);
-					} catch {
-						/* storage unavailable (private mode) — session-only switch */
-					}
-					const meta = document.querySelector('meta[name="theme-color"]');
-					if (meta) meta.setAttribute('content', next === 'light' ? '#ffffff' : '#000000');
+			const themeToggles = document.querySelectorAll('[data-theme-toggle]');
+			const themeLabels = document.querySelectorAll('[data-theme-label]');
+
+			function syncThemeControls() {
+				const isLight = document.documentElement.dataset.theme === 'light';
+				themeLabels.forEach((label) => {
+					label.textContent = isLight ? 'Light' : 'Dark';
 				});
+				themeToggles.forEach((toggle) => {
+					const label = isLight ? 'Switch to dark theme' : 'Switch to light theme';
+					toggle.setAttribute('aria-label', label);
+					toggle.setAttribute('title', label);
+				});
+			}
+
+			if (themeToggles.length) {
+				themeToggles.forEach((themeToggle) => {
+					themeToggle.addEventListener('click', () => {
+						const root = document.documentElement;
+						const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+						root.dataset.theme = next;
+						try {
+							localStorage.setItem('railkm-theme', next);
+						} catch {
+							/* storage unavailable (private mode) — session-only switch */
+						}
+						const meta = document.querySelector('meta[name="theme-color"]');
+						if (meta) meta.setAttribute('content', next === 'light' ? '#ffffff' : '#000000');
+						syncThemeControls();
+					});
+				});
+				syncThemeControls();
 			}
 		</script>
 
@@ -641,6 +845,9 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 						option.setAttribute('aria-selected', String(option.dataset.langOption === lang));
 					});
 				}
+				document.querySelectorAll('[data-mobile-lang-option]').forEach((option) => {
+					option.setAttribute('aria-pressed', String(option.dataset.mobileLangOption === lang));
+				});
 				window.dispatchEvent(new CustomEvent('railkm:langchange', { detail: { lang } }));
 			}
 
@@ -678,7 +885,62 @@ const stationCountLabel = graph.metadata.totalStations.toLocaleString('en-IN');
 				});
 			}
 
+			document.querySelectorAll('[data-mobile-lang-option]').forEach((option) => {
+				option.addEventListener('click', () => {
+					applyLanguage(setLang(option.dataset.mobileLangOption));
+				});
+			});
+
 			applyLanguage(getLang());
+		</script>
+
+		<script>
+			const mobileMenu = document.getElementById('mobile-menu');
+			const mobileMenuTrigger = document.getElementById('mobile-menu-trigger');
+
+			if (mobileMenu && mobileMenuTrigger) {
+				function isMobileMenuOpen() {
+					return !mobileMenu.classList.contains('hidden');
+				}
+
+				function openMobileMenu() {
+					mobileMenu.classList.remove('hidden');
+					mobileMenuTrigger.setAttribute('aria-expanded', 'true');
+				}
+
+				function closeMobileMenu() {
+					if (!isMobileMenuOpen()) return;
+					mobileMenu.classList.add('hidden');
+					mobileMenuTrigger.setAttribute('aria-expanded', 'false');
+				}
+
+				mobileMenuTrigger.addEventListener('click', (event) => {
+					event.stopPropagation();
+					if (isMobileMenuOpen()) closeMobileMenu();
+					else openMobileMenu();
+				});
+
+				mobileMenu.addEventListener('click', (event) => {
+					if (!(event.target instanceof Element)) return;
+					if (event.target.closest('a, [data-mobile-menu-close]')) closeMobileMenu();
+				});
+
+				document.addEventListener('click', (event) => {
+					if (!isMobileMenuOpen()) return;
+					if (event.target === mobileMenuTrigger || mobileMenuTrigger.contains(event.target)) return;
+					if (!mobileMenu.contains(event.target)) closeMobileMenu();
+				});
+
+				document.addEventListener('keydown', (event) => {
+					if (event.key === 'Escape') closeMobileMenu();
+				});
+
+				window.addEventListener('railkm:langchange', closeMobileMenu);
+
+				window.addEventListener('resize', () => {
+					if (window.matchMedia('(min-width: 768px)').matches) closeMobileMenu();
+				});
+			}
 		</script>
 	</body>
 </html>
