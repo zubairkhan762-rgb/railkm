@@ -27,6 +27,7 @@ const currentPath = Astro.url.pathname;
 const isMapperActive = currentPath === '/' || currentPath.startsWith('/distance');
 const isTaActive = currentPath.startsWith('/ta-calculator');
 const isBikeActive = currentPath.startsWith('/bike-parcel-calculator');
+const isKmaActive = currentPath.startsWith('/kma-calculator');
 const isRoutesActive = currentPath.startsWith('/routes');
 
 const mobileToolRowClass = (active: boolean) =>
@@ -232,6 +233,31 @@ const mobileToolRowClass = (active: boolean) =>
 						<span class="hidden sm:inline">Bike &amp; Parcel</span>
 					</a>
 
+					<a
+						href="/kma-calculator"
+						aria-label="Open the Loco Pilot KMA Calculator"
+						title="Loco Pilot KMA Calculator"
+						aria-current={isKmaActive ? 'page' : undefined}
+						class:list={[
+							'focus-ring hidden h-9 shrink-0 items-center gap-1 rounded-sm border px-2 text-label-sm transition-colors md:inline-flex sm:h-10 sm:gap-1.5 sm:px-2.5',
+							isKmaActive
+								? 'border-emerald-600/30 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/30 dark:text-emerald-400'
+								: 'border-line bg-surface text-foreground hover:border-foreground/40 hover:bg-foreground/5',
+						]}
+					>
+						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
+							<rect x="5" y="3" width="14" height="13" rx="3" stroke="currentColor" stroke-width="1.6"></rect>
+							<path
+								d="M5 10h14M8 16l-1.5 3M16 16l1.5 3"
+								stroke="currentColor"
+								stroke-width="1.6"
+								stroke-linecap="round"></path>
+							<circle cx="9" cy="13" r=".9" fill="currentColor"></circle>
+							<circle cx="15" cy="13" r=".9" fill="currentColor"></circle>
+						</svg>
+						<span class="hidden lg:inline" data-i18n="navKma">Loco Pilot KMA</span>
+					</a>
+
 					<button
 						type="button"
 						id="cmdk-trigger"
@@ -373,10 +399,11 @@ const mobileToolRowClass = (active: boolean) =>
 									</svg>
 									<span class="min-w-0 flex-1 truncate">Route Network</span>
 								</a>
-								<div
+								<a
+									href="/kma-calculator"
 									role="menuitem"
-									aria-disabled="true"
-									class="flex min-h-[44px] w-full cursor-not-allowed items-center gap-3 rounded-sm px-2.5 py-2 text-body-md text-muted opacity-70"
+									aria-current={isKmaActive ? 'page' : undefined}
+									class={mobileToolRowClass(isKmaActive)}
 								>
 									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0">
 										<rect x="5" y="3" width="14" height="13" rx="3" stroke="currentColor" stroke-width="1.6"></rect>
@@ -388,9 +415,8 @@ const mobileToolRowClass = (active: boolean) =>
 										<circle cx="9" cy="13" r=".9" fill="currentColor"></circle>
 										<circle cx="15" cy="13" r=".9" fill="currentColor"></circle>
 									</svg>
-									<span class="min-w-0 flex-1 truncate">Loco Pilot KMA</span>
-									<span class="data-mono shrink-0 rounded-sm border border-line px-1.5 py-0.5 text-[10px] uppercase text-muted">Soon</span>
-								</div>
+									<span class="min-w-0 flex-1 truncate" data-i18n="navKma">Loco Pilot KMA</span>
+								</a>
 							</div>
 							<div class="border-t border-line p-2">
 								<p class="data-mono px-2.5 pb-1.5 pt-1 text-eyebrow uppercase text-muted">Preferences</p>
@@ -495,6 +521,11 @@ const mobileToolRowClass = (active: boolean) =>
 						href="/bike-parcel-calculator"
 						class="focus-ring rounded-sm text-body-sm text-muted transition-colors hover:text-foreground"
 						>Bike &amp; Parcel Calculator</a
+					>
+					<a
+						href="/kma-calculator"
+						class="focus-ring rounded-sm text-body-sm text-muted transition-colors hover:text-foreground"
+						>Loco Pilot KMA Calculator</a
 					>
 				</nav>
 				<p class="data-mono text-eyebrow text-muted">

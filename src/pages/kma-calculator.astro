@@ -1,0 +1,1509 @@
+---
+import Layout from '../layouts/Layout.astro';
+import BackToTop from '../components/BackToTop.astro';
+import graph from '../data/railway-graph.json';
+
+const stationCount = graph.metadata.totalStations.toLocaleString('en-IN');
+const title = 'Loco Pilot & Running Staff KMA Calculator — Kilometreage Allowance | RailKM';
+const description = `Free Kilometreage Allowance (KMA) calculator for Loco Pilots, Assistant Loco Pilots and Train Managers. Use 7th CPC running-staff rates, duty multipliers, shunting hours and the 120 km guarantee rule with track distance across ${stationCount} indexed stations.`;
+
+const faqs = [
+	{
+		question: 'Is KMA calculated on actual track kilometres or on the multiplied kilometres?',
+		answer:
+			'KMA is calculated on qualifying kilometres. The track distance between the signing-on and signing-off stations is the starting point, and the duty type then applies its multiplier. A normal run counts the track kilometres once, a ghat or pusher duty counts 1.5 times, a high ghat section counts twice, and a spare or learning-road duty counts half. The amount is then (qualifying km ÷ 100) × the rate per 100 km for the designation.',
+	},
+	{
+		question: 'How does the 120 km minimum guaranteed kilometreage rule work?',
+		answer:
+			'The 120 km guarantee is a floor, not an addition. If a running-staff member completes a duty that produces less than 120 qualifying kilometres, the trip is treated as 120 km for KMA purposes. If the trip already produces more than 120 km, the actual qualifying figure is paid and nothing extra is added. The guarantee is normally applied trip by trip, so a short shunting or spare duty can still earn the minimum. The calculator applies the rule only when the checkbox is selected.',
+	},
+	{
+		question: 'How are shunting and waiting duties converted into kilometreage?',
+		answer:
+			'Shunting and waiting duties are time based because there may be little or no road running. The hours are converted at a notified rate, commonly 15 km per hour or 20 km per hour depending on the duty and the local instruction. The calculator multiplies the entered hours by the selected hourly rate to obtain qualifying kilometres. If the 120 km guarantee is switched on and the converted figure is lower, the minimum is used instead.',
+	},
+	{
+		question: 'Do Loco Pilots receive daily TA as well as KMA for the same run?',
+		answer:
+			'No. Running staff are compensated for a run through Kilometreage Allowance and the associated running allowances, not through ordinary daily Travelling Allowance. Daily TA is for non-running duty away from headquarters. A Loco Pilot, ALP or Train Manager should not claim daily TA and KMA for the same trip. When running staff are sent on a course or other non-running duty, that duty is dealt with under the applicable TA rules instead.',
+	},
+	{
+		question: 'Is the DA 50% revised KMA rate automatically applicable?',
+		answer:
+			'Yes, once Dearness Allowance crosses 50%, the 7th CPC running-staff rates are revised by 25% from the date of the DA order. No separate application is normally required; the bill section applies the revised rate. Use the revised option in this calculator for the month in which the higher DA is in force. If the order is retrospective, the revised rate applies from the effective date and arrears are drawn in the next bill.',
+	},
+];
+
+const faqSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faqs.map((faq) => ({
+		'@type': 'Question',
+		name: faq.question,
+		acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+	})),
+};
+
+const kmaRates = [
+	{ designation: 'Loco Pilot (Mail / Express / Goods / Sr. Pass)', standard: '₹525.00', da: '₹656.25' },
+	{ designation: 'Loco Pilot (Passenger / Motorman)', standard: '₹520.00', da: '₹650.00' },
+	{ designation: 'Assistant Loco Pilot (ALP / Sr. ALP)', standard: '₹390.00', da: '₹487.50' },
+	{ designation: 'Train Manager / Guard (Mail / Express)', standard: '₹470.00', da: '₹587.50' },
+	{ designation: 'Train Manager / Guard (Goods / Passenger)', standard: '₹465.00', da: '₹581.25' },
+];
+---
+
+<Layout title={title} description={description} backHref="/" backLabel="Back to Route Mapper">
+	<div class="relative overflow-hidden">
+		<div
+			data-print="hide"
+			class="pointer-events-none absolute inset-x-0 top-0 h-[320px] bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(237,237,237,0.06),transparent)]"
+			aria-hidden="true"
+		>
+		</div>
+
+		<div class="relative mx-auto w-full max-w-4xl px-4 pt-5 pb-6 sm:px-6 sm:pt-16 sm:pb-24 print:pt-0 print:pb-0">
+			<nav data-print="hide" aria-label="Breadcrumb" class="data-mono text-eyebrow uppercase text-muted">
+				<ol class="flex flex-wrap items-center gap-2">
+					<li><a class="focus-ring rounded-sm transition-colors hover:text-foreground" href="/">Home</a></li>
+					<li aria-hidden="true">/</li>
+					<li class="text-foreground" data-i18n="navKma">Loco Pilot KMA</li>
+				</ol>
+			</nav>
+
+			<p data-print="hide" class="mt-4 data-mono text-eyebrow font-medium uppercase text-muted sm:mt-8" data-i18n="kmaEyebrow">
+				Indian Railways · Running Staff Allowance
+			</p>
+			<h1
+				data-print="hide"
+				data-i18n="kmaTitle"
+				class="mt-2 text-balance text-2xl font-semibold text-foreground sm:mt-5 sm:text-display-xl"
+			>
+				Loco Pilot &amp; Running Staff KMA (Kilometreage Allowance) Calculator
+			</h1>
+			<p data-print="hide" class="mt-3 hidden max-w-2xl text-body-lg text-muted sm:mt-4 sm:block" data-i18n="kmaDesc">
+				Calculate monthly Kilometreage Allowance for Loco Pilots, Assistant Loco Pilots and Train
+				Managers. Pick the 7th CPC running-staff rate, auto-fill track distance, apply duty multipliers
+				or shunting hours, and build a printable monthly KMA statement.
+			</p>
+
+			<div data-print="hide" class="mt-4 grid gap-4 sm:mt-10 sm:gap-6">
+				<section
+					id="kma-setup"
+					aria-labelledby="setup-heading"
+					class="rounded-lg border border-line bg-surface p-5 sm:p-6"
+				>
+					<p class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaStep1Label">
+						Step 1 · Designation &amp; rate
+					</p>
+					<h2 id="setup-heading" class="mt-1 text-heading-md font-semibold text-foreground" data-i18n="kmaStep1Heading">
+						Running staff designation &amp; KMA rate
+					</h2>
+
+					<div class="mt-5 grid gap-4 sm:grid-cols-2">
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaDesignationLabel">Designation</span>
+							<select
+								id="kma-designation"
+								class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							>
+								<option value="loco-mail" data-i18n="kmaDesigLocoMail">Loco Pilot (Mail / Express / Goods / Sr. Pass)</option>
+								<option value="loco-pass" data-i18n="kmaDesigLocoPass">Loco Pilot (Passenger / Motorman)</option>
+								<option value="alp" data-i18n="kmaDesigAlp">Assistant Loco Pilot (ALP / Sr. ALP)</option>
+								<option value="guard-mail" data-i18n="kmaDesigGuardMail">Train Manager / Guard (Mail / Express)</option>
+								<option value="guard-goods" data-i18n="kmaDesigGuardGoods">Train Manager / Guard (Goods / Passenger)</option>
+							</select>
+						</label>
+
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaRateModeLabel">Rate basis</span>
+							<select
+								id="kma-rate-mode"
+								class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							>
+								<option value="standard" data-i18n="kmaRateStandard">Standard 7th CPC rate</option>
+								<option value="da" data-i18n="kmaRateDa">DA ≥ 50% revised rate (+25%)</option>
+								<option value="custom" data-i18n="kmaRateCustom">Custom rate</option>
+							</select>
+						</label>
+					</div>
+
+					<label class="mt-4 flex flex-col gap-1.5">
+						<span class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaRateLabel">
+							KMA rate per 100 km (editable)
+						</span>
+						<span class="relative">
+							<span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" aria-hidden="true">₹</span>
+							<input
+								id="kma-rate"
+								type="number"
+								min="0"
+								step="0.25"
+								value="525"
+								inputmode="decimal"
+								class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background py-2.5 pl-8 pr-4 text-body-md text-foreground"
+							/>
+						</span>
+						<span class="text-body-sm text-muted" data-i18n="kmaRateHint">
+							Preset from the designation, then type any exact amount (₹525, ₹656.25, ₹390 …) to
+							override.
+						</span>
+					</label>
+				</section>
+
+				<section
+					id="kma-trip"
+					aria-labelledby="trip-heading"
+					class="rounded-lg border border-line bg-surface p-5 sm:p-6"
+				>
+					<p class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaStep2Label">
+						Step 2 · Duty / trip details
+					</p>
+					<h2 id="trip-heading" class="mt-1 text-heading-md font-semibold text-foreground" data-i18n="kmaStep2Heading">
+						Train, route &amp; track distance
+					</h2>
+
+					<div class="mt-5 grid gap-4 sm:grid-cols-2">
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaDateLabel">Duty date</span>
+							<input
+								id="kma-date"
+								name="kma-date"
+								type="date"
+								class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							/>
+						</label>
+
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaTrainLabel">Train number (optional)</span>
+							<input
+								id="kma-train"
+								name="kma-train"
+								type="text"
+								inputmode="numeric"
+								placeholder="e.g. 12951"
+								data-i18n-placeholder="kmaTrainPlaceholder"
+								autocomplete="off"
+								class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground placeholder:text-muted"
+							/>
+						</label>
+					</div>
+
+					<div class="mt-4 grid gap-4 sm:grid-cols-2">
+						<div class="flex flex-col gap-1.5">
+							<label class="data-mono text-eyebrow uppercase text-muted" for="kma-origin" data-i18n="kmaOriginLabel">
+								Origin / Lobby station
+							</label>
+							<div class="relative">
+								<input
+									id="kma-origin"
+									name="kma-origin"
+									type="text"
+									placeholder="e.g. NDLS or New Delhi"
+									data-i18n-placeholder="kmaOriginPlaceholder"
+									autocomplete="off"
+									autocapitalize="off"
+									autocorrect="off"
+									spellcheck="false"
+									role="combobox"
+									aria-expanded="false"
+									aria-controls="kma-origin-list"
+									aria-autocomplete="list"
+									class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground placeholder:text-muted"
+								/>
+								<ul
+									id="kma-origin-list"
+									role="listbox"
+									aria-label="Origin station suggestions"
+									class="absolute left-0 right-0 z-30 mt-1 hidden max-h-72 overflow-auto rounded-md border border-line bg-surface shadow-[0_12px_32px_-12px_rgba(0,0,0,0.8)]"></ul>
+							</div>
+							<p class="data-mono text-eyebrow text-muted hidden" data-caption="kma-origin"></p>
+						</div>
+
+						<div class="flex flex-col gap-1.5">
+							<label class="data-mono text-eyebrow uppercase text-muted" for="kma-via" data-i18n="kmaViaLabel">
+								Via station (optional)
+							</label>
+							<div class="relative">
+								<input
+									id="kma-via"
+									name="kma-via"
+									type="text"
+									placeholder="e.g. BPL or Bhopal"
+									data-i18n-placeholder="kmaViaPlaceholder"
+									autocomplete="off"
+									autocapitalize="off"
+									autocorrect="off"
+									spellcheck="false"
+									role="combobox"
+									aria-expanded="false"
+									aria-controls="kma-via-list"
+									aria-autocomplete="list"
+									class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground placeholder:text-muted"
+								/>
+								<ul
+									id="kma-via-list"
+									role="listbox"
+									aria-label="Via station suggestions"
+									class="absolute left-0 right-0 z-30 mt-1 hidden max-h-72 overflow-auto rounded-md border border-line bg-surface shadow-[0_12px_32px_-12px_rgba(0,0,0,0.8)]"></ul>
+							</div>
+							<p class="data-mono text-eyebrow text-muted hidden" data-caption="kma-via"></p>
+						</div>
+					</div>
+
+					<div class="mt-4 grid gap-4 sm:grid-cols-2">
+						<div class="flex flex-col gap-1.5">
+							<label class="data-mono text-eyebrow uppercase text-muted" for="kma-dest" data-i18n="kmaDestLabel">
+								Destination / To station
+							</label>
+							<div class="relative">
+								<input
+									id="kma-dest"
+									name="kma-dest"
+									type="text"
+									placeholder="e.g. CSMT or Mumbai CSMT"
+									data-i18n-placeholder="kmaDestPlaceholder"
+									autocomplete="off"
+									autocapitalize="off"
+									autocorrect="off"
+									spellcheck="false"
+									role="combobox"
+									aria-expanded="false"
+									aria-controls="kma-dest-list"
+									aria-autocomplete="list"
+									class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground placeholder:text-muted"
+								/>
+								<ul
+									id="kma-dest-list"
+									role="listbox"
+									aria-label="Destination station suggestions"
+									class="absolute left-0 right-0 z-30 mt-1 hidden max-h-72 overflow-auto rounded-md border border-line bg-surface shadow-[0_12px_32px_-12px_rgba(0,0,0,0.8)]"></ul>
+							</div>
+							<p class="data-mono text-eyebrow text-muted hidden" data-caption="kma-dest"></p>
+						</div>
+
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaKmLabel">
+								Track distance (KM) — auto-filled, editable
+							</span>
+							<span class="relative">
+								<input
+									id="kma-km"
+									name="kma-km"
+									type="number"
+									min="0"
+									step="0.1"
+									inputmode="decimal"
+									placeholder="0"
+									class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background py-2.5 pl-4 pr-12 text-body-md text-foreground placeholder:text-muted"
+								/>
+								<span class="data-mono pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-eyebrow uppercase text-muted">km</span>
+							</span>
+							<span id="kma-km-status" class="text-body-sm text-muted" data-i18n="kmaKmHint">
+								Auto-calculated from the indexed railway graph. Type to override with custom KM.
+							</span>
+						</label>
+					</div>
+
+					<div id="kma-distance-result" class="mt-4"></div>
+				</section>
+
+				<section
+					id="kma-duty"
+					aria-labelledby="duty-heading"
+					class="rounded-lg border border-line bg-surface p-5 sm:p-6"
+				>
+					<p class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaStep3Label">
+						Step 3 · Duty type multiplier
+					</p>
+					<h2 id="duty-heading" class="mt-1 text-heading-md font-semibold text-foreground" data-i18n="kmaStep3Heading">
+						Duty type &amp; qualifying kilometres
+					</h2>
+
+					<label class="mt-5 flex flex-col gap-1.5">
+						<span class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaDutyTypeLabel">Duty type</span>
+						<select
+							id="kma-duty-type"
+							class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+						>
+							<option value="normal" data-i18n="kmaDutyNormal">Normal working run (1.0× KM)</option>
+							<option value="ghat" data-i18n="kmaDutyGhat">Ghat section / pusher (1.5× KM)</option>
+							<option value="high-ghat" data-i18n="kmaDutyHighGhat">High ghat section (2.0× KM)</option>
+							<option value="spare" data-i18n="kmaDutySpare">Spare / learning road / passenger on duty (0.5× KM)</option>
+							<option value="shunting" data-i18n="kmaDutyShunting">Shunting / waiting duty by hours</option>
+						</select>
+					</label>
+
+					<div id="kma-shunting-panel" class="mt-4 hidden grid gap-4 sm:grid-cols-2">
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaShuntHoursLabel">
+								Shunting / waiting hours
+							</span>
+							<input
+								id="kma-shunt-hours"
+								name="kma-shunt-hours"
+								type="number"
+								min="0"
+								step="0.25"
+								inputmode="decimal"
+								placeholder="0"
+								class="data-mono focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground placeholder:text-muted"
+							/>
+						</label>
+
+						<label class="flex flex-col gap-1.5">
+							<span class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaShuntSpeedLabel">
+								Hours to KM conversion
+							</span>
+							<select
+								id="kma-shunt-speed"
+								class="focus-ring min-h-[44px] w-full rounded-sm border border-line bg-background px-4 py-2.5 text-body-md text-foreground"
+							>
+								<option value="15" data-i18n="kmaShunt15">15 km per hour</option>
+								<option value="20" data-i18n="kmaShunt20">20 km per hour</option>
+							</select>
+						</label>
+					</div>
+
+					<label class="mt-4 flex items-start gap-3 rounded-md border border-line bg-background p-4">
+						<input
+							id="kma-min-rule"
+							type="checkbox"
+							class="focus-ring mt-0.5 h-4 w-4 shrink-0 rounded-sm border border-line bg-background accent-emerald-600"
+						/>
+						<span class="min-w-0">
+							<span class="block text-body-md font-medium text-foreground" data-i18n="kmaMinRuleLabel">
+								Apply minimum 120 KM guarantee rule
+							</span>
+							<span class="mt-0.5 block text-body-sm text-muted" data-i18n="kmaMinRuleHint">
+								If the trip qualifies for less than 120 km, count 120 qualifying km.
+							</span>
+						</span>
+					</label>
+				</section>
+
+				<div id="kma-result"></div>
+			</div>
+
+			<section
+				id="kma-sheet-section"
+				aria-labelledby="sheet-heading"
+				class="mt-6 rounded-lg border border-line bg-surface p-5 sm:p-6 print:border-0 print:bg-transparent print:p-0"
+			>
+				<p class="data-mono text-eyebrow uppercase text-muted" data-i18n="kmaStep4Label">
+					Step 4 · Monthly KMA logbook
+				</p>
+				<h2 id="sheet-heading" class="mt-1 text-heading-md font-semibold text-foreground" data-i18n="kmaSheetHeading">
+					MONTHLY KMA TRIP SHEET (SAVED IN BROWSER)
+				</h2>
+				<p class="mt-2 max-w-2xl text-body-sm text-muted" data-i18n="kmaSheetDesc">
+					Add each duty trip to build a month-wise KMA statement. Entries are stored only in this
+					browser — nothing is uploaded.
+				</p>
+
+				<div class="mt-4 flex flex-wrap items-center gap-2" data-print="hide">
+					<button
+						type="button"
+						id="kma-copy"
+						data-i18n="kmaCopyBtn"
+						class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40"
+					>
+						Copy Summary
+					</button>
+					<button
+						type="button"
+						id="kma-export"
+						data-i18n="kmaExportBtn"
+						class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40"
+					>
+						Export Summary
+					</button>
+					<button
+						type="button"
+						id="kma-print"
+						data-i18n="kmaPrintBtn"
+						class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-foreground bg-foreground px-4 py-2.5 text-label-sm font-medium text-background transition-opacity hover:opacity-90"
+					>
+						Print / Save PDF
+					</button>
+					<button
+						type="button"
+						id="kma-clear"
+						data-i18n="kmaClearBtn"
+						class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-line bg-background px-4 py-2.5 text-label-sm text-foreground transition-colors hover:border-foreground/40"
+					>
+						Clear Sheet
+					</button>
+				</div>
+
+				<div
+					id="kma-sheet-container"
+					class="mt-5 overflow-x-auto rounded-md border border-line print:overflow-visible print:border-0"
+				>
+					<table class="w-full min-w-[48rem] border-collapse text-left lg:min-w-0 print:min-w-0">
+						<caption class="sr-only">Saved monthly KMA duty trips</caption>
+						<thead>
+							<tr class="border-b border-line bg-background/40">
+								<th scope="col" class="data-mono px-2 py-2.5 text-eyebrow uppercase text-muted" data-i18n="kmaThDate">Date</th>
+								<th scope="col" class="px-2 py-2.5 text-eyebrow uppercase text-muted" data-i18n="kmaThTrain">Train</th>
+								<th scope="col" class="px-2 py-2.5 text-eyebrow uppercase text-muted" data-i18n="kmaThRoute">From → To</th>
+								<th scope="col" class="px-2 py-2.5 text-right text-eyebrow uppercase text-muted" data-i18n="kmaThKm">Track KM</th>
+								<th scope="col" class="px-2 py-2.5 text-eyebrow uppercase text-muted" data-i18n="kmaThDuty">Duty</th>
+								<th scope="col" class="px-2 py-2.5 text-right text-eyebrow uppercase text-muted" data-i18n="kmaThQualifying">Qualifying KM</th>
+								<th scope="col" class="px-2 py-2.5 text-right text-eyebrow uppercase text-muted" data-i18n="kmaThAmount">KMA ₹</th>
+								<th scope="col" data-print="hide" class="px-2 py-2.5 text-right text-eyebrow uppercase text-muted">
+									<span class="sr-only">Remove</span>
+								</th>
+							</tr>
+						</thead>
+						<tbody id="kma-sheet-body" class="text-body-sm"></tbody>
+					</table>
+				</div>
+				<div id="kma-sheet-foot" class="mt-4"></div>
+				<p id="kma-sheet-empty" class="mt-5 text-body-sm text-muted" data-i18n="kmaSheetEmpty">
+					No duty trips added yet. Calculate a trip above and press “+ Add Duty Trip to Sheet”.
+				</p>
+			</section>
+
+			<p data-print="hide" class="mt-6 text-body-sm text-muted sm:mt-10">
+				RailKM is an independent planning tool and is not affiliated with Indian Railways. KMA figures
+				are indicative and use the standard 7th CPC running-staff rates shown above — confirm
+				entitlement with your railway administration.
+			</p>
+
+			<section
+				id="kma-guide"
+				data-print="hide"
+				aria-labelledby="kma-guide-heading"
+				class="mt-6 scroll-mt-20 border-t border-line pt-6 sm:mt-12 sm:pt-10"
+			>
+				<p class="data-mono text-eyebrow uppercase text-muted">Running staff reference manual</p>
+				<h2 id="kma-guide-heading" class="mt-1 text-balance text-heading-md font-semibold text-foreground">
+					Kilometreage Allowance (KMA) for Loco Pilots and Running Staff
+				</h2>
+				<p class="mt-3 max-w-3xl text-body-md text-muted">
+					Kilometreage Allowance, usually called KMA or Running Allowance, is the mileage-based
+					payment made to Indian Railways running staff for the kilometres they work. It is the main
+					pay component for Loco Pilots, Assistant Loco Pilots and Train Managers (Guards), and it is
+					calculated differently from ordinary Travelling Allowance. This manual explains the 7th CPC
+					rates, the duty multipliers, the 120 km guarantee, shunting conversion and the way a monthly
+					KMA statement is prepared for the bill section.
+				</p>
+
+				<div class="mt-6 max-w-3xl space-y-6 sm:mt-8 sm:space-y-8">
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">1. Who is covered by KMA</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								KMA applies to running staff whose duty is tied to the movement of trains. The
+								principal categories are Loco Pilots, Assistant Loco Pilots, Motormen and Train
+								Managers or Guards. Station Masters, Pointsmen, Trackmen and other non-running
+								employees are outside the mileage formula and are dealt with under daily TA or
+								other applicable allowances when they travel on duty.
+							</p>
+							<p>
+								The allowance is attached to the run, not to the person's attendance for the day.
+								A running employee who signs on at the lobby, works a train to the destination and
+								signs off there earns KMA for the kilometres of that run. A running employee who is
+								spared from running duty and attends a classroom course is not earning KMA for those
+								hours; that period is handled under the training or TA rules that apply to
+								non-running duty.
+							</p>
+						</div>
+					</article>
+
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">
+							2. 7th CPC KMA rates per 100 km and the 50% DA revision
+						</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								The 7th CPC running-staff rates are not a single figure for every employee. The
+								rate depends on the designation and, in some cases, on the class of train worked.
+								The standard rates are paid while Dearness Allowance remains below 50%. Once DA
+								crosses 50%, the rates are revised upward by 25% automatically from the date of the
+								DA order. No separate application is normally filed; the bill section applies the
+								revised rate for the month in which the higher DA is in force.
+							</p>
+							<p>
+								The calculator above applies the designation preset and lets you switch between the
+								standard rate and the DA-revised rate. You can also type a custom rate where a
+								particular running allowance order or a local instruction fixes a different figure.
+								Always use the rate notified for the month of the claim rather than a rate remembered
+								from an earlier bill.
+							</p>
+						</div>
+						<div class="mt-4 overflow-x-auto rounded-md border border-line">
+							<table class="w-full min-w-[32rem] border-collapse text-left">
+								<caption class="sr-only">7th CPC KMA rates per 100 km by running staff designation</caption>
+								<thead>
+									<tr class="border-b border-line bg-background/40">
+										<th scope="col" class="px-4 py-2.5 text-eyebrow uppercase text-muted">Designation</th>
+										<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">Standard rate / 100 km</th>
+										<th scope="col" class="px-4 py-2.5 text-right text-eyebrow uppercase text-muted">DA ≥ 50% rate / 100 km</th>
+									</tr>
+								</thead>
+								<tbody class="text-body-sm">
+									{
+										kmaRates.map((rate) => (
+											<tr class="border-b border-line/60 last:border-b-0">
+												<th scope="row" class="px-4 py-2.5 text-left font-medium text-foreground">{rate.designation}</th>
+												<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">{rate.standard}</td>
+												<td class="data-mono px-4 py-2.5 text-right tabular-nums text-foreground">{rate.da}</td>
+											</tr>
+										))
+									}
+								</tbody>
+							</table>
+						</div>
+					</article>
+
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">
+							3. How qualifying kilometres are worked out
+						</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								The first figure is the booked track distance between the signing-on and signing-off
+								stations. That distance comes from the railway route, not from a road map, and it is
+								the same station-to-station distance used by the RailKM route mapper. Once the track
+								kilometres are known, the duty type decides the multiplier. A normal working run
+								counts the track kilometres once. A ghat section or pusher duty counts one and a half
+								times the track kilometres. A high ghat section counts twice. A spare, learning-road
+								or passenger-on-duty turn counts half.
+							</p>
+							<p>
+								The multiplied figure is the qualifying kilometreage. KMA is then calculated as
+								(qualifying km ÷ 100) × the rate per 100 km for the designation. For example, a Loco
+								Pilot on the mail/express rate who works 300 track kilometres on a ghat section
+								qualifies for 450 km and earns 4.5 times the rate per 100 km. If the same employee
+								works the same 300 km as a normal run, the qualifying figure is only 300 km, which
+								shows why the duty type must be recorded accurately on the trip sheet.
+							</p>
+						</div>
+					</article>
+
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">
+							4. Shunting, waiting and detention duties
+						</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								Shunting and long waiting turns do not always produce a clean station-to-station
+								run, so they are converted from time into kilometreage. The hours spent on the duty
+								are multiplied by a notified hourly rate, commonly 15 km per hour or 20 km per hour
+								depending on the instruction in force. A four-hour shunting turn at 15 km per hour
+								produces 60 qualifying kilometres; the same turn at 20 km per hour produces 80. If
+								the 120 km guarantee is applied, the trip is raised to 120 qualifying kilometres
+								even though the hourly conversion is lower.
+							</p>
+							<p>
+								Detention and waiting on the road are recorded with the actual hours, not with an
+								estimate. The bill section compares the lobby register, the duty card and the trip
+								sheet before accepting the figure. Keep the hours and the hourly conversion rate on
+								the same line so that the arithmetic can be checked without a separate note.
+							</p>
+						</div>
+					</article>
+
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">
+							5. The 120 km minimum guaranteed kilometreage rule
+						</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								The 120 km guarantee protects running staff from a very short turn producing an
+								unusually small mileage payment. If a duty produces less than 120 qualifying
+								kilometres, the trip is treated as 120 km for KMA. If the duty already produces more
+								than 120 km, the actual figure is paid and nothing is added. The guarantee is
+								therefore a floor, not a bonus, and it is normally tested trip by trip rather than
+								against the monthly total.
+							</p>
+							<p>
+								Applying the guarantee to a short shunting turn can change the result considerably.
+								Keep the checkbox off when the office instruction requires actual kilometreage only,
+								and switch it on when the minimum guarantee is admissible for the duty. The monthly
+								sheet in this calculator stores the qualifying figure that was actually used, so the
+								statement remains consistent with the result card.
+							</p>
+						</div>
+					</article>
+
+					<article>
+						<h3 class="text-heading-md font-semibold text-foreground">
+							6. Preparing the monthly KMA trip sheet
+						</h3>
+						<div class="mt-3 space-y-3 text-body-md text-muted">
+							<p>
+								Running staff normally maintain a monthly trip sheet or mileage journal. Each line
+								shows the date, train number, from and to stations, track kilometres, duty type,
+								qualifying kilometres and the amount. At month-end the entries are totalled and
+								countersigned by the lobby or running-room supervisor before the statement goes to
+								the bill section. The bill section checks the designation, the rate in force, the
+								multiplier and the guarantee before passing the claim into the payroll system.
+							</p>
+							<p>
+								The sheet in this calculator follows that pattern. Add each trip after calculating
+								it, then use Copy Summary for a text record, Export Summary for a spreadsheet-ready
+								file, or Print / Save PDF for a signed paper statement. Entries stay in this browser
+								only. Cross-check the month total against the lobby register and the duty cards
+								before submitting the claim, and keep the printout with the movement records.
+							</p>
+						</div>
+					</article>
+				</div>
+
+				<h3 class="mt-8 text-heading-md font-semibold text-foreground sm:mt-12">
+					Five practical KMA questions
+				</h3>
+				<div class="mt-4 space-y-3 sm:mt-6">
+					{
+						faqs.map((faq) => (
+							<details class="group rounded-md border border-line bg-surface transition-colors hover:border-foreground/40">
+								<summary class="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 p-4 text-body-md font-medium text-foreground sm:p-5 [&::-webkit-details-marker]:hidden">
+									<span>{faq.question}</span>
+									<svg
+										class="h-4 w-4 shrink-0 text-muted transition-transform group-open:rotate-180"
+										viewBox="0 0 12 12"
+										fill="none"
+										aria-hidden="true"
+									>
+										<path
+											d="M3 4.5L6 7.5l3-3"
+											stroke="currentColor"
+											stroke-width="1.5"
+											stroke-linecap="round"
+											stroke-linejoin="round"></path>
+									</svg>
+								</summary>
+								<div class="border-t border-line px-4 py-3 text-body-sm text-muted sm:px-5 sm:py-4">{faq.answer}</div>
+							</details>
+						))
+					}
+				</div>
+			</section>
+		</div>
+	</div>
+
+	<script slot="head" type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
+
+	<script>
+		import { searchStations, resolveStation, shortestPath, stationInfo } from '../utils/routeEngine.js';
+		import { t } from '../utils/i18n.js';
+
+		const RATE_PRESETS = {
+			'loco-mail': { standard: 525, da: 656.25 },
+			'loco-pass': { standard: 520, da: 650 },
+			alp: { standard: 390, da: 487.5 },
+			'guard-mail': { standard: 470, da: 587.5 },
+			'guard-goods': { standard: 465, da: 581.25 },
+		};
+
+		const DUTY_MULTIPLIERS = {
+			normal: 1,
+			ghat: 1.5,
+			'high-ghat': 2,
+			spare: 0.5,
+		};
+
+		const designationSelect = document.getElementById('kma-designation');
+		const rateModeSelect = document.getElementById('kma-rate-mode');
+		const rateInput = document.getElementById('kma-rate');
+		const dateInput = document.getElementById('kma-date');
+		const trainInput = document.getElementById('kma-train');
+		const kmInput = document.getElementById('kma-km');
+		const kmStatusEl = document.getElementById('kma-km-status');
+		const dutySelect = document.getElementById('kma-duty-type');
+		const shuntPanel = document.getElementById('kma-shunting-panel');
+		const shuntHoursInput = document.getElementById('kma-shunt-hours');
+		const shuntSpeedSelect = document.getElementById('kma-shunt-speed');
+		const minRuleInput = document.getElementById('kma-min-rule');
+		const distanceResultEl = document.getElementById('kma-distance-result');
+		const resultEl = document.getElementById('kma-result');
+
+		let graph = null;
+		let kmTouched = false;
+		let kmWasAuto = false;
+
+		function esc(value) {
+			return String(value).replace(/[&<>"']/g, (ch) => {
+				return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+			});
+		}
+
+		function formatKm(value) {
+			const number = Number(value);
+			if (!Number.isFinite(number)) return '0';
+			return number.toLocaleString('en-IN', { maximumFractionDigits: 1 });
+		}
+
+		function formatMoney(value) {
+			const number = Number(value);
+			if (!Number.isFinite(number)) return '0';
+			return number.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+		}
+
+		function todayValue() {
+			const now = new Date();
+			const month = String(now.getMonth() + 1).padStart(2, '0');
+			const day = String(now.getDate()).padStart(2, '0');
+			return `${now.getFullYear()}-${month}-${day}`;
+		}
+
+		function setupStationField(input, list, caption) {
+			const idPrefix = input.id;
+			let results = [];
+			let active = -1;
+			let selected = { code: '', query: '' };
+
+			function updateCaption() {
+				if (!caption) return;
+				if (!selected.code) {
+					caption.textContent = '';
+					caption.classList.add('hidden');
+					return;
+				}
+				const info = graph ? stationInfo(graph, selected.code) : null;
+				caption.textContent = info ? `${selected.code} · ${info.name}` : selected.code;
+				caption.classList.remove('hidden');
+			}
+
+			function close() {
+				list.classList.add('hidden');
+				input.setAttribute('aria-expanded', 'false');
+				input.removeAttribute('aria-activedescendant');
+			}
+
+			function setActive(index) {
+				if (index < 0 || index >= results.length) return;
+				active = index;
+				list.querySelectorAll('[data-i]').forEach((option) => {
+					const on = Number(option.dataset.i) === index;
+					option.setAttribute('aria-selected', String(on));
+					option.classList.toggle('bg-foreground/10', on);
+				});
+				input.setAttribute('aria-activedescendant', `${idPrefix}-opt-${index}`);
+				const activeEl = document.getElementById(`${idPrefix}-opt-${index}`);
+				if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+			}
+
+			function choose(index) {
+				const result = results[index];
+				if (!result) return;
+				selected = { code: result.code, query: result.code };
+				input.value = result.code;
+				kmTouched = false;
+				updateCaption();
+				close();
+				computeDistance();
+			}
+
+			function place(query) {
+				if (!graph) return;
+				const trimmed = query.trim();
+				if (!trimmed) {
+					close();
+					return;
+				}
+				results = searchStations(graph, trimmed, 8);
+				active = results.length ? 0 : -1;
+
+				if (!results.length) {
+					list.innerHTML = `<li class="px-4 py-3 text-body-sm text-muted" role="presentation">${t('kmaNoMatch', { query: esc(trimmed) })}</li>`;
+				} else {
+					list.innerHTML = results
+						.map((result, index) => {
+							const junctionTag = result.isJunction
+								? `<span class="data-mono shrink-0 rounded-sm border border-line px-1 py-0.5 text-[10px] uppercase text-muted">Jn</span>`
+								: '';
+							const aliasTag = result.matchedAlias
+								? `<span class="data-mono shrink-0 rounded-sm border border-line px-1 py-0.5 text-[10px] uppercase text-muted">aka ${esc(result.matchedAlias)}</span>`
+								: '';
+							const zoneBit = [result.zone, result.state].filter(Boolean).join(' · ');
+							return `<li
+								id="${idPrefix}-opt-${index}"
+								role="option"
+								data-i="${index}"
+								aria-selected="${index === active}"
+								class="flex min-h-[44px] cursor-pointer items-center gap-2 px-4 py-2.5 ${index === active ? 'bg-foreground/10' : ''}"
+							>
+								<span translate="no" class="data-mono shrink-0 rounded-sm border border-line bg-background px-1.5 py-0.5 text-eyebrow font-semibold text-foreground">${esc(result.code)}</span>
+								<span class="min-w-0 flex-1 truncate text-body-md text-foreground">${esc(result.name)}</span>
+								${aliasTag}
+								${zoneBit ? `<span class="data-mono hidden shrink-0 text-eyebrow text-muted sm:inline">${esc(zoneBit)}</span>` : ''}
+								${junctionTag}
+							</li>`;
+						})
+						.join('');
+					list.querySelectorAll('[data-i]').forEach((option) => {
+						const index = Number(option.dataset.i);
+						option.addEventListener('mousedown', (event) => event.preventDefault());
+						option.addEventListener('mouseenter', () => setActive(index));
+						option.addEventListener('click', () => choose(index));
+					});
+				}
+
+				list.classList.remove('hidden');
+				input.setAttribute('aria-expanded', 'true');
+				if (active >= 0) setActive(active);
+			}
+
+			input.addEventListener('focus', () => {
+				if (input.value.trim()) place(input.value);
+			});
+			input.addEventListener('input', () => {
+				selected = { code: '', query: input.value };
+				updateCaption();
+				computeDistance();
+				place(input.value);
+			});
+			input.addEventListener('keydown', (event) => {
+				const open = !list.classList.contains('hidden');
+				if (event.key === 'ArrowDown') {
+					event.preventDefault();
+					if (!open) place(input.value);
+					else setActive(Math.min(active + 1, results.length - 1));
+				} else if (event.key === 'ArrowUp') {
+					if (!open) return;
+					event.preventDefault();
+					setActive(Math.max(active - 1, 0));
+				} else if (event.key === 'Enter') {
+					if (open && active >= 0) {
+						event.preventDefault();
+						choose(active);
+					} else if (open && results.length) {
+						event.preventDefault();
+						choose(0);
+					}
+				} else if (event.key === 'Escape') {
+					close();
+				}
+			});
+			input.addEventListener('blur', () => {
+				window.setTimeout(() => {
+					close();
+					if (!selected.code && input.value.trim() && graph) {
+						const resolved = resolveStation(graph, input.value);
+						if (resolved) {
+							selected = { code: resolved.code, query: resolved.code };
+							input.value = resolved.code;
+							kmTouched = false;
+							updateCaption();
+							computeDistance();
+						}
+					}
+				}, 150);
+			});
+
+			return {
+				get code() {
+					return selected.code;
+				},
+			};
+		}
+
+		const originInput = document.getElementById('kma-origin');
+		const viaInput = document.getElementById('kma-via');
+		const destInput = document.getElementById('kma-dest');
+
+		const originField = setupStationField(
+			originInput,
+			document.getElementById('kma-origin-list'),
+			document.querySelector('[data-caption="kma-origin"]')
+		);
+		const viaField = setupStationField(
+			viaInput,
+			document.getElementById('kma-via-list'),
+			document.querySelector('[data-caption="kma-via"]')
+		);
+		const destField = setupStationField(
+			destInput,
+			document.getElementById('kma-dest-list'),
+			document.querySelector('[data-caption="kma-dest"]')
+		);
+
+		function setKmStatus(mode) {
+			if (!kmStatusEl) return;
+			const key = mode === 'auto' ? 'kmaKmAuto' : mode === 'manual' ? 'kmaKmManual' : 'kmaKmHint';
+			kmStatusEl.dataset.i18n = key;
+			kmStatusEl.textContent = t(key);
+		}
+
+		function computeDistance() {
+			if (!distanceResultEl) return;
+			const origin = originField.code;
+			const via = viaField.code;
+			const dest = destField.code;
+
+			if (!graph || !origin || !dest) {
+				if (kmWasAuto) {
+					if (kmInput) kmInput.value = '';
+					kmWasAuto = false;
+					setKmStatus('');
+				}
+				distanceResultEl.innerHTML = `<p class="text-body-sm text-muted">${t('kmaSelectBoth')}</p>`;
+				render();
+				return;
+			}
+
+			let distanceKm = 0;
+			if (via) {
+				const first = shortestPath(graph, origin, via);
+				const second = shortestPath(graph, via, dest);
+				if (!first || !second) {
+					if (kmWasAuto) {
+						if (kmInput) kmInput.value = '';
+						kmWasAuto = false;
+						setKmStatus('');
+					}
+					distanceResultEl.innerHTML = `<div class="rounded-md border border-error/40 bg-error/5 p-4" role="alert">
+						<p class="data-mono text-eyebrow uppercase text-error">${t('kmaNoRouteTitle')}</p>
+						<p class="mt-1 text-body-sm text-muted">${t('kmaNoRouteBody', { from: esc(origin), to: esc(dest) })}</p>
+					</div>`;
+					render();
+					return;
+				}
+				distanceKm = first.distanceKm + second.distanceKm;
+			} else {
+				const result = shortestPath(graph, origin, dest);
+				if (!result) {
+					if (kmWasAuto) {
+						if (kmInput) kmInput.value = '';
+						kmWasAuto = false;
+						setKmStatus('');
+					}
+					distanceResultEl.innerHTML = `<div class="rounded-md border border-error/40 bg-error/5 p-4" role="alert">
+						<p class="data-mono text-eyebrow uppercase text-error">${t('kmaNoRouteTitle')}</p>
+						<p class="mt-1 text-body-sm text-muted">${t('kmaNoRouteBody', { from: esc(origin), to: esc(dest) })}</p>
+					</div>`;
+					render();
+					return;
+				}
+				distanceKm = result.distanceKm;
+			}
+
+			if (!kmTouched) {
+				if (kmInput) kmInput.value = String(Math.round(distanceKm * 10) / 10);
+				kmWasAuto = true;
+				setKmStatus('auto');
+			}
+			const viaText = via ? t('kmaViaNote', { via: esc(via) }) : '';
+			distanceResultEl.innerHTML = `<div class="flex flex-col gap-3 rounded-md border border-line bg-background p-4">
+				<div class="flex flex-wrap items-center justify-between gap-2">
+					<p class="data-mono text-eyebrow uppercase text-muted">${t('kmaKmAuto')}</p>
+					<p class="data-mono text-body-md font-semibold text-foreground">${formatKm(distanceKm)} km</p>
+				</div>
+				<span class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-emerald-600/30 bg-emerald-500/10 px-2.5 py-1 text-emerald-700 dark:border-emerald-500/30 dark:text-emerald-400">
+					<span class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600 dark:bg-emerald-400" aria-hidden="true"></span>
+					<span class="data-mono min-w-0 text-eyebrow leading-tight">${t('kmaAutoFilled', { km: formatKm(distanceKm) })}</span>
+				</span>
+				<p class="text-body-sm text-muted">${t('kmaRouteNote', { from: esc(origin), to: esc(dest), via: viaText })}</p>
+			</div>`;
+			render();
+		}
+
+		function rateForMode() {
+			const preset = RATE_PRESETS[designationSelect && designationSelect.value] || RATE_PRESETS['loco-mail'];
+			const mode = rateModeSelect ? rateModeSelect.value : 'standard';
+			if (mode === 'da') return preset.da;
+			if (mode === 'custom') return Number(rateInput && rateInput.value) || preset.standard;
+			return preset.standard;
+		}
+
+		function applyRatePreset() {
+			const preset = RATE_PRESETS[designationSelect && designationSelect.value] || RATE_PRESETS['loco-mail'];
+			const mode = rateModeSelect ? rateModeSelect.value : 'standard';
+			if (mode === 'standard' && rateInput) rateInput.value = String(preset.standard);
+			if (mode === 'da' && rateInput) rateInput.value = String(preset.da);
+			render();
+		}
+
+		function currentDuty() {
+			const type = dutySelect ? dutySelect.value : 'normal';
+			const option = dutySelect && dutySelect.selectedIndex >= 0 ? dutySelect.options[dutySelect.selectedIndex] : null;
+			const label = option ? option.text : type;
+			if (type === 'shunting') {
+				const hours = Number(shuntHoursInput && shuntHoursInput.value) || 0;
+				const speed = Number(shuntSpeedSelect && shuntSpeedSelect.value) || 15;
+				return {
+					type,
+					label,
+					multiplier: null,
+					hours,
+					speed,
+					baseKm: hours * speed,
+					multiplierLabel: `${formatKm(speed)} km/hr`,
+				};
+			}
+			const multiplier = DUTY_MULTIPLIERS[type] || 1;
+			const km = Number(kmInput && kmInput.value) || 0;
+			return {
+				type,
+				label,
+				multiplier,
+				hours: null,
+				speed: null,
+				baseKm: km * multiplier,
+				multiplierLabel: `${multiplier.toLocaleString('en-IN', { maximumFractionDigits: 2 })}×`,
+			};
+		}
+
+		function currentCalculation() {
+			const rate = Number(rateInput && rateInput.value) || 0;
+			const duty = currentDuty();
+			const actualKm = Number(kmInput && kmInput.value) || 0;
+			const validDistance = duty.type === 'shunting' ? duty.hours > 0 : actualKm > 0;
+			const valid = rate > 0 && validDistance;
+			let qualifyingKm = duty.baseKm;
+			let minApplied = false;
+			if (valid && minRuleInput && minRuleInput.checked && qualifyingKm < 120) {
+				qualifyingKm = 120;
+				minApplied = true;
+			}
+			const amount = Math.round((qualifyingKm / 100) * rate * 100) / 100;
+			return { rate, duty, actualKm, valid, qualifyingKm, minApplied, amount };
+		}
+
+		function designationLabel() {
+			if (!designationSelect || designationSelect.selectedIndex < 0) return '';
+			return designationSelect.options[designationSelect.selectedIndex].text;
+		}
+
+		function idleCard() {
+			return `<section aria-label="KMA result placeholder" class="rounded-md border border-line bg-surface p-6">
+				<h2 class="text-heading-md font-semibold text-foreground">${t('kmaResIdleTitle')}</h2>
+				<p class="mt-2 max-w-2xl text-body-md text-muted">${t('kmaResIdleText')}</p>
+			</section>`;
+		}
+
+		function render() {
+			if (!resultEl) return;
+			const calc = currentCalculation();
+			if (!calc.valid) {
+				resultEl.innerHTML = idleCard();
+				return;
+			}
+
+			const minNote = calc.minApplied
+				? `<p class="mt-3 text-body-sm text-emerald-700 dark:text-emerald-400">${t('kmaResMinApplied')}</p>`
+				: '';
+			const formula = t('kmaResFormula', {
+				km: formatKm(calc.qualifyingKm),
+				rate: formatMoney(calc.rate),
+			});
+
+			resultEl.innerHTML = `<section aria-label="${t('kmaResHeading')}" class="rounded-md border border-emerald-600/30 bg-emerald-500/10 p-5 dark:border-emerald-500/30">
+				<div class="flex flex-wrap items-center justify-between gap-2">
+					<h2 class="data-mono text-eyebrow uppercase text-emerald-700 dark:text-emerald-400">${t('kmaResHeading')}</h2>
+					<span class="data-mono text-eyebrow text-muted">${t('kmaResRateLine', { rate: formatMoney(calc.rate), designation: esc(designationLabel()) })}</span>
+				</div>
+				<dl class="mt-4 grid grid-cols-1 gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+					<div class="bg-surface p-4">
+						<dt class="data-mono text-eyebrow uppercase text-muted">${t('kmaResTrackKm')}</dt>
+						<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">${formatKm(calc.actualKm)}<span class="ml-1 text-label-sm font-normal text-muted">km</span></dd>
+					</div>
+					<div class="bg-surface p-4">
+						<dt class="data-mono text-eyebrow uppercase text-muted">${t('kmaResMultiplier')}</dt>
+						<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">${esc(calc.duty.multiplierLabel)}</dd>
+						<dd class="mt-1 text-body-sm text-muted">${esc(calc.duty.label)}</dd>
+					</div>
+					<div class="bg-surface p-4">
+						<dt class="data-mono text-eyebrow uppercase text-muted">${t('kmaResQualifying')}</dt>
+						<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">${formatKm(calc.qualifyingKm)}<span class="ml-1 text-label-sm font-normal text-muted">km</span></dd>
+						<dd class="mt-1 text-body-sm text-muted">${t('kmaResFormula', { km: formatKm(calc.qualifyingKm), rate: formatMoney(calc.rate) })}</dd>
+					</div>
+					<div class="bg-surface p-4">
+						<dt class="data-mono text-eyebrow uppercase text-muted">${t('kmaResAmount')}</dt>
+						<dd class="mt-2 data-mono text-xl font-semibold tabular-nums text-foreground">₹${formatMoney(calc.amount)}</dd>
+						<dd class="mt-1 text-body-sm text-muted">${formula}</dd>
+					</div>
+				</dl>
+				${minNote}
+				<p class="mt-3 text-body-sm text-muted">${t('kmaResDisclaimer')}</p>
+				<div class="mt-4 flex flex-wrap items-center gap-3">
+					<button
+						type="button"
+						data-add-trip
+						class="focus-ring inline-flex min-h-[44px] items-center gap-2 rounded-sm border border-foreground bg-foreground px-4 py-2.5 text-label-sm font-medium text-background transition-opacity hover:opacity-90"
+					>
+						${t('kmaAddTripBtn')}
+					</button>
+				</div>
+			</section>`;
+		}
+
+		const SHEET_KEY = 'railkm_kma_sheet_v1';
+		const sheetBodyEl = document.getElementById('kma-sheet-body');
+		const sheetFootEl = document.getElementById('kma-sheet-foot');
+		const sheetEmptyEl = document.getElementById('kma-sheet-empty');
+		const sheetContainerEl = document.getElementById('kma-sheet-container');
+
+		function readSheet() {
+			try {
+				const parsed = JSON.parse(localStorage.getItem(SHEET_KEY) || '[]');
+				return Array.isArray(parsed) ? parsed.filter((entry) => entry && typeof entry === 'object') : [];
+			} catch {
+				return [];
+			}
+		}
+
+		function writeSheet(entries) {
+			try {
+				localStorage.setItem(SHEET_KEY, JSON.stringify(entries));
+			} catch {}
+		}
+
+		const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+		function dateLabel(iso) {
+			if (!iso || typeof iso !== 'string') return '—';
+			const [year, month, day] = iso.slice(0, 10).split('-').map(Number);
+			if (!year || !month || !day) return iso;
+			return `${String(day).padStart(2, '0')} ${MONTHS[month - 1]} ${year}`;
+		}
+
+		function routeText(trip) {
+			const origin = trip.originCode || trip.originName || '—';
+			const dest = trip.destCode || trip.destName || '—';
+			const via = trip.viaCode ? ` via ${trip.viaCode}` : '';
+			return `${origin}${via} → ${dest}`;
+		}
+
+		function summaryRates(trips) {
+			const rates = new Set(trips.map((trip) => Number(trip.rate) || 0));
+			return rates.size === 1 ? [...rates][0] : null;
+		}
+
+		function buildTrip() {
+			const calc = currentCalculation();
+			if (!calc.valid) return null;
+			const id =
+				window.crypto && typeof window.crypto.randomUUID === 'function'
+					? window.crypto.randomUUID()
+					: `trip-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+			const originCode = originField.code || (originInput ? originInput.value.trim().toUpperCase() : '');
+			const destCode = destField.code || (destInput ? destInput.value.trim().toUpperCase() : '');
+			const viaCode = viaField.code || (viaInput ? viaInput.value.trim().toUpperCase() : '');
+			const originName = graph && originField.code ? stationInfo(graph, originField.code)?.name || '' : '';
+			const destName = graph && destField.code ? stationInfo(graph, destField.code)?.name || '' : '';
+			const viaName = graph && viaField.code ? stationInfo(graph, viaField.code)?.name || '' : '';
+			return {
+				id,
+				date: (dateInput && dateInput.value) || todayValue(),
+				train: trainInput ? trainInput.value.trim() : '',
+				originCode,
+				originName,
+				viaCode,
+				viaName,
+				destCode,
+				destName,
+				actualKm: calc.actualKm,
+				dutyType: calc.duty.type,
+				dutyLabel: calc.duty.label,
+				multiplier: calc.duty.multiplier,
+				shuntingHours: calc.duty.hours,
+				shuntingSpeed: calc.duty.speed,
+				qualifyingKm: calc.qualifyingKm,
+				minApplied: calc.minApplied,
+				rate: calc.rate,
+				amount: calc.amount,
+				createdAt: Date.now(),
+			};
+		}
+
+		function addCurrentTrip(button) {
+			const trip = buildTrip();
+			if (!trip) return;
+			const entries = readSheet();
+			entries.push(trip);
+			writeSheet(entries);
+			renderSheet();
+			if (button) {
+				const original = button.textContent;
+				button.textContent = t('kmaAddedBtn');
+				button.disabled = true;
+				window.setTimeout(() => {
+					button.textContent = original;
+					button.disabled = false;
+				}, 1400);
+			}
+		}
+
+		function removeTrip(id) {
+			if (!id) return;
+			const entries = readSheet().filter((trip) => String(trip.id) !== String(id));
+			writeSheet(entries);
+			renderSheet();
+		}
+
+		function renderSheet() {
+			if (!sheetBodyEl || !sheetFootEl) return;
+			const trips = readSheet()
+				.slice()
+				.sort((a, b) => (Number(a.createdAt) || 0) - (Number(b.createdAt) || 0));
+
+			if (trips.length === 0) {
+				sheetBodyEl.innerHTML = '';
+				sheetFootEl.innerHTML = '';
+				if (sheetContainerEl) sheetContainerEl.classList.add('hidden');
+				if (sheetEmptyEl) sheetEmptyEl.classList.remove('hidden');
+				return;
+			}
+
+			if (sheetContainerEl) sheetContainerEl.classList.remove('hidden');
+			if (sheetEmptyEl) sheetEmptyEl.classList.add('hidden');
+
+			sheetBodyEl.innerHTML = trips
+				.map((trip) => {
+					const trackKm = Number(trip.actualKm) || 0;
+					const qualifyingKm = Number(trip.qualifyingKm) || 0;
+					const amount = Number(trip.amount) || 0;
+					const names = [trip.originName, trip.viaName, trip.destName].filter(Boolean).join(' → ');
+					const dutyLabel = trip.dutyLabel || trip.dutyType || '—';
+					const minTag = trip.minApplied
+						? `<span class="data-mono ml-1 shrink-0 rounded-sm border border-line px-1 py-0.5 text-[10px] uppercase text-muted">120</span>`
+						: '';
+					return `<tr class="border-b border-line/60 align-top">
+						<td class="data-mono whitespace-nowrap px-2 py-2.5 text-body-sm text-foreground">${esc(dateLabel(trip.date))}</td>
+						<td class="data-mono whitespace-nowrap px-2 py-2.5 text-body-sm text-muted">${esc(trip.train || '—')}</td>
+						<td class="min-w-0 break-words px-2 py-2.5 text-body-sm text-foreground">
+							<span class="data-mono font-semibold">${esc(routeText(trip))}</span>
+							${names ? `<span class="mt-0.5 block break-words text-body-sm text-muted">${esc(names)}</span>` : ''}
+						</td>
+						<td class="data-mono whitespace-nowrap px-2 py-2.5 text-right tabular-nums text-foreground">${formatKm(trackKm)}</td>
+						<td class="min-w-0 break-words px-2 py-2.5 text-body-sm text-foreground">
+							<span class="inline-flex items-center">${esc(dutyLabel)}${minTag}</span>
+						</td>
+						<td class="data-mono whitespace-nowrap px-2 py-2.5 text-right tabular-nums text-foreground">${formatKm(qualifyingKm)}</td>
+						<td class="data-mono whitespace-nowrap px-2 py-2.5 text-right tabular-nums font-semibold text-foreground">₹${formatMoney(amount)}</td>
+						<td data-print="hide" class="px-2 py-2.5 text-right">
+							<button type="button" data-remove-trip="${esc(trip.id)}" aria-label="${t('kmaRemoveTrip')}" title="${t('kmaRemoveTrip')}" class="focus-ring inline-flex h-7 w-7 items-center justify-center rounded-sm text-muted transition-colors hover:text-foreground">×</button>
+						</td>
+					</tr>`;
+				})
+				.join('');
+
+			const totalTrips = trips.length;
+			const totalActualKm = trips.reduce((sum, trip) => sum + (Number(trip.actualKm) || 0), 0);
+			const totalQualifyingKm = trips.reduce((sum, trip) => sum + (Number(trip.qualifyingKm) || 0), 0);
+			const totalAmount = trips.reduce((sum, trip) => sum + (Number(trip.amount) || 0), 0);
+			const rate = summaryRates(trips);
+			const rateLabel = rate === null ? t('kmaSumMixedRate') : t('kmaSumRate', { rate: formatMoney(rate) });
+
+			sheetFootEl.innerHTML = `<div class="rounded-md border border-line bg-background/40 p-3">
+				<dl class="grid grid-cols-1 gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+					<div class="bg-surface p-3">
+						<dt class="data-mono text-eyebrow uppercase text-muted">${t('kmaSumTrips')}</dt>
+						<dd class="mt-1.5 data-mono text-lg font-semibold tabular-nums text-foreground">${totalTrips}</dd>
+					</div>
+					<div class="bg-surface p-3">
+						<dt class="data-mono text-eyebrow uppercase text-muted">${t('kmaSumActualKm')}</dt>
+						<dd class="mt-1.5 data-mono text-lg font-semibold tabular-nums text-foreground">${formatKm(totalActualKm)} <span class="text-label-sm font-normal text-muted">km</span></dd>
+					</div>
+					<div class="bg-surface p-3">
+						<dt class="data-mono text-eyebrow uppercase text-muted">${t('kmaSumQualifyingKm')}</dt>
+						<dd class="mt-1.5 data-mono text-lg font-semibold tabular-nums text-foreground">${formatKm(totalQualifyingKm)} <span class="text-label-sm font-normal text-muted">km</span></dd>
+					</div>
+					<div class="bg-surface p-3">
+						<dt class="data-mono text-eyebrow uppercase text-muted">${t('kmaSumAmount')}</dt>
+						<dd class="mt-1.5 data-mono text-lg font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">₹${formatMoney(totalAmount)}</dd>
+						<dd class="mt-1 text-body-sm text-muted">${esc(rateLabel)}</dd>
+					</div>
+				</dl>
+			</div>`;
+		}
+
+		function monthlyText() {
+			const trips = readSheet();
+			const rate = summaryRates(trips);
+			const totalActualKm = trips.reduce((sum, trip) => sum + (Number(trip.actualKm) || 0), 0);
+			const totalQualifyingKm = trips.reduce((sum, trip) => sum + (Number(trip.qualifyingKm) || 0), 0);
+			const totalAmount = trips.reduce((sum, trip) => sum + (Number(trip.amount) || 0), 0);
+			const header = [
+				t('kmaTextTitle'),
+				`${t('kmaTextTotalTrips')}: ${trips.length}`,
+				`${t('kmaTextActualKm')}: ${formatKm(totalActualKm)} km`,
+				`${t('kmaTextQualifyingKm')}: ${formatKm(totalQualifyingKm)} km`,
+				rate === null ? t('kmaSumMixedRate') : t('kmaSumRate', { rate: formatMoney(rate) }),
+				'',
+			];
+			if (!trips.length) return [...header, t('kmaTextNoTrips')].join('\n');
+			const lines = trips.map((trip, index) => {
+				const duty = trip.dutyLabel || trip.dutyType || '—';
+				return `${index + 1}) ${dateLabel(trip.date)} · ${trip.train || '—'} · ${routeText(trip)} · ${formatKm(trip.actualKm)} km · ${duty} · ${formatKm(trip.qualifyingKm)} qKM · ₹${formatMoney(trip.amount)}`;
+			});
+			return [...header, ...lines, '', `${t('kmaTextGrandTotal')}: ₹${formatMoney(totalAmount)}`].join('\n');
+		}
+
+		function csvText() {
+			const trips = readSheet();
+			const quote = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+			const rows = [
+				['Date', 'Train', 'From', 'Via', 'To', 'Track KM', 'Duty Type', 'Qualifying KM', 'Rate per 100 km', 'KMA Amount'],
+				...trips.map((trip) => [
+					trip.date || '',
+					trip.train || '',
+					trip.originCode || trip.originName || '',
+					trip.viaCode || trip.viaName || '',
+					trip.destCode || trip.destName || '',
+					Number(trip.actualKm) || 0,
+					trip.dutyLabel || trip.dutyType || '',
+					Number(trip.qualifyingKm) || 0,
+					Number(trip.rate) || 0,
+					Number(trip.amount) || 0,
+				]),
+			];
+			return rows.map((row) => row.map(quote).join(',')).join('\r\n');
+		}
+
+		async function copyText(text) {
+			try {
+				if (navigator.clipboard && window.isSecureContext) {
+					await navigator.clipboard.writeText(text);
+					return true;
+				}
+			} catch {}
+			try {
+				const area = document.createElement('textarea');
+				area.value = text;
+				area.setAttribute('readonly', '');
+				area.style.position = 'fixed';
+				area.style.opacity = '0';
+				document.body.appendChild(area);
+				area.select();
+				const ok = document.execCommand('copy');
+				document.body.removeChild(area);
+				return ok;
+			} catch {
+				return false;
+			}
+		}
+
+		function clearSheet() {
+			const trips = readSheet();
+			if (!trips.length) return;
+			if (!window.confirm(t('kmaClearConfirm', { n: trips.length }))) return;
+			writeSheet([]);
+			renderSheet();
+		}
+
+		function exportSheet() {
+			const trips = readSheet();
+			if (!trips.length) return;
+			const blob = new Blob([`\uFEFF${csvText()}`], { type: 'text/csv;charset=utf-8;' });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = `railkm-kma-sheet-${todayValue()}.csv`;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			URL.revokeObjectURL(url);
+		}
+
+		if (resultEl) {
+			resultEl.addEventListener('click', (event) => {
+				const button = event.target.closest('[data-add-trip]');
+				if (button) addCurrentTrip(button);
+			});
+		}
+		if (sheetBodyEl) {
+			sheetBodyEl.addEventListener('click', (event) => {
+				const button = event.target.closest('[data-remove-trip]');
+				if (button) removeTrip(button.dataset.removeTrip);
+			});
+		}
+
+		const copyBtn = document.getElementById('kma-copy');
+		const exportBtn = document.getElementById('kma-export');
+		const printBtn = document.getElementById('kma-print');
+		const clearBtn = document.getElementById('kma-clear');
+
+		if (copyBtn) {
+			copyBtn.addEventListener('click', async () => {
+				const ok = await copyText(monthlyText());
+				copyBtn.textContent = ok ? t('kmaCopyDone') : t('kmaCopyFailed');
+				window.setTimeout(() => {
+					copyBtn.textContent = t('kmaCopyBtn');
+				}, 1500);
+			});
+		}
+		if (exportBtn) {
+			exportBtn.addEventListener('click', exportSheet);
+		}
+		if (printBtn) {
+			printBtn.addEventListener('click', () => window.print());
+		}
+		if (clearBtn) {
+			clearBtn.addEventListener('click', clearSheet);
+		}
+
+		function toggleShunting() {
+			const shunting = dutySelect && dutySelect.value === 'shunting';
+			if (shuntPanel) shuntPanel.classList.toggle('hidden', !shunting);
+			if (shuntPanel) shuntPanel.classList.toggle('grid', shunting);
+			render();
+		}
+
+		if (designationSelect) designationSelect.addEventListener('change', applyRatePreset);
+		if (rateModeSelect) {
+			rateModeSelect.addEventListener('change', () => {
+				if (rateModeSelect.value === 'custom' && rateInput) {
+					const preset = RATE_PRESETS[designationSelect && designationSelect.value] || RATE_PRESETS['loco-mail'];
+					if (!Number(rateInput.value)) rateInput.value = String(preset.standard);
+				}
+				applyRatePreset();
+			});
+		}
+		if (rateInput) {
+			rateInput.addEventListener('input', () => {
+				if (rateModeSelect && rateModeSelect.value !== 'custom') rateModeSelect.value = 'custom';
+				render();
+			});
+		}
+		if (kmInput) {
+			kmInput.addEventListener('input', () => {
+				kmTouched = true;
+				kmWasAuto = false;
+				setKmStatus('manual');
+				render();
+			});
+		}
+		if (dutySelect) dutySelect.addEventListener('change', toggleShunting);
+		if (shuntHoursInput) shuntHoursInput.addEventListener('input', render);
+		if (shuntSpeedSelect) shuntSpeedSelect.addEventListener('change', render);
+		if (minRuleInput) minRuleInput.addEventListener('change', render);
+
+		async function boot() {
+			if (dateInput && !dateInput.value) dateInput.value = todayValue();
+			applyRatePreset();
+			toggleShunting();
+			renderSheet();
+			try {
+				const response = await fetch('/api/railway-graph.json');
+				if (!response.ok) throw new Error(`Graph request failed (${response.status})`);
+				graph = await response.json();
+			} catch {
+				if (distanceResultEl) {
+					distanceResultEl.innerHTML = `<div class="rounded-md border border-error/40 bg-error/5 p-4" role="alert">
+						<p class="data-mono text-eyebrow uppercase text-error">${t('kmaErrStationIndex')}</p>
+						<p class="mt-1 text-body-sm text-muted">${t('kmaErrStationIndexBody')}</p>
+					</div>`;
+				}
+				return;
+			}
+			computeDistance();
+			render();
+		}
+
+		window.addEventListener('railkm:langchange', () => {
+			computeDistance();
+			render();
+			renderSheet();
+		});
+
+		boot();
+	</script>
+	<BackToTop />
+</Layout>

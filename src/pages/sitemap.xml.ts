@@ -32,6 +32,12 @@ export const GET: APIRoute = ({ site }) => {
 			changefreq: 'monthly',
 			priority: '0.9',
 		},
+		{
+			loc: new URL('/kma-calculator', base).href,
+			lastmod,
+			changefreq: 'monthly',
+			priority: '0.9',
+		},
 		...buildPopularRoutes().map((entry) => ({
 			loc: new URL(`/distance/${entry.slug}`, base).href,
 			lastmod,
