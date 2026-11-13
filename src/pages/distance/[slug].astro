@@ -4,50 +4,48 @@ import BackToTop from '../../components/BackToTop.astro';
 import { buildPopularRoutes } from '../../utils/popularRoutes.js';
 import { estimateFares } from '../../utils/routeEngine.js';
 
-const slugFor = (from, to) => `${from.toLowerCase()}-to-${to.toLowerCase()}`;
-
-function selectRelatedRoutes(entry, routesBySlug, reverseSlug, limit = 8) {
-	const picked = [];
-	const seen = new Set([entry.slug]);
-
-	const push = (candidate) => {
-		if (!candidate || seen.has(candidate.slug) || picked.length >= limit) return;
-		seen.add(candidate.slug);
-		picked.push({
-			slug: candidate.slug,
-			from: candidate.from,
-			to: candidate.to,
-			fromName: candidate.fromName,
-			toName: candidate.toName,
-			distanceKm: candidate.route.totalDistanceKm,
-		});
-	};
-
-	push(routesBySlug.get(reverseSlug));
-
-	const allRoutes = [...routesBySlug.values()];
-	for (const candidate of allRoutes) {
-		if (candidate.from === entry.from) push(candidate);
-		if (picked.length >= limit) break;
-	}
-	for (const candidate of allRoutes) {
-		if (candidate.to === entry.to) push(candidate);
-		if (picked.length >= limit) break;
-	}
-	for (const candidate of allRoutes) {
-		push(candidate);
-		if (picked.length >= limit) break;
-	}
-
-	return picked;
-}
-
 export function getStaticPaths() {
 	const routes = buildPopularRoutes();
 	const routesBySlug = new Map(routes.map((entry) => [entry.slug, entry]));
 
+	const selectRelatedRoutes = (entry, reverseSlug, limit = 8) => {
+		const picked = [];
+		const seen = new Set([entry.slug]);
+
+		const push = (candidate) => {
+			if (!candidate || seen.has(candidate.slug) || picked.length >= limit) return;
+			seen.add(candidate.slug);
+			picked.push({
+				slug: candidate.slug,
+				from: candidate.from,
+				to: candidate.to,
+				fromName: candidate.fromName,
+				toName: candidate.toName,
+				distanceKm: candidate.route.totalDistanceKm,
+			});
+		};
+
+		push(routesBySlug.get(reverseSlug));
+
+		const allRoutes = [...routesBySlug.values()];
+		for (const candidate of allRoutes) {
+			if (candidate.from === entry.from) push(candidate);
+			if (picked.length >= limit) break;
+		}
+		for (const candidate of allRoutes) {
+			if (candidate.to === entry.to) push(candidate);
+			if (picked.length >= limit) break;
+		}
+		for (const candidate of allRoutes) {
+			push(candidate);
+			if (picked.length >= limit) break;
+		}
+
+		return picked;
+	};
+
 	return routes.map((entry) => {
-		const reverseSlug = slugFor(entry.to, entry.from);
+		const reverseSlug = `${entry.to.toLowerCase()}-to-${entry.from.toLowerCase()}`;
 		const reverse = routesBySlug.get(reverseSlug);
 
 		return {
@@ -57,7 +55,7 @@ export function getStaticPaths() {
 				reverse: reverse
 					? { slug: reverse.slug, from: reverse.from, to: reverse.to }
 					: null,
-				related: selectRelatedRoutes(entry, routesBySlug, reverseSlug),
+				related: selectRelatedRoutes(entry, reverseSlug),
 			},
 		};
 	});
