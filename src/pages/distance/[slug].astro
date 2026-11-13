@@ -4,19 +4,72 @@ import BackToTop from '../../components/BackToTop.astro';
 import { buildPopularRoutes } from '../../utils/popularRoutes.js';
 import { estimateFares } from '../../utils/routeEngine.js';
 
-export function getStaticPaths() {
-	return buildPopularRoutes().map((entry) => ({
-		params: { slug: entry.slug },
-		props: { entry },
-	}));
+const slugFor = (from, to) => `${from.toLowerCase()}-to-${to.toLowerCase()}`;
+
+function selectRelatedRoutes(entry, routesBySlug, reverseSlug, limit = 8) {
+	const picked = [];
+	const seen = new Set([entry.slug]);
+
+	const push = (candidate) => {
+		if (!candidate || seen.has(candidate.slug) || picked.length >= limit) return;
+		seen.add(candidate.slug);
+		picked.push({
+			slug: candidate.slug,
+			from: candidate.from,
+			to: candidate.to,
+			fromName: candidate.fromName,
+			toName: candidate.toName,
+			distanceKm: candidate.route.totalDistanceKm,
+		});
+	};
+
+	push(routesBySlug.get(reverseSlug));
+
+	const allRoutes = [...routesBySlug.values()];
+	for (const candidate of allRoutes) {
+		if (candidate.from === entry.from) push(candidate);
+		if (picked.length >= limit) break;
+	}
+	for (const candidate of allRoutes) {
+		if (candidate.to === entry.to) push(candidate);
+		if (picked.length >= limit) break;
+	}
+	for (const candidate of allRoutes) {
+		push(candidate);
+		if (picked.length >= limit) break;
+	}
+
+	return picked;
 }
 
-const { entry } = Astro.props;
+export function getStaticPaths() {
+	const routes = buildPopularRoutes();
+	const routesBySlug = new Map(routes.map((entry) => [entry.slug, entry]));
+
+	return routes.map((entry) => {
+		const reverseSlug = slugFor(entry.to, entry.from);
+		const reverse = routesBySlug.get(reverseSlug);
+
+		return {
+			params: { slug: entry.slug },
+			props: {
+				entry,
+				reverse: reverse
+					? { slug: reverse.slug, from: reverse.from, to: reverse.to }
+					: null,
+				related: selectRelatedRoutes(entry, routesBySlug, reverseSlug),
+			},
+		};
+	});
+}
+
+const { entry, reverse, related } = Astro.props;
 const { route, from, to, fromName, toName, fromCode, toCode, slug } = entry;
 
 const site = Astro.site ?? new URL('https://railkm.com/');
 const pageUrl = new URL(`/distance/${slug}`, site);
 const mapperUrl = `/?route=${from}-${to}`;
+const reverseHref = reverse ? `/distance/${reverse.slug}` : `/?route=${to}-${from}`;
 
 const intermediateStops = Math.max(0, route.stopCount - 2);
 const junctions = route.stops.filter((stop) => stop.isJunction);
@@ -149,6 +202,17 @@ const breadcrumbSchema = {
 					</dd>
 				</div>
 			</dl>
+
+			<div class="mt-4">
+				<a
+					href={reverseHref}
+					class="focus-ring group inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-sm border border-line bg-surface px-5 py-3 text-label-sm font-medium text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/[0.03] sm:w-auto"
+				>
+					<span aria-hidden="true">⇄</span>
+					Check Reverse Route ({to} to {from})
+					<span aria-hidden="true" class="transition-transform group-hover:translate-x-0.5">→</span>
+				</a>
+			</div>
 
 			<section aria-labelledby="fare-heading" class="mt-6 rounded-md border border-line bg-surface p-5 sm:p-6">
 				<div class="flex flex-wrap items-center justify-between gap-2">
@@ -307,6 +371,40 @@ const breadcrumbSchema = {
 					</table>
 				</div>
 			</section>
+
+			{
+				related.length > 0 && (
+					<section aria-labelledby="related-heading" class="mt-8 sm:mt-12">
+						<h2 id="related-heading" class="text-heading-md font-semibold text-foreground">
+							Popular &amp; Related Distance Routes
+						</h2>
+						<p class="mt-2 text-body-sm text-muted">
+							Explore more Indian Railways route distances connected to {fromName} and {toName}.
+						</p>
+						<ul class="mt-4 grid gap-2 sm:grid-cols-2">
+							{related.map((relatedRoute) => (
+								<li>
+									<a
+										href={`/distance/${relatedRoute.slug}`}
+										class="focus-ring group flex items-center justify-between gap-3 rounded-sm border border-line bg-surface px-3 py-2 text-body-sm transition-colors hover:border-foreground/40"
+									>
+										<span class="min-w-0 truncate">
+											<span translate="no" class="data-mono font-semibold text-foreground">
+												{relatedRoute.from} to {relatedRoute.to}
+											</span>
+											<span aria-hidden="true" class="mx-1 text-muted">•</span>
+											<span class="data-mono tabular-nums text-muted">
+												{relatedRoute.distanceKm.toLocaleString('en-IN')} km
+											</span>
+										</span>
+										<span aria-hidden="true" class="shrink-0 text-muted transition-transform group-hover:translate-x-0.5">→</span>
+									</a>
+								</li>
+							))}
+						</ul>
+					</section>
+				)
+			}
 
 			<section aria-labelledby="faq-heading" class="mt-8 sm:mt-12">
 				<h2 id="faq-heading" class="text-heading-md font-semibold text-foreground">
